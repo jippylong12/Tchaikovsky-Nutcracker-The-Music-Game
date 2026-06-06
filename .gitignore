@@ -1,0 +1,5 @@
+.DS_Store
+
+# Recovered/source media artifacts are large and should stay local.
+analysis/
+base/
