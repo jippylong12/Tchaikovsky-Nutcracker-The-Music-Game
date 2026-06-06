@@ -3,3 +3,9 @@
 # Recovered/source media artifacts are large and should stay local.
 analysis/
 base/
+
+# Generated private/local bundle outputs.
+app/generated/
+app/public/local-media/audio/
+app/public/local-media/text/
+app/public/local-media/visual/

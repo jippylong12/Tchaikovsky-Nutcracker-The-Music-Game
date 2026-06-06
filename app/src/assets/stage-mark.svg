@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Nutcracker stage mark">
+  <rect width="160" height="160" fill="#23483c"/>
+  <path d="M28 134h104V58c0-27-21-46-52-46S28 31 28 58v76Z" fill="#f3ead8"/>
+  <path d="M45 134V60c0-18 12-31 35-31s35 13 35 31v74" fill="none" stroke="#4a2d46" stroke-width="8"/>
+  <path d="M56 82h48M56 103h48" stroke="#b6822d" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="80" cy="58" r="13" fill="#4a2d46"/>
+  <path d="M39 136h82" stroke="#221a14" stroke-width="10" stroke-linecap="round"/>
+</svg>
