@@ -50,6 +50,7 @@ Committed source-backed assets live in `app/src/assets/nutcracker-source/`:
 * `chooser-hallway.png`: repaired and alpha-composited JPEG3 id 19 from `nutchooser.swf`; used as source-backed chooser hallway art.
 * `chooser-instruments.png`: trimmed render of sprite id 68 extracted from `nutchooser.swf`; used as source-backed chooser lower instrument art.
 * `song-hint-label.png`: trimmed render of text id 122 from `song1/song.swf`.
+* `song-change-song-label.png`: trimmed render of text id 130 from `song1/song.swf`; used for the source `CHANGE SONG` chooser control.
 * `song-listen-label.png`: trimmed render of text id 134 from `song1/song.swf`.
 * `song-exit-label.png`: trimmed render of text id 145 from `song1/song.swf`.
 * `song-stop-label-blue.png` and `song-stop-label-black.png`: trimmed renders of text ids 139 and 141 from `song1/song.swf`; retained as source evidence for playback-state controls.
@@ -146,7 +147,7 @@ The modern implementation now follows that interaction model more closely: a sin
 The DOM song controls now use the source instance names and placement records from `song1__song.placements.txt` instead of a generic bottom-right action strip:
 
 * `helpButton`: id 120 at depth 122, matrix x `556.50`, y `165.30`; contains the original `HINT` text and calls `showHint()` in ActionScript. The DOM HINT button maps to `data-song-action="hint-song"` so incomplete selections show the original four-instrument hint, while complete selections run the check path.
-* `hintButton`: id 127 at depth 127, matrix x `556.35`, y `267.95`; contains the original two-line `CHANGE SONG` text and prompts the song-change flow. The DOM maps it directly back to the chooser.
+* `hintButton`: id 127 at depth 127, matrix x `556.35`, y `267.95`; contains the original two-line `CHANGE SONG` text, backed by rendered text id `130`, and prompts the song-change flow. The DOM maps it directly back to the chooser.
 * `songChooser`: id 133 at depth 133, matrix x `84.10`, y `163.70`; contains the original `LISTEN` text and calls the source preview-song path. The DOM maps it to the theme listen/stop behavior.
 * `listenSong`: id 144 at depth 138, matrix x `81.75`, y `266.30`; contains the original `EXIT` text. The DOM maps it back to the chooser.
 * `quiter`: id 150 at depth 145, matrix x `585.90`, y `472.45`; retained as source evidence for the Flash quit transition, but not rendered as a separate DOM control because the fixed viewport already uses the visible source `EXIT`/`CHANGE SONG` controls.

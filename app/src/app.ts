@@ -10,6 +10,7 @@ import song5SceneryUrl from "./assets/nutcracker-source/song5-scenery.png";
 import song6SceneryUrl from "./assets/nutcracker-source/song6-scenery.png";
 import song7SceneryUrl from "./assets/nutcracker-source/song7-scenery.png";
 import song8SceneryUrl from "./assets/nutcracker-source/song8-scenery.png";
+import songChangeSongLabelUrl from "./assets/nutcracker-source/song-change-song-label.png";
 import songExitLabelUrl from "./assets/nutcracker-source/song-exit-label.png";
 import songHelpArtUrl from "./assets/nutcracker-source/song-help-art.png";
 import songHintLabelUrl from "./assets/nutcracker-source/song-hint-label.png";
@@ -812,9 +813,9 @@ function renderNutcrackerSongGame(
             <img src="${songHintLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">HINT</span>
           </button>
-          <button class="scene-button source-text-button source-change-song-button" type="button" data-source-control="hintButton" data-scene-route="nutcracker-chooser">
-            <span>CHANGE</span>
-            <span>SONG</span>
+          <button class="scene-button source-label-button source-change-song-button" type="button" data-source-control="hintButton" data-scene-route="nutcracker-chooser">
+            <img src="${songChangeSongLabelUrl}" alt="" aria-hidden="true" />
+            <span class="sr-only">CHANGE SONG</span>
           </button>
           <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-scene-route="nutcracker-chooser">
             <img src="${songExitLabelUrl}" alt="" aria-hidden="true" />

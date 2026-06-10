@@ -182,6 +182,9 @@ describe("desktop app shell", () => {
     const hintButton = mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]');
     expect(hintButton?.dataset.songAction).toBe("hint-song");
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="hintButton"]')?.textContent).toContain("CHANGE");
+    expect(mount.querySelector<HTMLImageElement>('[data-source-control="hintButton"] img')?.src).toContain(
+      "song-change-song-label",
+    );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="songChooser"]')).not.toBeNull();
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')).not.toBeNull();
     hintButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));

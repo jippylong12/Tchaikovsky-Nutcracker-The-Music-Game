@@ -556,8 +556,7 @@ button {
   pointer-events: none;
 }
 
-.source-song-actions .source-label-button,
-.source-song-actions .source-text-button {
+.source-song-actions .source-label-button {
   position: absolute;
   pointer-events: auto;
 }
@@ -621,34 +620,12 @@ button {
   padding: 0;
 }
 
-.source-text-button {
-  display: grid;
-  place-items: center;
-  border: 0;
-  color: #050505;
-  background: transparent;
-  box-shadow: none;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.source-text-button:hover,
-.source-text-button:focus-visible {
-  outline: 3px solid rgba(255, 247, 168, 0.9);
-  outline-offset: 2px;
-  background: rgba(255, 247, 168, 0.12);
-}
-
 .source-change-song-button {
   left: 556px;
   top: 268px;
   width: 68px;
   height: 39px;
-  font-size: 11px;
-  line-height: 0.92;
+  padding: 0;
 }
 
 .track-card.source-track-hotspot {
