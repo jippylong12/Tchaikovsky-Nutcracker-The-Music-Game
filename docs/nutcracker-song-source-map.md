@@ -58,8 +58,8 @@ Committed source-backed assets live in `app/src/assets/nutcracker-source/`:
 * `song-play-again-label.png`: trimmed render of text id 111 from `song1/song.swf`; used for the source-backed reset/play-again control after feedback.
 * `song-yes-label.png`: trimmed render of text id 345 from `song1/song.swf`; used by the source-backed change-song confirmation.
 * `song-no-label.png`: trimmed render of text id 350 from `song1/song.swf`; used by the source-backed change-song confirmation.
-* `song-speaker.png`: PNG asset 3 extracted from `song1/song.swf`.
-* `song-sound-icon.png`: PNG asset 39 extracted from `song1/song.swf`.
+* `song-speaker.png`: PNG asset 3 extracted from `song1/song.swf`; retained as direct bitmap evidence, but not used as a standalone speaker control because visual inspection shows it is not the clean `spk1`/`spk2` sprite.
+* `song-sound-icon.png`: PNG asset 39 extracted from `song1/song.swf`; retained as direct bitmap evidence, but visual inspection shows this is decorative curtain/scallop art rather than a sound-control icon.
 * `song-help-art.png`: PNG asset 73 extracted from `song1/song.swf`.
 * `track1-nutcracker.png` through `track8-round-doll.png`: source-identical lossless bitmaps extracted from `song1/characters/anim*.swf`; retained as fallback actor art.
 * `song1-track1-actor.png` through `song8-track8-actor.png`: promoted representative lossless bitmaps from each song's own `characters/anim#.swf`; used as visible selected-stage actors in the modern scene.
@@ -151,6 +151,8 @@ Instrument button handlers in the SWF also call `_root.testCombination()` after 
 The root timeline places empty/shared movie slots named `inst1` through `inst8`, `anim1` through `anim8`, and `prevTrack1` through `prevTrack8`. Its ActionScript and child button actions reference `doubleClick`, `dragInstrument`, `hitArea.hitTest`, `instOnScene`, `_root.activeInst#`, `addINST`, `removeAnim`, and `testCombination`.
 
 The modern implementation now follows that interaction model more closely: a single click previews the source track stream, while double-clicking an instrument or dragging it onto the stage selects it and renders the source-extracted actor art. Full `anim*.swf` timeline playback remains a fidelity gap to close with a deeper SWF display-list renderer.
+
+Modern selected/correct/incorrect badges, yellow hotspot fills, and red/green actor glows are not source-backed. The SWF communicates selected instruments by loading the corresponding `characters/anim#.swf` into `anim#` slots and communicates hint/check results through `_root.message` in the `courtain` sprite. The DOM therefore keeps selected/correctness state in classes/data/ARIA for behavior and tests, but avoids visible invented badges/glows over the preserved viewport.
 
 The SWF `helpme(a, b)` function sets `_root.helpmessage`, starts dragging `_root.flyinghelp`, and makes that help clip visible. Instrument rollovers call `helpme` with source labels including `BASS`, `VIOLIN`, `TRUMPET`, `FLUTE`, `VIBRAPHONE`, `PIANO`, `DRUM`, `SAXOPHONE`, `MARIMBA`, `OBOE`, and `TIMPANI`; rollouts call `nohelp()`. The DOM now mirrors that visible hover/focus behavior with a source-styled transient help tag on each instrument hotspot. Song 7 track 2 uses the source-specific `VIOLIN (PIZZICATO)` label found in `song7__song.actions.txt`. `English Horn` is retained as an uppercase trackinfo-derived fallback because no matching source help string was found in the current song 3 dumps.
 
