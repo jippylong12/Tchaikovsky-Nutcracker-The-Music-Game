@@ -203,9 +203,12 @@ describe("desktop app shell", () => {
 
     createTestShell(mount);
     mount.querySelector<HTMLButtonElement>('[data-route="song-1"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    mount
-      .querySelector<HTMLButtonElement>('[data-song-id="1"][data-song-track="1"]')
-      ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const instrumentButton = mount.querySelector<HTMLButtonElement>('[data-song-id="1"][data-song-track="1"]');
+
+    expect(instrumentButton?.getAttribute("draggable")).toBe("true");
+    expect(instrumentButton?.getAttribute("aria-label")).toContain("double click or drag onto the stage");
+
+    instrumentButton?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
 
     expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.src).toContain("track1-nutcracker");
   });
@@ -220,7 +223,7 @@ describe("desktop app shell", () => {
       getCorrectNutcrackerTrackNumbers(song).forEach((trackNumber) => {
         mount
           .querySelector<HTMLButtonElement>(`[data-song-id="${song.id}"][data-song-track="${trackNumber}"]`)
-          ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+          ?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
       });
 
       expect(mount.textContent).toContain("ok");
@@ -240,7 +243,7 @@ describe("desktop app shell", () => {
     getCorrectNutcrackerTrackNumbers(nutcrackerSongGames[0]).forEach((trackNumber) => {
       mount
         .querySelector<HTMLButtonElement>(`[data-song-id="1"][data-song-track="${trackNumber}"]`)
-        ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        ?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
     });
     mount.querySelector<HTMLButtonElement>('[data-route="nutcracker-chooser"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 

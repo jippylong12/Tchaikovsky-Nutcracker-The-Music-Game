@@ -285,21 +285,66 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-song-track]").forEach((button) => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (event) => {
         const songId = Number(button.dataset.songId);
         const trackNumber = Number(button.dataset.songTrack);
         if (isNutcrackerSongId(songId) && isNutcrackerTrackNumber(trackNumber)) {
           const song = nutcrackerSongGames.find((item) => item.id === songId);
-          toggleNutcrackerTrack(shellState, songId, trackNumber);
           const track = song?.tracks.find((item) => item.number === trackNumber);
-          if (track && shellState.nutcrackerSelections[songId].includes(trackNumber)) {
-            audio.stopSceneAudio();
-            shellState.activeSuiteTrackId = null;
-            shellState.activeAudioId = audio.playTrack(track.audioPath, getNutcrackerTrackStartSeconds(track)).id;
+          if (!song || !track) {
+            return;
           }
-          if (song && shellState.nutcrackerSelections[songId].length === getCorrectNutcrackerTrackNumbers(song).length) {
-            submitNutcrackerSong(song, shellState, progress);
+          if (event.detail === 0) {
+            toggleNutcrackerTrack(shellState, songId, trackNumber);
+            checkNutcrackerSelectionIfReady(song, shellState, progress);
+            render();
+            return;
           }
+          playNutcrackerTrackPreview(track);
+        }
+      });
+      button.addEventListener("dblclick", () => {
+        const songId = Number(button.dataset.songId);
+        const trackNumber = Number(button.dataset.songTrack);
+        if (isNutcrackerSongId(songId) && isNutcrackerTrackNumber(trackNumber)) {
+          const song = nutcrackerSongGames.find((item) => item.id === songId);
+          if (!song) {
+            return;
+          }
+          toggleNutcrackerTrack(shellState, songId, trackNumber);
+          checkNutcrackerSelectionIfReady(song, shellState, progress);
+          render();
+        }
+      });
+      button.addEventListener("dragstart", (event) => {
+        const songId = Number(button.dataset.songId);
+        const trackNumber = Number(button.dataset.songTrack);
+        if (isNutcrackerSongId(songId) && isNutcrackerTrackNumber(trackNumber)) {
+          event.dataTransfer?.setData("text/plain", `${songId}:${trackNumber}`);
+          event.dataTransfer?.setData("application/x-nutcracker-track", `${songId}:${trackNumber}`);
+          event.dataTransfer?.setDragImage(button, 12, 12);
+        }
+      });
+    });
+
+    mount.querySelectorAll<HTMLElement>("[data-song-drop-stage]").forEach((stage) => {
+      stage.addEventListener("dragover", (event) => {
+        event.preventDefault();
+      });
+      stage.addEventListener("drop", (event) => {
+        event.preventDefault();
+        const payload =
+          event.dataTransfer?.getData("application/x-nutcracker-track") || event.dataTransfer?.getData("text/plain") || "";
+        const [songIdRaw, trackNumberRaw] = payload.split(":");
+        const songId = Number(songIdRaw);
+        const trackNumber = Number(trackNumberRaw);
+        if (isNutcrackerSongId(songId) && isNutcrackerTrackNumber(trackNumber)) {
+          const song = nutcrackerSongGames.find((item) => item.id === songId);
+          if (!song || song.routeId !== shellState.routeId) {
+            return;
+          }
+          addNutcrackerTrack(shellState, songId, trackNumber);
+          checkNutcrackerSelectionIfReady(song, shellState, progress);
           render();
         }
       });
@@ -332,6 +377,12 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     shellState.activeAudioId = null;
     shellState.activeSuiteTrackId = null;
     render();
+  };
+
+  const playNutcrackerTrackPreview = (track: NutcrackerTrack) => {
+    audio.stopSceneAudio();
+    shellState.activeSuiteTrackId = null;
+    shellState.activeAudioId = audio.playTrack(track.audioPath, getNutcrackerTrackStartSeconds(track)).id;
   };
 
   const playSceneAudio = (audioPath: string, loop: boolean, startTimeSeconds = 0) => {
@@ -739,7 +790,7 @@ function renderNutcrackerSongGame(
     <div class="scene-body nutcracker-song-scene source-flash-scene">
       <img class="song-source-frame" src="${nutcrackerSongFrameUrl}" alt="" aria-hidden="true" />
       ${renderNutcrackerSongScenery(song.id)}
-      <section class="song-stage-overlay" aria-label="${escapeHtml(song.title)} track choices">
+      <section class="song-stage-overlay" aria-label="${escapeHtml(song.title)} track choices" data-song-drop-stage="${song.id}">
         <h1 class="sr-only">${escapeHtml(song.title)}</h1>
         <p class="song-source-message" aria-live="polite">${escapeHtml(message)}</p>
         ${renderSelectedNutcrackerActors(song, selectedTrackNumbers, feedback)}
@@ -820,8 +871,9 @@ function renderNutcrackerTrackButton(
         type="button"
         data-song-id="${songId}"
         data-song-track="${track.number}"
+        draggable="true"
         aria-pressed="${selected}"
-        aria-label="Track ${track.number}: ${escapeHtml(track.instrument)}. ${formatTrackStart(track)}."
+        aria-label="Track ${track.number}: ${escapeHtml(track.instrument)}. Click to preview; double click or drag onto the stage to select. ${formatTrackStart(track)}."
       >
         <span class="sr-only">Track ${track.number}</span>
         <strong class="sr-only">${escapeHtml(track.instrument)}</strong>
@@ -940,6 +992,37 @@ function toggleNutcrackerTrack(
 
   shellState.nutcrackerSelections[songId] = [...selected].sort((a, b) => a - b);
   shellState.nutcrackerFeedback[songId] = null;
+}
+
+function addNutcrackerTrack(
+  shellState: ShellState,
+  songId: NutcrackerSongId,
+  trackNumber: NutcrackerTrackNumber,
+): void {
+  const song = nutcrackerSongGames.find((item) => item.id === songId);
+  const maxSelections = song ? getCorrectNutcrackerTrackNumbers(song).length : 4;
+  const selected = new Set(shellState.nutcrackerSelections[songId]);
+  if (selected.has(trackNumber)) {
+    shellState.nutcrackerFeedback[songId] = null;
+    return;
+  }
+  if (selected.size >= maxSelections) {
+    shellState.nutcrackerFeedback[songId] = "try again";
+    return;
+  }
+  selected.add(trackNumber);
+  shellState.nutcrackerSelections[songId] = [...selected].sort((a, b) => a - b);
+  shellState.nutcrackerFeedback[songId] = null;
+}
+
+function checkNutcrackerSelectionIfReady(
+  song: NutcrackerSongGame,
+  shellState: ShellState,
+  progress: ProgressStoreController,
+): void {
+  if (shellState.nutcrackerSelections[song.id].length === getCorrectNutcrackerTrackNumbers(song).length) {
+    submitNutcrackerSong(song, shellState, progress);
+  }
 }
 
 function submitNutcrackerSong(
