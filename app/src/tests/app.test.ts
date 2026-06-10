@@ -270,7 +270,12 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-1")?.dataset.sourceVectorBounds).toContain("shape id 0172");
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-4")?.dataset.sourcePlacement).toContain("instIMG4");
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-4")?.dataset.sourceHitRect).toBe("246,334,154,44");
-    expect(mount.querySelector<HTMLElement>(".source-track-hotspot-7 .source-track-help")?.textContent).toBe("DRUM");
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceControl).toBe("flyinghelp");
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourcePlacement).toContain("id 0257 depth 0306");
+    mount
+      .querySelector<HTMLButtonElement>('[data-song-id="1"][data-song-track="7"]')
+      ?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.textContent).toBe("DRUM");
 
     mount.querySelector<HTMLButtonElement>('[data-route="song-5"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     mount

@@ -744,11 +744,12 @@ button {
   outline-offset: 2px;
 }
 
-.source-track-help {
+.source-flying-help {
   position: absolute;
-  left: 50%;
-  top: -28px;
+  left: 10000px;
+  top: 196px;
   z-index: 6;
+  min-width: 54px;
   max-width: 180px;
   padding: 3px 7px 4px;
   border: 1px solid #00ccff;
@@ -762,27 +763,12 @@ button {
   text-align: center;
   text-shadow: 1px 1px 0 #000033;
   white-space: nowrap;
-  opacity: 0;
   pointer-events: none;
-  transform: translateX(-50%);
+  opacity: 0;
 }
 
-.source-track-hotspot:hover .source-track-help,
-.source-track-hotspot:focus-within .source-track-help {
+.source-flying-help[data-visible="true"] {
   opacity: 1;
-}
-
-.source-track-hotspot-4 .source-track-help,
-.source-track-hotspot-8 .source-track-help {
-  right: 0;
-  left: auto;
-  transform: none;
-}
-
-.source-track-hotspot-2 .source-track-help,
-.source-track-hotspot-3 .source-track-help {
-  left: 0;
-  transform: none;
 }
 
 .source-selected-actor {

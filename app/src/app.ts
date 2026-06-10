@@ -332,6 +332,21 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
           event.dataTransfer?.setDragImage(button, 12, 12);
         }
       });
+      button.addEventListener("pointerenter", (event) => {
+        showSourceFlyingHelp(button, event);
+      });
+      button.addEventListener("pointermove", (event) => {
+        showSourceFlyingHelp(button, event);
+      });
+      button.addEventListener("pointerleave", () => {
+        hideSourceFlyingHelp();
+      });
+      button.addEventListener("focus", () => {
+        showSourceFlyingHelp(button);
+      });
+      button.addEventListener("blur", () => {
+        hideSourceFlyingHelp();
+      });
     });
 
     mount.querySelectorAll<HTMLElement>("[data-song-drop-stage]").forEach((stage) => {
@@ -365,6 +380,37 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         }
       });
     });
+  };
+
+  const showSourceFlyingHelp = (button: HTMLButtonElement, event?: PointerEvent) => {
+    const label = button.closest<HTMLElement>("[data-source-help]")?.dataset.sourceHelp;
+    const flyingHelp = mount.querySelector<HTMLElement>(".source-flying-help");
+    const viewport = mount.querySelector<HTMLElement>(".game-viewport");
+    if (!label || !flyingHelp || !viewport) {
+      return;
+    }
+
+    flyingHelp.textContent = label;
+    flyingHelp.dataset.visible = "true";
+
+    const viewportRect = viewport.getBoundingClientRect();
+    const buttonRect = button.getBoundingClientRect();
+    const sourceX = event ? event.clientX - viewportRect.left : buttonRect.left + buttonRect.width / 2 - viewportRect.left;
+    const sourceY = event ? event.clientY - viewportRect.top : buttonRect.top - viewportRect.top;
+    const left = Math.min(Math.max(sourceX + 14, 8), 488);
+    const top = Math.min(Math.max(sourceY - 34, 8), 438);
+    flyingHelp.style.left = `${left}px`;
+    flyingHelp.style.top = `${top}px`;
+  };
+
+  const hideSourceFlyingHelp = () => {
+    const flyingHelp = mount.querySelector<HTMLElement>(".source-flying-help");
+    if (!flyingHelp) {
+      return;
+    }
+    flyingHelp.textContent = "";
+    delete flyingHelp.dataset.visible;
+    flyingHelp.style.left = "10000px";
   };
 
   const navigate = (routeId: RouteId) => {
@@ -862,6 +908,7 @@ function renderNutcrackerSongGame(
         <p class="song-source-message sr-only" aria-live="polite">${escapeHtml(sourceMessage ?? "")}</p>
         ${renderSelectedNutcrackerActors(song, selectedTrackNumbers, feedback)}
         ${song.tracks.map((track) => renderNutcrackerTrackButton(song.id, track, selectedTrackNumbers, feedback)).join("")}
+        ${renderNutcrackerFlyingHelp()}
         <div class="song-actions source-song-actions" aria-label="Source song controls">
           <button class="media-button source-label-button source-listen-button" type="button" data-source-control="songChooser" data-song-action="play-theme" data-song-id="${song.id}">
             <span class="source-control-help" aria-hidden="true">LISTEN TO THE SONG</span>
@@ -1010,12 +1057,22 @@ function renderNutcrackerTrackButton(
         aria-pressed="${selected}"
         aria-label="Track ${track.number}: ${escapeHtml(track.instrument)}. Click to preview; double click or drag onto the stage to select. ${formatTrackStart(track)}."
       >
-        <span class="source-track-help" aria-hidden="true">${escapeHtml(getNutcrackerSourceHelpLabel(songId, track))}</span>
         <span class="sr-only">Track ${track.number}</span>
         <strong class="sr-only">${escapeHtml(track.instrument)}</strong>
         <small class="sr-only">${formatTrackStart(track)}${track.character ? ` / ${escapeHtml(track.character)}` : ""}</small>
       </button>
     </article>
+  `;
+}
+
+function renderNutcrackerFlyingHelp(): string {
+  return `
+    <aside
+      class="source-flying-help"
+      aria-hidden="true"
+      data-source-control="flyinghelp"
+      data-source-placement="song1/song.swf flyinghelp id 0257 depth 0306 initial matrix x 1143.85 y 195.55; helpme(a,b) sets _root.helpmessage, gotoAndStop(a), startDrag(this), _visible=1; nohelp() clears message, _visible=0, _x=10000"
+    ></aside>
   `;
 }
 
