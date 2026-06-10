@@ -838,18 +838,22 @@ function renderNutcrackerSongGame(
         ${song.tracks.map((track) => renderNutcrackerTrackButton(song.id, track, selectedTrackNumbers, feedback)).join("")}
         <div class="song-actions source-song-actions" aria-label="Source song controls">
           <button class="media-button source-label-button source-listen-button" type="button" data-source-control="songChooser" data-song-action="play-theme" data-song-id="${song.id}">
+            <span class="source-control-help" aria-hidden="true">LISTEN TO THE SONG</span>
             <img src="${isPlaying ? songStopLabelUrl : songListenLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">${isPlaying ? "STOP" : "LISTEN"}</span>
           </button>
           <button class="scene-button source-label-button source-hint-button" type="button" data-source-control="helpButton" data-song-action="hint-song" data-song-id="${song.id}">
+            <span class="source-control-help" aria-hidden="true">HINT</span>
             <img src="${songHintLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">HINT</span>
           </button>
           <button class="scene-button source-label-button source-change-song-button" type="button" data-source-control="hintButton" data-song-action="confirm-change-song" data-song-id="${song.id}">
+            <span class="source-control-help" aria-hidden="true">SELECT A DIFFERENT SONG</span>
             <img src="${songChangeSongLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">CHANGE SONG</span>
           </button>
           <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-scene-route="nutcracker-chooser">
+            <span class="source-control-help" aria-hidden="true">QUIT THE GAME</span>
             <img src="${songExitLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">EXIT</span>
           </button>

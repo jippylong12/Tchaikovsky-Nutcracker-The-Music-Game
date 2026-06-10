@@ -193,6 +193,11 @@ describe("desktop app shell", () => {
     expect(mount.textContent).not.toContain('press "Yes" to change this song or "No" to cancel');
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="songChooser"]')).not.toBeNull();
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')).not.toBeNull();
+    expect(mount.querySelector('[data-source-control="helpButton"] .source-control-help')?.textContent).toBe("HINT");
+    expect(mount.querySelector('[data-source-control="hintButton"] .source-control-help')?.textContent).toBe(
+      "SELECT A DIFFERENT SONG",
+    );
+    expect(mount.querySelector('[data-source-control="listenSong"] .source-control-help')?.textContent).toBe("QUIT THE GAME");
     hintButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(mount.textContent).toContain("All songs are played by 4 instruments!");
     expect(mount.textContent).not.toContain("Test");

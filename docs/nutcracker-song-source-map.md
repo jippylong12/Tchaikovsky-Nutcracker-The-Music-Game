@@ -157,6 +157,8 @@ The DOM song controls now use the source instance names and placement records fr
 * `listenSong`: id 144 at depth 138, matrix x `81.75`, y `266.30`; contains the original `EXIT` text. The DOM maps it back to the chooser.
 * `quiter`: id 150 at depth 145, matrix x `585.90`, y `472.45`; retained as source evidence for the Flash quit transition, but not rendered as a separate DOM control because the fixed viewport already uses the visible source `EXIT`/`CHANGE SONG` controls.
 
+The same source controls also call `helpme`/`nohelp` on hover. The DOM now exposes those source help strings as transient source-styled help tags: `Hint`, `Select a different song`, and `Quit the Game`. `listenSong` release also routes the SWF through `warningFrame`, but its handler does not set `_root.message`; the DOM therefore keeps the existing chooser return until the static warning-frame wording can be recovered without guessing.
+
 The old generic song-page HINT/EXIT wrapper is no longer rendered over song scenes. The generic beige help modal is also replaced for song scenes by the recovered `song-help-art.png` frame when scene help is opened.
 
 ## Track preview timing evidence

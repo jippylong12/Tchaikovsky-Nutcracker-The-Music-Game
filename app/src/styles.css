@@ -577,6 +577,41 @@ button {
   pointer-events: none;
 }
 
+.source-control-help {
+  position: absolute;
+  left: 50%;
+  top: -27px;
+  z-index: 7;
+  max-width: 170px;
+  padding: 3px 7px 4px;
+  border: 1px solid #00ccff;
+  color: #fff7a8;
+  background: rgba(0, 0, 102, 0.92);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.1;
+  text-align: center;
+  text-shadow: 1px 1px 0 #000033;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.source-label-button:hover .source-control-help,
+.source-label-button:focus-visible .source-control-help {
+  opacity: 1;
+}
+
+.source-hint-button .source-control-help,
+.source-change-song-button .source-control-help {
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
 .source-label-button:hover,
 .source-label-button:focus-visible {
   outline: 3px solid rgba(255, 247, 168, 0.9);
