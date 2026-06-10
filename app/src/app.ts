@@ -15,8 +15,10 @@ import songExitLabelUrl from "./assets/nutcracker-source/song-exit-label.png";
 import songHelpArtUrl from "./assets/nutcracker-source/song-help-art.png";
 import songHintLabelUrl from "./assets/nutcracker-source/song-hint-label.png";
 import songListenLabelUrl from "./assets/nutcracker-source/song-listen-label.png";
+import songNoLabelUrl from "./assets/nutcracker-source/song-no-label.png";
 import songPlayAgainLabelUrl from "./assets/nutcracker-source/song-play-again-label.png";
 import songStopLabelUrl from "./assets/nutcracker-source/song-stop-label-blue.png";
+import songYesLabelUrl from "./assets/nutcracker-source/song-yes-label.png";
 import stageMarkUrl from "./assets/stage-mark.svg";
 import { createAudioService, type AudioService } from "./audio/audioService";
 import {
@@ -53,6 +55,7 @@ type ShellState = {
   routeStack: RouteId[];
   helpOpen: boolean;
   activeAudioId: string | null;
+  pendingNutcrackerSongChange: NutcrackerSongId | null;
   readingPages: Record<ReadingRouteId, number>;
   activeDictionaryInstrumentId: string;
   activeSuiteTrackId: string | null;
@@ -77,6 +80,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     routeStack: [],
     helpOpen: false,
     activeAudioId: null,
+    pendingNutcrackerSongChange: null,
     readingPages: {
       story: 0,
       "composer-biography": 0,
@@ -368,6 +372,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
     shellState.routeId = routeId;
     shellState.helpOpen = false;
+    shellState.pendingNutcrackerSongChange = null;
     audio.stopSceneAudio();
     shellState.activeAudioId = null;
     shellState.activeSuiteTrackId = null;
@@ -402,6 +407,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     if (action === "back") {
       shellState.routeId = shellState.routeStack.pop() ?? "main-menu";
       shellState.helpOpen = false;
+      shellState.pendingNutcrackerSongChange = null;
       audio.stopSceneAudio();
       shellState.activeAudioId = null;
       shellState.activeSuiteTrackId = null;
@@ -465,6 +471,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
 
     if (action === "play-theme") {
+      shellState.pendingNutcrackerSongChange = null;
       if (shellState.activeAudioId) {
         stopSceneAudio();
         return;
@@ -478,11 +485,34 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     if (action === "reset-song") {
       shellState.nutcrackerSelections[songId] = [];
       shellState.nutcrackerFeedback[songId] = null;
+      shellState.pendingNutcrackerSongChange = null;
       render();
       return;
     }
 
+    if (action === "confirm-change-song") {
+      audio.stopSceneAudio();
+      shellState.activeAudioId = null;
+      shellState.activeSuiteTrackId = null;
+      shellState.pendingNutcrackerSongChange = songId;
+      render();
+      return;
+    }
+
+    if (action === "cancel-change-song") {
+      shellState.pendingNutcrackerSongChange = null;
+      render();
+      return;
+    }
+
+    if (action === "accept-change-song") {
+      shellState.pendingNutcrackerSongChange = null;
+      navigate("nutcracker-chooser");
+      return;
+    }
+
     if (action === "hint-song") {
+      shellState.pendingNutcrackerSongChange = null;
       showNutcrackerHint(song, shellState, progress);
       render();
       return;
@@ -544,6 +574,7 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
       shellState.nutcrackerSelections[song.id],
       shellState.nutcrackerFeedback[song.id],
       shellState.activeAudioId !== null,
+      shellState.pendingNutcrackerSongChange === song.id,
     );
   }
 
@@ -781,6 +812,7 @@ function renderNutcrackerSongGame(
   selectedTrackNumbers: readonly NutcrackerTrackNumber[],
   feedback: string | null,
   isPlaying: boolean,
+  changePromptOpen: boolean,
 ): string {
   const selectedTrackCount = selectedTrackNumbers.length;
   const correctRequiredCount = getCorrectNutcrackerTrackNumbers(song).length;
@@ -813,7 +845,7 @@ function renderNutcrackerSongGame(
             <img src="${songHintLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">HINT</span>
           </button>
-          <button class="scene-button source-label-button source-change-song-button" type="button" data-source-control="hintButton" data-scene-route="nutcracker-chooser">
+          <button class="scene-button source-label-button source-change-song-button" type="button" data-source-control="hintButton" data-song-action="confirm-change-song" data-song-id="${song.id}">
             <img src="${songChangeSongLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">CHANGE SONG</span>
           </button>
@@ -830,9 +862,26 @@ function renderNutcrackerSongGame(
               : ""
           }
         </div>
+        ${changePromptOpen ? renderNutcrackerChangeSongPrompt(song.id) : ""}
         <p class="sr-only">${completed ? "Door cleared." : "Door ready."} Source: ${escapeHtml(song.sourcePath)}. Track streams extracted from recovered SWFs.</p>
       </section>
     </div>
+  `;
+}
+
+function renderNutcrackerChangeSongPrompt(songId: NutcrackerSongId): string {
+  return `
+    <aside class="source-alert" aria-label="Change song confirmation">
+      <p>press "Yes" to change this song or "No" to cancel</p>
+      <button class="source-alert-choice source-alert-yes" type="button" data-song-action="accept-change-song" data-song-id="${songId}">
+        <img src="${songYesLabelUrl}" alt="" aria-hidden="true" />
+        <span class="sr-only">YES</span>
+      </button>
+      <button class="source-alert-choice source-alert-no" type="button" data-song-action="cancel-change-song" data-song-id="${songId}">
+        <img src="${songNoLabelUrl}" alt="" aria-hidden="true" />
+        <span class="sr-only">NO</span>
+      </button>
+    </aside>
   `;
 }
 

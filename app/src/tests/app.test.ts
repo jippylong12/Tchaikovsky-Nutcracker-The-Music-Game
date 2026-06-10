@@ -185,6 +185,12 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>('[data-source-control="hintButton"] img')?.src).toContain(
       "song-change-song-label",
     );
+    mount.querySelector<HTMLButtonElement>('[data-source-control="hintButton"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mount.textContent).toContain('press "Yes" to change this song or "No" to cancel');
+    expect(mount.querySelector<HTMLImageElement>(".source-alert-yes img")?.src).toContain("song-yes-label");
+    expect(mount.querySelector<HTMLImageElement>(".source-alert-no img")?.src).toContain("song-no-label");
+    mount.querySelector<HTMLButtonElement>(".source-alert-no")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mount.textContent).not.toContain('press "Yes" to change this song or "No" to cancel');
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="songChooser"]')).not.toBeNull();
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')).not.toBeNull();
     hintButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
