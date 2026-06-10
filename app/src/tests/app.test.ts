@@ -217,11 +217,15 @@ describe("desktop app shell", () => {
     expect(mount.textContent).not.toContain('press "Yes" to change this song or "No" to cancel');
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="songChooser"]')).not.toBeNull();
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')).not.toBeNull();
-    expect(mount.querySelector('[data-source-control="helpButton"] .source-control-help')?.textContent).toBe("HINT");
-    expect(mount.querySelector('[data-source-control="hintButton"] .source-control-help')?.textContent).toBe(
-      "SELECT A DIFFERENT SONG",
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="songChooser"]')?.dataset.sourceHelp).toBe(
+      "Listen to the Original Music",
     );
-    expect(mount.querySelector('[data-source-control="listenSong"] .source-control-help')?.textContent).toBe("QUIT THE GAME");
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="hintButton"]')?.dataset.sourceHelp).toBe(
+      "Select a\ndifferent\nsong",
+    );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dataset.sourceHelp).toBe("Quit the Game");
+    hintButton?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.textContent).toBe("Hint");
     hintButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(mount.textContent).toContain("All songs are played by 4 instruments!");
     expect(mount.querySelector<HTMLElement>(".source-hint-alert")?.dataset.sourceFrame).toBe(

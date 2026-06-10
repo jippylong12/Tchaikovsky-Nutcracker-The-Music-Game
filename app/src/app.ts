@@ -332,19 +332,28 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
           event.dataTransfer?.setDragImage(button, 12, 12);
         }
       });
-      button.addEventListener("pointerenter", (event) => {
-        showSourceFlyingHelp(button, event);
+    });
+
+    mount.querySelectorAll<HTMLElement>("[data-source-help]").forEach((sourceHelpElement) => {
+      const helpTarget = sourceHelpElement.matches("button")
+        ? sourceHelpElement
+        : sourceHelpElement.querySelector<HTMLButtonElement>("button");
+      if (!helpTarget) {
+        return;
+      }
+      helpTarget.addEventListener("pointerenter", (event) => {
+        showSourceFlyingHelp(sourceHelpElement, event);
       });
-      button.addEventListener("pointermove", (event) => {
-        showSourceFlyingHelp(button, event);
+      helpTarget.addEventListener("pointermove", (event) => {
+        showSourceFlyingHelp(sourceHelpElement, event);
       });
-      button.addEventListener("pointerleave", () => {
+      helpTarget.addEventListener("pointerleave", () => {
         hideSourceFlyingHelp();
       });
-      button.addEventListener("focus", () => {
-        showSourceFlyingHelp(button);
+      helpTarget.addEventListener("focus", () => {
+        showSourceFlyingHelp(sourceHelpElement);
       });
-      button.addEventListener("blur", () => {
+      helpTarget.addEventListener("blur", () => {
         hideSourceFlyingHelp();
       });
     });
@@ -382,8 +391,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     });
   };
 
-  const showSourceFlyingHelp = (button: HTMLButtonElement, event?: PointerEvent) => {
-    const label = button.closest<HTMLElement>("[data-source-help]")?.dataset.sourceHelp;
+  const showSourceFlyingHelp = (sourceHelpElement: HTMLElement, event?: PointerEvent) => {
+    const label = sourceHelpElement.dataset.sourceHelp;
     const flyingHelp = mount.querySelector<HTMLElement>(".source-flying-help");
     const viewport = mount.querySelector<HTMLElement>(".game-viewport");
     if (!label || !flyingHelp || !viewport) {
@@ -394,9 +403,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     flyingHelp.dataset.visible = "true";
 
     const viewportRect = viewport.getBoundingClientRect();
-    const buttonRect = button.getBoundingClientRect();
-    const sourceX = event ? event.clientX - viewportRect.left : buttonRect.left + buttonRect.width / 2 - viewportRect.left;
-    const sourceY = event ? event.clientY - viewportRect.top : buttonRect.top - viewportRect.top;
+    const sourceRect = sourceHelpElement.getBoundingClientRect();
+    const sourceX = event ? event.clientX - viewportRect.left : sourceRect.left + sourceRect.width / 2 - viewportRect.left;
+    const sourceY = event ? event.clientY - viewportRect.top : sourceRect.top - viewportRect.top;
     const left = Math.min(Math.max(sourceX + 14, 8), 488);
     const top = Math.min(Math.max(sourceY - 34, 8), 438);
     flyingHelp.style.left = `${left}px`;
@@ -910,23 +919,19 @@ function renderNutcrackerSongGame(
         ${song.tracks.map((track) => renderNutcrackerTrackButton(song.id, track, selectedTrackNumbers, feedback)).join("")}
         ${renderNutcrackerFlyingHelp()}
         <div class="song-actions source-song-actions" aria-label="Source song controls">
-          <button class="media-button source-label-button source-listen-button" type="button" data-source-control="songChooser" data-song-action="play-theme" data-song-id="${song.id}">
-            <span class="source-control-help" aria-hidden="true">LISTEN TO THE SONG</span>
+          <button class="media-button source-label-button source-listen-button" type="button" data-source-control="songChooser" data-source-help="${isPlaying ? "Stop the Music" : "Listen to the Original Music"}" data-song-action="play-theme" data-song-id="${song.id}">
             <img src="${isPlaying ? songStopLabelUrl : songListenLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">${isPlaying ? "STOP" : "LISTEN"}</span>
           </button>
-          <button class="scene-button source-label-button source-hint-button" type="button" data-source-control="helpButton" data-song-action="hint-song" data-song-id="${song.id}">
-            <span class="source-control-help" aria-hidden="true">HINT</span>
+          <button class="scene-button source-label-button source-hint-button" type="button" data-source-control="helpButton" data-source-help="Hint" data-song-action="hint-song" data-song-id="${song.id}">
             <img src="${songHintLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">HINT</span>
           </button>
-          <button class="scene-button source-label-button source-change-song-button" type="button" data-source-control="hintButton" data-song-action="confirm-change-song" data-song-id="${song.id}">
-            <span class="source-control-help" aria-hidden="true">SELECT A DIFFERENT SONG</span>
+          <button class="scene-button source-label-button source-change-song-button" type="button" data-source-control="hintButton" data-source-help="Select a&#10;different&#10;song" data-song-action="confirm-change-song" data-song-id="${song.id}">
             <img src="${songChangeSongLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">CHANGE SONG</span>
           </button>
-          <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-scene-route="nutcracker-chooser">
-            <span class="source-control-help" aria-hidden="true">QUIT THE GAME</span>
+          <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-source-help="Quit the Game" data-scene-route="nutcracker-chooser">
             <img src="${songExitLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">EXIT</span>
           </button>
