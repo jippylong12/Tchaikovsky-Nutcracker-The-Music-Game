@@ -301,6 +301,10 @@ describe("desktop app shell", () => {
       expect(mount.textContent).toContain("Door cleared.");
       expect(mount.querySelector(".source-hint-alert")).toBeNull();
       expect(mount.textContent).toContain("PLAY AGAIN");
+      expect(mount.querySelector<HTMLElement>(".source-play-again-button")?.dataset.sourceControl).toBe("gameController");
+      expect(mount.querySelector<HTMLElement>(".source-play-again-button")?.dataset.sourcePlacement).toContain(
+        "id 0115 depth 0116",
+      );
     });
 
     expect(mount.textContent).toContain("Game keys1/9");

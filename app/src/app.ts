@@ -885,7 +885,14 @@ function renderNutcrackerSongGame(
           </button>
           ${
             feedback
-              ? `<button class="page-button source-label-button source-play-again-button" type="button" data-song-action="reset-song" data-song-id="${song.id}">
+              ? `<button
+                  class="page-button source-label-button source-play-again-button"
+                  type="button"
+                  data-source-control="gameController"
+                  data-source-placement="song1/song.swf gameController id 0115 depth 0116 matrix scale 1.140 x 322.20 y 317.70; buttonAgain frame places id 0114 at x -0.90 y 1.75 ratio 3"
+                  data-song-action="reset-song"
+                  data-song-id="${song.id}"
+                >
                   <img src="${songPlayAgainLabelUrl}" alt="" aria-hidden="true" />
                   <span class="sr-only">PLAY AGAIN</span>
                 </button>`
