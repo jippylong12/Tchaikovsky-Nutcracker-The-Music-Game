@@ -236,6 +236,10 @@ describe("desktop app shell", () => {
       "games/nutcrackergame/song1/characters/anim1.swf",
     );
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-1")?.dataset.sourceHelp).toBe("BASS");
+    expect(mount.querySelector<HTMLElement>(".source-track-hotspot-1")?.dataset.sourcePlacement).toContain("instIMG1");
+    expect(mount.querySelector<HTMLElement>(".source-track-hotspot-1")?.dataset.sourceVectorBounds).toContain("shape id 0172");
+    expect(mount.querySelector<HTMLElement>(".source-track-hotspot-4")?.dataset.sourcePlacement).toContain("instIMG4");
+    expect(mount.querySelector<HTMLElement>(".source-track-hotspot-4")?.dataset.sourceHitRect).toBe("246,334,154,44");
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-7 .source-track-help")?.textContent).toBe("DRUM");
   });
 

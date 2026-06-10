@@ -47,6 +47,7 @@ The JPEG3 pass writes ignored repaired image proof artifacts to `app/generated/n
 - Frame-specific SWF extraction/rendering is unreliable in this local toolchain. It can produce blank frames or crash on later character frames. Do not claim exact `anim*.swf` playback unless a more robust renderer is added and verified.
 - Avoid using `status` as a shell loop variable in zsh; it is read-only. Use `rc` or another name.
 - `song1__song.actions.txt` is often the fastest way to confirm behavior. Useful source terms include `testCombination`, `showHint`, `helpme`, `nohelp`, `doubleClick`, `dragInstrument`, `hitArea.hitTest`, `instOnScene`, `addINST`, and `removeAnim`.
+- Be careful when mapping `instIMG#` help labels in `swfdump` output. `swfdump` can print symbol definitions after a root placement record, so a `helpme` constant pool printed after `PLACEOBJECT2 ... name "instIMG1"` may be defining a later symbol rather than the already placed root instance. Use the named root placement records plus ActionScript `_root.instIMG` + index references as the stable anchor.
 
 ## Source-Backed Behaviors Already Implemented
 
@@ -64,6 +65,7 @@ The JPEG3 pass writes ignored repaired image proof artifacts to `app/generated/n
   - fourth selected track auto-checks
 - Track preview starts use detected audible MP3 start times, not only `firstFrame#`, because some `firstFrame#` values do not match audible preview timing.
 - Instrument hover/focus help mirrors source `helpme` strings where available.
+- Instrument hotspots expose `data-source-placement`, `data-source-vector-bounds`, and `data-source-hit-rect` so placement provenance can be inspected directly in DOM output and tests. The hit rects are slightly padded/dom-pragmatic where Flash vector hit shapes are too narrow for reliable modern interaction.
 - Selected actors use source-extracted character bitmaps and CSS motion derived from placement dumps, documented as a fallback rather than full timeline playback.
 
 ## Known Remaining Gaps
@@ -78,4 +80,3 @@ The JPEG3 pass writes ignored repaired image proof artifacts to `app/generated/n
 - Keep generated proof output under `app/generated/` ignored unless Marcus explicitly asks to persist a generated artifact.
 - Commit small source-backed increments with evidence in `docs/nutcracker-song-source-map.md` or this knowledge base.
 - Update Linear `JIP-349` with commit SHA and validation evidence, but keep it In Review until Marcus approves the UI.
-

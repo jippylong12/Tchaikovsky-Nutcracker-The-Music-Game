@@ -146,6 +146,25 @@ The modern implementation now follows that interaction model more closely: a sin
 
 The SWF `helpme(a, b)` function sets `_root.helpmessage`, starts dragging `_root.flyinghelp`, and makes that help clip visible. Instrument rollovers call `helpme` with source labels including `BASS`, `VIOLIN`, `TRUMPET`, `FLUTE`, `VIBRAPHONE`, `PIANO`, `DRUM`, `SAXOPHONE`, `MARIMBA`, `OBOE`, and `TIMPANI`; rollouts call `nohelp()`. The DOM now mirrors that visible hover/focus behavior with a source-styled transient help tag on each instrument hotspot. Song 7 track 2 uses the source-specific `VIOLIN (PIZZICATO)` label found in `song7__song.actions.txt`. `English Horn` is retained as an uppercase trackinfo-derived fallback because no matching source help string was found in the current song 3 dumps.
 
+## Instrument hotspot placement evidence
+
+The DOM instrument hotspots now carry `data-source-placement`, `data-source-vector-bounds`, and `data-source-hit-rect` attributes so each clickable area can be audited against `song1__song.placements.txt`. The SWF root places each instrument button as an `instIMG#` movie instance with action code; those instances drive double-click, drag, preview, and hover-help behavior.
+
+`swfdump` prints later symbol definitions between root placement records, so help-label constant pools printed after `instIMG#` do not always belong to that already-placed instance. The stable placement evidence is the named root `PLACEOBJECT2` record plus the already-known `instIMG#` / track-number convention from the ActionScript references to `_root.instIMG` + `i`.
+
+The recovered root instance evidence for song 1 is:
+
+* Track 1 / `instIMG1`: id `0171`, depth `0153`, matrix scale `1.055`, x `153.20`, y `405.50`; immediate shape id `0172` bbox `[-62.50,-29.15,62.45,29.20]`, approximate source rect `87.26,374.74,131.82,61.55`.
+* Track 2 / `instIMG2`: id `0213`, depth `0253`, matrix scale `1.055`, x `103.10`, y `355.75`; immediate shape id `0214` bbox `[-56.65,-24.15,56.65,24.10]`, approximate source rect `43.33,330.27,119.53,50.90`.
+* Track 3 / `instIMG3`: id `0221`, depth `0282`, matrix scale `1.055`, x `141.15`, y `317.25`; immediate shape id `0222` bbox `[-66.65,-5.15,66.65,5.20]`, approximate source rect `70.84,311.82,140.63,10.92`.
+* Track 4 / `instIMG4`: id `0229`, depth `0294`, matrix scale `1.055`, x `317.45`, y `352.35`; nested sprite id `0229` uses frame-labeled button states. Frame `face1` places id `0092`, which contains shape id `0091` bbox `[-66.65,-5.15,66.65,5.20]`, yielding approximate source rect `248.14,348.82,140.63,10.92`.
+* Track 5 / `instIMG5`: id `0179`, depth `0169`, matrix scale `1.055`, x `307.70`, y `402.20`; immediate shape id `0180` bbox `[-45.50,-51.25,45.60,51.30]`, approximate source rect `259.70,348.13,96.11,108.20`.
+* Track 6 / `instIMG6`: id `0187`, depth `0201`, matrix scale `1.055`, x `444.65`, y `366.70`; immediate shape id `0188` bbox `[-24.90,-36.65,24.90,36.65]`, approximate source rect `418.38,328.04,52.54,77.33`.
+* Track 7 / `instIMG7`: id `0195`, depth `0229`, matrix scale `1.055`, x `522.90`, y `408.05`; immediate shape id `0196` bbox `[-34.90,-51.45,34.95,51.45]`, approximate source rect `486.08,353.76,73.70,108.56`.
+* Track 8 / `instIMG8`: id `0203`, depth `0241`, matrix scale `1.055`, x `556.35`, y `339.60`; immediate shape id `0204` bbox `[-54.00,-20.40,53.50,20.35]`, approximate source rect `499.38,318.08,113.41,42.99`.
+
+The DOM hit rectangles intentionally remain slightly larger than some vector bounds because several source button shapes are narrow lines or nested timeline states while the visible source render has overlapping instrument art. The rectangles are source-derived targets, not exact Flash hit-test playback. Track 4 was corrected from the earlier far-right fallback hotspot to the recovered `instIMG4` placement area.
+
 ## Source song control placement evidence
 
 The DOM song controls now use the source instance names and placement records from `song1__song.placements.txt` instead of a generic bottom-right action strip:

@@ -938,12 +938,16 @@ function renderNutcrackerTrackButton(
 ): string {
   const selected = selectedTrackNumbers.includes(track.number);
   const feedbackClass = feedback ? (track.valid ? " valid" : selected ? " invalid" : "") : "";
+  const hotspot = getTrackHotspotEvidence(track.number);
 
   return `
     <article
       class="track-card source-track-hotspot source-track-hotspot-${track.number}${selected ? " selected" : ""}${feedbackClass}"
-      style="${getTrackHotspotStyle(track.number)}"
+      style="${formatTrackHotspotStyle(hotspot.hitRect)}"
       data-source-help="${escapeHtml(getNutcrackerSourceHelpLabel(songId, track))}"
+      data-source-placement="${escapeHtml(hotspot.placement)}"
+      data-source-vector-bounds="${escapeHtml(hotspot.vectorBounds)}"
+      data-source-hit-rect="${escapeHtml(formatSourceRect(hotspot.hitRect))}"
     >
       <button
         class="track-select-button"
@@ -978,19 +982,73 @@ function getNutcrackerDoorStyle(songId: NutcrackerSongId): string {
   return `left:${position.left}px;top:${position.top}px;width:${position.width}px;height:${position.height}px`;
 }
 
-function getTrackHotspotStyle(trackNumber: NutcrackerTrackNumber): string {
-  const positions: Record<NutcrackerTrackNumber, { left: number; top: number; width: number; height: number }> = {
-    1: { left: 70, top: 330, width: 178, height: 102 },
-    2: { left: 45, top: 296, width: 160, height: 70 },
-    3: { left: 66, top: 260, width: 182, height: 60 },
-    4: { left: 478, top: 286, width: 122, height: 92 },
-    5: { left: 242, top: 342, width: 180, height: 86 },
-    6: { left: 386, top: 326, width: 132, height: 78 },
-    7: { left: 525, top: 369, width: 88, height: 72 },
-    8: { left: 520, top: 252, width: 94, height: 82 },
-  };
-  const position = positions[trackNumber];
+type SourceRect = {
+  readonly left: number;
+  readonly top: number;
+  readonly width: number;
+  readonly height: number;
+};
+
+type TrackHotspotEvidence = {
+  readonly placement: string;
+  readonly vectorBounds: string;
+  readonly hitRect: SourceRect;
+};
+
+const nutcrackerTrackHotspotEvidence: Record<NutcrackerTrackNumber, TrackHotspotEvidence> = {
+  1: {
+    placement: 'song1/song.swf instIMG1 id 0171 depth 0153 matrix scale 1.055 x 153.20 y 405.50',
+    vectorBounds: 'shape id 0172 bbox [-62.50,-29.15,62.45,29.20] -> approx rect 87.26,374.74,131.82,61.55',
+    hitRect: { left: 70, top: 330, width: 178, height: 102 },
+  },
+  2: {
+    placement: 'song1/song.swf instIMG2 id 0213 depth 0253 matrix scale 1.055 x 103.10 y 355.75',
+    vectorBounds: 'shape id 0214 bbox [-56.65,-24.15,56.65,24.10] -> approx rect 43.33,330.27,119.53,50.90',
+    hitRect: { left: 45, top: 296, width: 160, height: 70 },
+  },
+  3: {
+    placement: 'song1/song.swf instIMG3 id 0221 depth 0282 matrix scale 1.055 x 141.15 y 317.25',
+    vectorBounds: 'shape id 0222 bbox [-66.65,-5.15,66.65,5.20] -> approx rect 70.84,311.82,140.63,10.92',
+    hitRect: { left: 66, top: 260, width: 182, height: 60 },
+  },
+  4: {
+    placement: 'song1/song.swf instIMG4 id 0229 depth 0294 matrix scale 1.055 x 317.45 y 352.35',
+    vectorBounds:
+      'sprite id 0229 nests frame-labeled button states; face1 uses shape id 0091 bbox [-66.65,-5.15,66.65,5.20] via id 0092, approx rect 248.14,348.82,140.63,10.92',
+    hitRect: { left: 246, top: 334, width: 154, height: 44 },
+  },
+  5: {
+    placement: 'song1/song.swf instIMG5 id 0179 depth 0169 matrix scale 1.055 x 307.70 y 402.20',
+    vectorBounds: 'shape id 0180 bbox [-45.50,-51.25,45.60,51.30] -> approx rect 259.70,348.13,96.11,108.20',
+    hitRect: { left: 242, top: 342, width: 180, height: 86 },
+  },
+  6: {
+    placement: 'song1/song.swf instIMG6 id 0187 depth 0201 matrix scale 1.055 x 444.65 y 366.70',
+    vectorBounds: 'shape id 0188 bbox [-24.90,-36.65,24.90,36.65] -> approx rect 418.38,328.04,52.54,77.33',
+    hitRect: { left: 386, top: 326, width: 132, height: 78 },
+  },
+  7: {
+    placement: 'song1/song.swf instIMG7 id 0195 depth 0229 matrix scale 1.055 x 522.90 y 408.05',
+    vectorBounds: 'shape id 0196 bbox [-34.90,-51.45,34.95,51.45] -> approx rect 486.08,353.76,73.70,108.56',
+    hitRect: { left: 525, top: 369, width: 88, height: 72 },
+  },
+  8: {
+    placement: 'song1/song.swf instIMG8 id 0203 depth 0241 matrix scale 1.055 x 556.35 y 339.60',
+    vectorBounds: 'shape id 0204 bbox [-54.00,-20.40,53.50,20.35] -> approx rect 499.38,318.08,113.41,42.99',
+    hitRect: { left: 520, top: 252, width: 94, height: 82 },
+  },
+};
+
+function getTrackHotspotEvidence(trackNumber: NutcrackerTrackNumber): TrackHotspotEvidence {
+  return nutcrackerTrackHotspotEvidence[trackNumber];
+}
+
+function formatTrackHotspotStyle(position: SourceRect): string {
   return `left:${position.left}px;top:${position.top}px;width:${position.width}px;height:${position.height}px`;
+}
+
+function formatSourceRect(position: SourceRect): string {
+  return `${position.left},${position.top},${position.width},${position.height}`;
 }
 
 function getNutcrackerSourceHelpLabel(songId: NutcrackerSongId, track: NutcrackerTrack): string {
