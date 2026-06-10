@@ -58,6 +58,8 @@ It intentionally skips copying when ImageMagick reports the selected generated P
 - Do not let the chooser help action fall back to the generic beige app modal inside the preserved viewport. Until the exact `helpFrame` content/talker animation is recovered, use a documented source-styled fallback and keep it visually above the chooser scene.
 - Avoid using `status` as a shell loop variable in zsh; it is read-only. Use `rc` or another name.
 - `song1__song.actions.txt` is often the fastest way to confirm behavior. Useful source terms include `testCombination`, `showHint`, `helpme`, `nohelp`, `doubleClick`, `dragInstrument`, `hitArea.hitTest`, `instOnScene`, `addINST`, and `removeAnim`.
+- Do not render `gameSolution` as if it were a visible text field. In the recovered dumps it is ActionScript state (`ok` / `try again`) with no `DEFINEEDITTEXT` binding. Visible hint/check copy is written to `_root.message` inside the `courtain` sprite.
+- The HINT/check feedback frame is `courtain` label `giveHint`: root sprite id `0063` at depth `0082`, x `319.85`, y `4.90`; `_root.message` edit text id `0058` at depth `0007`, matrix scale `0.953/0.843`, x `132.90`, y `96.80`, ratio `14`. Use this source-curtain area for visible HINT/try-again fallback copy so feedback stays inside the 640 x 480 frame.
 - Be careful when mapping `instIMG#` help labels in `swfdump` output. `swfdump` can print symbol definitions after a root placement record, so a `helpme` constant pool printed after `PLACEOBJECT2 ... name "instIMG1"` may be defining a later symbol rather than the already placed root instance. Use the named root placement records plus ActionScript `_root.instIMG` + index references as the stable anchor.
 
 ## Source-Backed Behaviors Already Implemented

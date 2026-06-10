@@ -144,6 +144,8 @@ The parser recovered `song3-scenery-secondary.png` from JPEG3 id 39, but did not
 * `All songs are played by 4 instruments!`
 * `Listen to the original song and find  4 correct instruments. Double click on the instruments or drag them onto the stage.`
 
+`gameSolution` is only ActionScript state in the recovered dumps; no `DEFINEEDITTEXT` field is bound to `_root.gameSolution`. The visible hint/check copy uses `_root.message` inside the `courtain` sprite. `courtain` is placed on the root timeline as sprite id `0063` at depth `0082`, x `319.85`, y `4.90`. In the `giveHint` frame, edit text id `0058` is placed at depth `0007` with matrix scale `0.953/0.843`, x `132.90`, y `96.80`, ratio `14`. The DOM therefore treats HINT and incorrect-check feedback as a source-curtain fallback rather than a normal always-visible page banner. The change-song prompt uses the related `alert` frame, where edit text id `0054` is placed at depth `0012`, x `155.90`, y `97.10`, ratio `4`.
+
 Instrument button handlers in the SWF also call `_root.testCombination()` after instrument add/remove interactions. The modern implementation mirrors that effective behavior by checking automatically when the fourth instrument is selected, instead of adding an invented visible submit button.
 
 The root timeline places empty/shared movie slots named `inst1` through `inst8`, `anim1` through `anim8`, and `prevTrack1` through `prevTrack8`. Its ActionScript and child button actions reference `doubleClick`, `dragInstrument`, `hitArea.hitTest`, `instOnScene`, `_root.activeInst#`, `addINST`, `removeAnim`, and `testCombination`.

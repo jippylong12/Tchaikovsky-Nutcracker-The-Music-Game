@@ -651,6 +651,16 @@ button {
   box-shadow: 6px 7px 0 rgba(0, 0, 0, 0.32);
 }
 
+.source-hint-alert {
+  top: 80px;
+  min-height: 112px;
+  pointer-events: none;
+}
+
+.source-hint-alert p {
+  margin-top: 18px;
+}
+
 .source-alert::before {
   position: absolute;
   inset: 8px;

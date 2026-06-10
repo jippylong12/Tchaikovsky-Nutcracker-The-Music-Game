@@ -844,13 +844,14 @@ function renderNutcrackerSongGame(
   const correctSelectionCount = feedback ? countCorrectSelections(song, selectedTrackNumbers) : 0;
   const incorrectSelectionCount = feedback ? Math.max(0, selectedTrackCount - correctSelectionCount) : 0;
   const hintOnly = feedback === "hint";
-  const message = feedback && !hintOnly
-    ? isCorrectNutcrackerSelection(song, selectedTrackNumbers)
-      ? "ok"
+  const selectionCorrect = isCorrectNutcrackerSelection(song, selectedTrackNumbers);
+  const sourceMessage = feedback && !hintOnly
+    ? selectionCorrect
+      ? null
       : `you have ${correctSelectionCount} correct instruments and ${incorrectSelectionCount} incorrect instruments`
     : hintOnly || (selectedTrackCount > 0 && selectedTrackCount < correctRequiredCount)
       ? "All songs are played by 4 instruments!"
-      : "Listen to the original song and find  4 correct instruments. Double click on the instruments or drag them onto the stage.";
+    : "Listen to the original song and find  4 correct instruments. Double click on the instruments or drag them onto the stage.";
 
   return `
     <div class="scene-body nutcracker-song-scene source-flash-scene">
@@ -858,7 +859,7 @@ function renderNutcrackerSongGame(
       ${renderNutcrackerSongScenery(song.id)}
       <section class="song-stage-overlay" aria-label="${escapeHtml(song.title)} track choices" data-song-drop-stage="${song.id}">
         <h1 class="sr-only">${escapeHtml(song.title)}</h1>
-        <p class="song-source-message" aria-live="polite">${escapeHtml(message)}</p>
+        <p class="song-source-message sr-only" aria-live="polite">${escapeHtml(sourceMessage ?? "")}</p>
         ${renderSelectedNutcrackerActors(song, selectedTrackNumbers, feedback)}
         ${song.tracks.map((track) => renderNutcrackerTrackButton(song.id, track, selectedTrackNumbers, feedback)).join("")}
         <div class="song-actions source-song-actions" aria-label="Source song controls">
@@ -891,6 +892,7 @@ function renderNutcrackerSongGame(
               : ""
           }
         </div>
+        ${sourceMessage ? renderNutcrackerHintCurtain(sourceMessage) : ""}
         ${changePromptOpen ? renderNutcrackerChangeSongPrompt(song.id) : ""}
         <p class="sr-only">${completed ? "Door cleared." : "Door ready."} Source: ${escapeHtml(song.sourcePath)}. Track streams extracted from recovered SWFs.</p>
       </section>
@@ -898,9 +900,27 @@ function renderNutcrackerSongGame(
   `;
 }
 
+function renderNutcrackerHintCurtain(message: string): string {
+  return `
+    <aside
+      class="source-alert source-hint-alert"
+      aria-label="Song hint"
+      data-source-frame="song1/song.swf courtain giveHint"
+      data-source-placement="courtain root id 0063 depth 0082 x 319.85 y 4.90; _root.message edit id 0058 depth 0007 matrix scale 0.953/0.843 x 132.90 y 96.80 ratio 14"
+    >
+      <p>${escapeHtml(message)}</p>
+    </aside>
+  `;
+}
+
 function renderNutcrackerChangeSongPrompt(songId: NutcrackerSongId): string {
   return `
-    <aside class="source-alert" aria-label="Change song confirmation">
+    <aside
+      class="source-alert source-change-alert"
+      aria-label="Change song confirmation"
+      data-source-frame="song1/song.swf courtain alert"
+      data-source-placement="courtain root id 0063 depth 0082 x 319.85 y 4.90; _root.message edit id 0054 depth 0012 matrix x 155.90 y 97.10 ratio 4"
+    >
       <p>press "Yes" to change this song or "No" to cancel</p>
       <button class="source-alert-choice source-alert-yes" type="button" data-song-action="accept-change-song" data-song-id="${songId}">
         <img src="${songYesLabelUrl}" alt="" aria-hidden="true" />

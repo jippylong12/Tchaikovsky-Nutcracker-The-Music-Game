@@ -224,6 +224,12 @@ describe("desktop app shell", () => {
     expect(mount.querySelector('[data-source-control="listenSong"] .source-control-help')?.textContent).toBe("QUIT THE GAME");
     hintButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(mount.textContent).toContain("All songs are played by 4 instruments!");
+    expect(mount.querySelector<HTMLElement>(".source-hint-alert")?.dataset.sourceFrame).toBe(
+      "song1/song.swf courtain giveHint",
+    );
+    expect(mount.querySelector<HTMLElement>(".source-hint-alert")?.dataset.sourcePlacement).toContain(
+      "_root.message edit id 0058",
+    );
     expect(mount.textContent).not.toContain("Test");
     expect(mount.textContent).not.toContain("Correct arrangement");
     expect(mount.textContent).toContain("Song doors");
@@ -292,7 +298,8 @@ describe("desktop app shell", () => {
           ?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
       });
 
-      expect(mount.textContent).toContain("ok");
+      expect(mount.textContent).toContain("Door cleared.");
+      expect(mount.querySelector(".source-hint-alert")).toBeNull();
       expect(mount.textContent).toContain("PLAY AGAIN");
     });
 
