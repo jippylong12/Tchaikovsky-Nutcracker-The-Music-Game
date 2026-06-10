@@ -887,7 +887,11 @@ function renderNutcrackerTrackButton(
   const feedbackClass = feedback ? (track.valid ? " valid" : selected ? " invalid" : "") : "";
 
   return `
-    <article class="track-card source-track-hotspot${selected ? " selected" : ""}${feedbackClass}" style="${getTrackHotspotStyle(track.number)}">
+    <article
+      class="track-card source-track-hotspot source-track-hotspot-${track.number}${selected ? " selected" : ""}${feedbackClass}"
+      style="${getTrackHotspotStyle(track.number)}"
+      data-source-help="${escapeHtml(getNutcrackerSourceHelpLabel(songId, track))}"
+    >
       <button
         class="track-select-button"
         type="button"
@@ -897,6 +901,7 @@ function renderNutcrackerTrackButton(
         aria-pressed="${selected}"
         aria-label="Track ${track.number}: ${escapeHtml(track.instrument)}. Click to preview; double click or drag onto the stage to select. ${formatTrackStart(track)}."
       >
+        <span class="source-track-help" aria-hidden="true">${escapeHtml(getNutcrackerSourceHelpLabel(songId, track))}</span>
         <span class="sr-only">Track ${track.number}</span>
         <strong class="sr-only">${escapeHtml(track.instrument)}</strong>
         <small class="sr-only">${formatTrackStart(track)}${track.character ? ` / ${escapeHtml(track.character)}` : ""}</small>
@@ -933,6 +938,18 @@ function getTrackHotspotStyle(trackNumber: NutcrackerTrackNumber): string {
   };
   const position = positions[trackNumber];
   return `left:${position.left}px;top:${position.top}px;width:${position.width}px;height:${position.height}px`;
+}
+
+function getNutcrackerSourceHelpLabel(songId: NutcrackerSongId, track: NutcrackerTrack): string {
+  if (songId === 7 && track.number === 2) {
+    return "VIOLIN (PIZZICATO)";
+  }
+
+  if (track.instrument === "Drums") {
+    return "DRUM";
+  }
+
+  return track.instrument.toUpperCase();
 }
 
 function countCorrectSelections(song: NutcrackerSongGame, selectedTrackNumbers: readonly NutcrackerTrackNumber[]): number {

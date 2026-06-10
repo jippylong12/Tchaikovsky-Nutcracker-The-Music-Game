@@ -224,6 +224,8 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.dataset.sourceAnimation).toBe(
       "games/nutcrackergame/song1/characters/anim1.swf",
     );
+    expect(mount.querySelector<HTMLElement>(".source-track-hotspot-1")?.dataset.sourceHelp).toBe("BASS");
+    expect(mount.querySelector<HTMLElement>(".source-track-hotspot-7 .source-track-help")?.textContent).toBe("DRUM");
   });
 
   it("checks each Nutcracker song game and unlocks the first progress key after all doors", () => {

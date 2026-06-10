@@ -142,6 +142,8 @@ The root timeline places empty/shared movie slots named `inst1` through `inst8`,
 
 The modern implementation now follows that interaction model more closely: a single click previews the source track stream, while double-clicking an instrument or dragging it onto the stage selects it and renders the source-extracted actor art. Full `anim*.swf` timeline playback remains a fidelity gap to close with a deeper SWF display-list renderer.
 
+The SWF `helpme(a, b)` function sets `_root.helpmessage`, starts dragging `_root.flyinghelp`, and makes that help clip visible. Instrument rollovers call `helpme` with source labels including `BASS`, `VIOLIN`, `TRUMPET`, `FLUTE`, `VIBRAPHONE`, `PIANO`, `DRUM`, `SAXOPHONE`, `MARIMBA`, `OBOE`, and `TIMPANI`; rollouts call `nohelp()`. The DOM now mirrors that visible hover/focus behavior with a source-styled transient help tag on each instrument hotspot. Song 7 track 2 uses the source-specific `VIOLIN (PIZZICATO)` label found in `song7__song.actions.txt`. `English Horn` is retained as an uppercase trackinfo-derived fallback because no matching source help string was found in the current song 3 dumps.
+
 ## Source song control placement evidence
 
 The DOM song controls now use the source instance names and placement records from `song1__song.placements.txt` instead of a generic bottom-right action strip:
