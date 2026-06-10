@@ -767,10 +767,9 @@ button {
   top: 196px;
   z-index: 6;
   width: 276px;
-  min-height: 22px;
+  height: 22px;
   padding: 0;
   border: 0;
-  color: #ffff00;
   background: transparent;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 14px;
@@ -778,15 +777,6 @@ button {
   letter-spacing: 0;
   line-height: 1;
   text-align: center;
-  text-shadow:
-    -1px -1px 0 #001f54,
-    0 -1px 0 #001f54,
-    1px -1px 0 #001f54,
-    -1px 0 0 #001f54,
-    1px 0 0 #001f54,
-    -1px 1px 0 #001f54,
-    0 1px 0 #001f54,
-    1px 1px 0 #001f54;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
@@ -797,9 +787,70 @@ button {
 }
 
 .source-flying-help[data-source-frame="4"] {
-  width: 126px;
-  min-height: 126px;
+  width: 128px;
+  height: 128px;
   white-space: pre-line;
+}
+
+.source-flying-help-frame,
+.source-flying-help-text {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+.source-flying-help[data-source-frame="2"] .source-flying-help-frame-2,
+.source-flying-help[data-source-frame="3"] .source-flying-help-frame-3,
+.source-flying-help[data-source-frame="4"] .source-flying-help-frame-4 {
+  display: block;
+}
+
+.source-flying-help[data-source-frame="2"] .source-flying-help-frame-2 .source-flying-help-text,
+.source-flying-help[data-source-frame="3"] .source-flying-help-frame-3 .source-flying-help-text,
+.source-flying-help[data-source-frame="4"] .source-flying-help-frame-4 .source-flying-help-text {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.source-flying-help-text-shadow {
+  color: #001f54;
+}
+
+.source-flying-help-text-fill {
+  color: #ffff00;
+}
+
+.source-flying-help-text-231 {
+  transform: translate(1.25px, 1.05px);
+}
+
+.source-flying-help-text-232 {
+  transform: translate(0.6px, 0.7px);
+}
+
+.source-flying-help-text-233 {
+  transform: translate(0, 0);
+}
+
+.source-flying-help-text-234 {
+  transform: translate(1.25px, 1.05px);
+}
+
+.source-flying-help-text-235 {
+  transform: translate(8.9px, 0.7px);
+}
+
+.source-flying-help-text-236 {
+  transform: translate(3px, 0);
+}
+
+.source-flying-help-text-237 {
+  transform: translate(0.8px, 0.8px);
+}
+
+.source-flying-help-text-238 {
+  transform: translate(0, 0);
 }
 
 .source-flying-help[data-visible="true"] {

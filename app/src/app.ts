@@ -413,7 +413,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       return;
     }
 
-    flyingHelp.textContent = label;
+    flyingHelp.querySelectorAll<HTMLElement>(".source-flying-help-text").forEach((layer) => {
+      layer.textContent = label;
+    });
     flyingHelp.dataset.sourceFrame = sourceHelpElement.dataset.sourceHelpFrame ?? "2";
     flyingHelp.dataset.sourceBounds = sourceHelpElement.dataset.sourceHelpBounds ?? "frame 2 edit ids 0231-0233 bbox approx 276x22 after 1.2 scale";
     flyingHelp.dataset.visible = "true";
@@ -433,7 +435,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     if (!flyingHelp) {
       return;
     }
-    flyingHelp.textContent = "";
+    flyingHelp.querySelectorAll<HTMLElement>(".source-flying-help-text").forEach((layer) => {
+      layer.textContent = "";
+    });
     delete flyingHelp.dataset.visible;
     flyingHelp.style.left = "10000px";
   };
@@ -1211,9 +1215,25 @@ function renderNutcrackerFlyingHelp(): string {
       aria-hidden="true"
       data-source-control="flyinghelp"
       data-source-placement="song1/song.swf flyinghelp id 0257 depth 0306 initial matrix x 1143.85 y 195.55; helpme(a,b) sets _root.helpmessage, gotoAndStop(a), startDrag(this), _visible=1; nohelp() clears message, _visible=0, _x=10000"
+      data-source-layer-model="frame 2 places edit ids 0231/0232/0233 at normalized layer offsets from source matrices; frame 3 places edit ids 0234/0235/0236 at normalized offsets from negative source matrices; frame 4 places sprite id 0240, which fades nested sprite id 0239 containing edit ids 0237/0238"
       data-source-frame="1"
       data-source-bounds="frame 1 helpoff; frames 2/3 use edit text shadow stacks, frame 4 places sprite id 0240, frames 5-8 use shape ids 0241/0244/0246/0251/0252"
-    ></aside>
+    >
+      <span class="source-flying-help-frame source-flying-help-frame-2" aria-hidden="true">
+        <span class="source-flying-help-text source-flying-help-text-shadow source-flying-help-text-231"></span>
+        <span class="source-flying-help-text source-flying-help-text-shadow source-flying-help-text-232"></span>
+        <span class="source-flying-help-text source-flying-help-text-fill source-flying-help-text-233"></span>
+      </span>
+      <span class="source-flying-help-frame source-flying-help-frame-3" aria-hidden="true">
+        <span class="source-flying-help-text source-flying-help-text-shadow source-flying-help-text-234"></span>
+        <span class="source-flying-help-text source-flying-help-text-shadow source-flying-help-text-235"></span>
+        <span class="source-flying-help-text source-flying-help-text-fill source-flying-help-text-236"></span>
+      </span>
+      <span class="source-flying-help-frame source-flying-help-frame-4" aria-hidden="true">
+        <span class="source-flying-help-text source-flying-help-text-shadow source-flying-help-text-237"></span>
+        <span class="source-flying-help-text source-flying-help-text-fill source-flying-help-text-238"></span>
+      </span>
+    </aside>
   `;
 }
 

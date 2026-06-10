@@ -297,9 +297,14 @@ describe("desktop app shell", () => {
     expect(mount.textContent).toContain("Dance of the Sugar Plum Fairy");
     const refreshedHintButton = mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]');
     refreshedHintButton?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
-    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.textContent).toBe("Hint");
+    expect(mount.querySelector<HTMLElement>(".source-flying-help-frame-4 .source-flying-help-text-fill")?.textContent).toBe(
+      "Hint",
+    );
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceFrame).toBe("4");
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceBounds).toContain("sprite id 0240");
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceLayerModel).toContain(
+      "edit ids 0237/0238",
+    );
     refreshedHintButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(mount.textContent).toContain("All songs are played by 4 instruments!");
     expect(mount.querySelector<HTMLElement>(".source-hint-alert")?.dataset.sourceFrame).toBe(
@@ -355,10 +360,14 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceControl).toBe("flyinghelp");
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourcePlacement).toContain("id 0257 depth 0306");
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceBounds).toContain("frames 2/3");
+    expect(mount.querySelectorAll(".source-flying-help-frame-2 .source-flying-help-text")).toHaveLength(3);
+    expect(mount.querySelectorAll(".source-flying-help-frame-4 .source-flying-help-text")).toHaveLength(2);
     mount
       .querySelector<HTMLButtonElement>('[data-song-id="1"][data-song-track="7"]')
       ?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
-    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.textContent).toBe("DRUM");
+    expect(mount.querySelector<HTMLElement>(".source-flying-help-frame-2 .source-flying-help-text-fill")?.textContent).toBe(
+      "DRUM",
+    );
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceFrame).toBe("2");
 
     mount.querySelector<HTMLButtonElement>('[data-route="song-5"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
