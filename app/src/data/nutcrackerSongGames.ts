@@ -1,11 +1,11 @@
-import cannonUrl from "../assets/nutcracker/cannon.png";
-import dancerUrl from "../assets/nutcracker/dancer.png";
-import elephantUrl from "../assets/nutcracker/elephant.png";
-import horsemanUrl from "../assets/nutcracker/horseman.png";
-import mouseUrl from "../assets/nutcracker/mouse.png";
-import nutcrackerUrl from "../assets/nutcracker/nutcracker.png";
-import roundDollUrl from "../assets/nutcracker/round-doll.png";
-import trainUrl from "../assets/nutcracker/train.png";
+import cannonUrl from "../assets/nutcracker-source/track7-cannon.png";
+import dancerUrl from "../assets/nutcracker-source/track5-dancer.png";
+import elephantUrl from "../assets/nutcracker-source/track4-elephant.png";
+import horsemanUrl from "../assets/nutcracker-source/track6-horseman.png";
+import mouseUrl from "../assets/nutcracker-source/track2-mouse.png";
+import nutcrackerUrl from "../assets/nutcracker-source/track1-nutcracker.png";
+import roundDollUrl from "../assets/nutcracker-source/track8-round-doll.png";
+import trainUrl from "../assets/nutcracker-source/track3-train.png";
 
 export type NutcrackerSongId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type NutcrackerTrackNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;

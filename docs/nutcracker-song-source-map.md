@@ -57,6 +57,7 @@ Committed source-backed assets live in `app/src/assets/nutcracker-source/`:
 * `song-speaker.png`: PNG asset 3 extracted from `song1/song.swf`.
 * `song-sound-icon.png`: PNG asset 39 extracted from `song1/song.swf`.
 * `song-help-art.png`: PNG asset 73 extracted from `song1/song.swf`.
+* `track1-nutcracker.png` through `track8-round-doll.png`: source-identical lossless bitmaps extracted from `song1/characters/anim*.swf`; used as visible selected-stage actors in the modern scene.
 * `song2-scenery.png`: repaired and alpha-composited JPEG3 id 7 from `song2/song.swf`.
 * `song3-scenery-primary.png`: repaired and alpha-composited JPEG3 id 14 from `song3/song.swf`.
 * `song3-scenery-secondary.png`: repaired and alpha-composited JPEG3 id 39 from `song3/song.swf`; retained as recovered source evidence, but not rendered in the current frame-1 scene because the display-list placement parser did not find it active on frame 1.
@@ -72,6 +73,14 @@ The broader song-scene PNG extraction pass generated a clean proof inventory und
 
 The JPEG3 recovery is now reproducible with `npm run assets:nutcracker-jpeg3` from `app/`. The script lives at `app/scripts/extract-nutcracker-jpeg3.mjs` and writes proof artifacts to `app/generated/nutcracker-source-extract/direct-image-tags/`.
 
+The broader SWF evidence pass is reproducible with `npm run assets:nutcracker-swf` from `app/`. The script lives at `app/scripts/extract-nutcracker-swf-assets.mjs` and writes:
+
+* direct `DEFINEBITSLOSSLESS2` PNGs from `nutchooser.swf`, `song*/song.swf`, and `song*/characters/anim*.swf`
+* placement dumps from `swfdump -b -p`
+* ActionScript dumps from `swfdump -a`
+* text dumps from `swfdump -t`
+* `manifest.json` linking source SWFs, extracted asset IDs, dimensions, and output files
+
 ## Current renderer limits
 
 The installed `swfrender` can render `song1/song.swf`, but `nutchooser.swf` and `song2` through `song8` fail with `No JPEG library compiled in`. `ffmpeg` can decode an embedded 449 x 313 alpha image from the song SWFs, but it is not the full 640 x 480 stage composite and is not used as a scene background.
@@ -84,6 +93,8 @@ The installed `swfrender` can render `song1/song.swf`, but `nutchooser.swf` and 
 * The repaired transparent PNGs are copied into `app/src/assets/nutcracker-source/`.
 
 Because `swfrender` still cannot render full song 2-8 composites, the current implementation uses the source-rendered song 1 stage as the shared song-game scene reference, overlays recovered song-specific JPEG3 scenery where frame-1 display-list placement can be recovered, and places modern HTML hotspots at positions derived from the visible source render and `nutchooser.swf` placement data.
+
+The full `characters/anim*.swf` timelines are not yet played in the DOM. Instead, selected instruments render the source-extracted character/instrument lossless bitmap for that track on the stage. This is closer to the original than invisible-only selection state, but it is still a documented fallback for the real Flash behavior, which loads each `anim#.swf` into the corresponding `anim#` movie slot and plays timeline animation.
 
 ## Song scenery placement evidence
 
@@ -108,6 +119,8 @@ The parser recovered `song3-scenery-secondary.png` from JPEG3 id 39, but did not
 * `Listen to the original song and find  4 correct instruments. Double click on the instruments or drag them onto the stage.`
 
 Instrument button handlers in the SWF also call `_root.testCombination()` after instrument add/remove interactions. The modern implementation mirrors that effective behavior by checking automatically when the fourth instrument is selected, instead of adding an invented visible submit button.
+
+The root timeline places empty/shared movie slots named `inst1` through `inst8`, `anim1` through `anim8`, and `prevTrack1` through `prevTrack8`. The modern implementation keeps direct instrument clicks and preview behavior, and now renders source-extracted selected actor art when a track is active. Full double-click/drag and timeline playback remain fidelity gaps to close with a deeper SWF display-list renderer.
 
 ## Track preview timing evidence
 

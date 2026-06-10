@@ -198,6 +198,18 @@ describe("desktop app shell", () => {
     expect(mount.textContent).not.toContain("Test");
   });
 
+  it("shows selected Nutcracker instruments as source-extracted stage actors", () => {
+    const mount = document.createElement("main");
+
+    createTestShell(mount);
+    mount.querySelector<HTMLButtonElement>('[data-route="song-1"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>('[data-song-id="1"][data-song-track="1"]')
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.src).toContain("track1-nutcracker");
+  });
+
   it("checks each Nutcracker song game and unlocks the first progress key after all doors", () => {
     const mount = document.createElement("main");
 

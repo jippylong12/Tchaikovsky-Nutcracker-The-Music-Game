@@ -742,6 +742,7 @@ function renderNutcrackerSongGame(
       <section class="song-stage-overlay" aria-label="${escapeHtml(song.title)} track choices">
         <h1 class="sr-only">${escapeHtml(song.title)}</h1>
         <p class="song-source-message" aria-live="polite">${escapeHtml(message)}</p>
+        ${renderSelectedNutcrackerActors(song, selectedTrackNumbers, feedback)}
         ${song.tracks.map((track) => renderNutcrackerTrackButton(song.id, track, selectedTrackNumbers, feedback)).join("")}
         <div class="song-actions source-song-actions">
           <button class="media-button source-label-button source-listen-button" type="button" data-song-action="play-theme" data-song-id="${song.id}">
@@ -778,6 +779,28 @@ function renderNutcrackerSongScenery(songId: NutcrackerSongId): string {
       (sourceUrl, index) =>
         `<img class="song-source-scenery song-source-scenery-${songId}-${index + 1}" src="${sourceUrl}" alt="" aria-hidden="true" />`,
     )
+    .join("");
+}
+
+function renderSelectedNutcrackerActors(
+  song: NutcrackerSongGame,
+  selectedTrackNumbers: readonly NutcrackerTrackNumber[],
+  feedback: string | null,
+): string {
+  return selectedTrackNumbers
+    .map((trackNumber) => song.tracks.find((track) => track.number === trackNumber))
+    .filter((track): track is NutcrackerTrack => track !== undefined)
+    .map((track) => {
+      const correctnessClass = feedback ? (track.valid ? " valid" : " invalid") : "";
+      return `
+        <img
+          class="source-selected-actor source-selected-actor-${track.number}${correctnessClass}"
+          src="${track.imagePath}"
+          alt=""
+          aria-hidden="true"
+        />
+      `;
+    })
     .join("");
 }
 

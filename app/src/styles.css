@@ -620,6 +620,78 @@ button {
   box-shadow: 0 0 0 3px rgba(20, 20, 87, 0.6);
 }
 
+.source-selected-actor {
+  position: absolute;
+  z-index: 2;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(3px 5px 0 rgba(0, 0, 0, 0.28));
+}
+
+.source-selected-actor.valid {
+  filter: drop-shadow(0 0 8px rgba(110, 255, 155, 0.85)) drop-shadow(3px 5px 0 rgba(0, 0, 0, 0.28));
+}
+
+.source-selected-actor.invalid {
+  filter: drop-shadow(0 0 8px rgba(255, 120, 120, 0.85)) drop-shadow(3px 5px 0 rgba(0, 0, 0, 0.28));
+}
+
+.source-selected-actor-1 {
+  left: 260px;
+  top: 115px;
+  width: 72px;
+  height: 126px;
+}
+
+.source-selected-actor-2 {
+  left: 314px;
+  top: 172px;
+  width: 100px;
+  height: 42px;
+}
+
+.source-selected-actor-3 {
+  left: 154px;
+  top: 196px;
+  width: 210px;
+  height: 38px;
+}
+
+.source-selected-actor-4 {
+  left: 336px;
+  top: 124px;
+  width: 96px;
+  height: 95px;
+}
+
+.source-selected-actor-5 {
+  left: 270px;
+  top: 103px;
+  width: 76px;
+  height: 123px;
+}
+
+.source-selected-actor-6 {
+  left: 322px;
+  top: 151px;
+  width: 126px;
+  height: 68px;
+}
+
+.source-selected-actor-7 {
+  left: 235px;
+  top: 171px;
+  width: 120px;
+  height: 60px;
+}
+
+.source-selected-actor-8 {
+  left: 350px;
+  top: 133px;
+  width: 70px;
+  height: 122px;
+}
+
 .source-track-hotspot.selected::after {
   position: absolute;
   right: 4px;
