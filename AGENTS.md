@@ -34,6 +34,6 @@ npm test
 npm run lint
 npm run build
 npm run assets:nutcracker-swf
+npm run assets:nutcracker-actors
 npm run assets:nutcracker-jpeg3
 ```
-

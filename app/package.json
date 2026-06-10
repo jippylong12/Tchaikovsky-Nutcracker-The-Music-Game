@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "assets:pipeline": "node scripts/generate-asset-pipeline.mjs",
+    "assets:nutcracker-actors": "node scripts/promote-nutcracker-actor-assets.mjs",
     "assets:nutcracker-jpeg3": "node scripts/extract-nutcracker-jpeg3.mjs",
     "assets:nutcracker-swf": "node scripts/extract-nutcracker-swf-assets.mjs",
     "typecheck": "tsc --noEmit",

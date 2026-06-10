@@ -60,7 +60,8 @@ Committed source-backed assets live in `app/src/assets/nutcracker-source/`:
 * `song-speaker.png`: PNG asset 3 extracted from `song1/song.swf`.
 * `song-sound-icon.png`: PNG asset 39 extracted from `song1/song.swf`.
 * `song-help-art.png`: PNG asset 73 extracted from `song1/song.swf`.
-* `track1-nutcracker.png` through `track8-round-doll.png`: source-identical lossless bitmaps extracted from `song1/characters/anim*.swf`; used as visible selected-stage actors in the modern scene.
+* `track1-nutcracker.png` through `track8-round-doll.png`: source-identical lossless bitmaps extracted from `song1/characters/anim*.swf`; retained as fallback actor art.
+* `song1-track1-actor.png` through `song8-track8-actor.png`: promoted representative lossless bitmaps from each song's own `characters/anim#.swf`; used as visible selected-stage actors in the modern scene.
 * `song2-scenery.png`: repaired and alpha-composited JPEG3 id 7 from `song2/song.swf`.
 * `song3-scenery-primary.png`: repaired and alpha-composited JPEG3 id 14 from `song3/song.swf`.
 * `song3-scenery-secondary.png`: repaired and alpha-composited JPEG3 id 39 from `song3/song.swf`; retained as recovered source evidence, but not rendered in the current frame-1 scene because the display-list placement parser did not find it active on frame 1.
@@ -84,6 +85,8 @@ The broader SWF evidence pass is reproducible with `npm run assets:nutcracker-sw
 * text dumps from `swfdump -t`
 * `manifest.json` linking source SWFs, extracted asset IDs, dimensions, and output files
 
+Representative selected-actor assets are promoted from that generated SWF output with `npm run assets:nutcracker-actors`. The script lives at `app/scripts/promote-nutcracker-actor-assets.mjs` and copies one source PNG per `song#/characters/anim#.swf` into `app/src/assets/nutcracker-source/song#-track#-actor.png`.
+
 ## Current renderer limits
 
 The installed `swfrender` can render `song1/song.swf`, but `nutchooser.swf` and `song2` through `song8` fail with `No JPEG library compiled in`. `ffmpeg` can decode an embedded 449 x 313 alpha image from the song SWFs, but it is not the full 640 x 480 stage composite and is not used as a scene background.
@@ -97,11 +100,13 @@ The installed `swfrender` can render `song1/song.swf`, but `nutchooser.swf` and 
 
 Because `swfrender` still cannot render full song 2-8 composites, the current implementation uses the source-rendered song 1 stage as the shared song-game scene reference, overlays recovered song-specific JPEG3 scenery where frame-1 display-list placement can be recovered, and places modern HTML hotspots at positions derived from the visible source render and `nutchooser.swf` placement data.
 
-The full `characters/anim*.swf` timelines are not yet played in the DOM. Instead, selected instruments render the source-extracted character/instrument lossless bitmap for that track on the stage and apply a small CSS motion pass derived from the SWF placement dumps. This is closer to the original than invisible-only or static selection state, but it is still a documented fallback for the real Flash behavior, which loads each `anim#.swf` into the corresponding `anim#` movie slot and plays timeline animation.
+The full `characters/anim*.swf` timelines are not yet played in the DOM. Instead, selected instruments render a representative source-extracted lossless bitmap from the current song's own `characters/anim#.swf` on the stage and apply a small CSS motion pass derived from the SWF placement dumps. This is closer to the original than invisible-only, static selection state, or reusing song 1 actor art for every song, but it is still a documented fallback for the real Flash behavior, which loads each `anim#.swf` into the corresponding `anim#` movie slot and plays timeline animation.
 
 ## Character animation fallback evidence
 
-Each selected actor element now records its corresponding source movie as `data-source-animation="games/nutcrackergame/song#/characters/anim#.swf"`. The browser does not execute those SWFs, so the DOM fallback uses the extracted lossless actor bitmap plus restrained `steps()` CSS transforms. The transform direction and relative size come from the song 1 placement dumps under `app/generated/nutcracker-source-extract/full-swf-pass/dumps/`.
+Each selected actor element now records its corresponding source movie as `data-source-animation="games/nutcrackergame/song#/characters/anim#.swf"`. The browser does not execute those SWFs, so the DOM fallback uses the promoted per-song lossless actor bitmap plus restrained `steps()` CSS transforms. The transform direction and relative size come from the placement dumps under `app/generated/nutcracker-source-extract/full-swf-pass/dumps/`, with targeted overrides where promoted actors have different source shapes.
+
+This matters visibly: song 5, song 7, and song 8 track 7 promote a 167 x 358 standing drummer actor from their own `anim7.swf`, while song 1 track 7 remains the 129 x 64 cannon. The previous global `track7-cannon.png` fallback was source-backed only for song 1 and was wrong for those later songs.
 
 The measured `PLACEOBJECT2 moves object` ranges in `song1__characters__anim*.placements.txt` show repeated timeline movement rather than static actors:
 

@@ -231,7 +231,7 @@ describe("desktop app shell", () => {
 
     instrumentButton?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
 
-    expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.src).toContain("track1-nutcracker");
+    expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.src).toContain("song1-track1-actor");
     expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.dataset.sourceAnimation).toBe(
       "games/nutcrackergame/song1/characters/anim1.swf",
     );
@@ -241,6 +241,18 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-4")?.dataset.sourcePlacement).toContain("instIMG4");
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-4")?.dataset.sourceHitRect).toBe("246,334,154,44");
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-7 .source-track-help")?.textContent).toBe("DRUM");
+
+    mount.querySelector<HTMLButtonElement>('[data-route="song-5"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>('[data-song-id="5"][data-song-track="7"]')
+      ?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+
+    expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-song-5.source-selected-actor-7")?.src).toContain(
+      "song5-track7-actor",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-song-5.source-selected-actor-7")?.dataset.sourceAnimation).toBe(
+      "games/nutcrackergame/song5/characters/anim7.swf",
+    );
   });
 
   it("checks each Nutcracker song game and unlocks the first progress key after all doors", () => {

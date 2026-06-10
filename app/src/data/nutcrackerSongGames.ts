@@ -42,6 +42,11 @@ const trackImagePaths = [
   cannonUrl,
   roundDollUrl,
 ] as const;
+const songActorImagePaths = import.meta.glob("../assets/nutcracker-source/song*-track*-actor.png", {
+  eager: true,
+  import: "default",
+  query: "?url",
+}) as Record<string, string>;
 
 const audioPreviewStartSeconds: Record<NutcrackerSongId, Record<NutcrackerTrackNumber, number>> = {
   1: { 1: 0.7, 2: 1.3, 3: 0.7, 4: 0.7, 5: 10.9, 6: 0.7, 7: 0.7, 8: 19.3 },
@@ -159,7 +164,7 @@ function buildSongGame(
       previewStartSeconds: audioPreviewStartSeconds[id][(index + 1) as NutcrackerTrackNumber],
       character: track[3],
       audioPath: getNutcrackerTrackAudioPath(id, (index + 1) as NutcrackerTrackNumber),
-      imagePath: trackImagePaths[index],
+      imagePath: getNutcrackerTrackActorImagePath(id, (index + 1) as NutcrackerTrackNumber),
     })),
   };
 }
@@ -216,9 +221,13 @@ export function parseTrackInfoText(content: string, songId: NutcrackerSongId): r
       previewStartSeconds: audioPreviewStartSeconds[songId][trackNumber],
       character: row?.character,
       audioPath: getNutcrackerTrackAudioPath(songId, trackNumber),
-      imagePath: trackImagePaths[trackNumber - 1],
+      imagePath: getNutcrackerTrackActorImagePath(songId, trackNumber),
     };
   });
+}
+
+function getNutcrackerTrackActorImagePath(songId: NutcrackerSongId, trackNumber: NutcrackerTrackNumber): string {
+  return songActorImagePaths[`../assets/nutcracker-source/song${songId}-track${trackNumber}-actor.png`] ?? trackImagePaths[trackNumber - 1];
 }
 
 function parseNumberVariables(content: string, variableName: "track" | "firstFrame"): Map<NutcrackerTrackNumber, number> {

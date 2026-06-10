@@ -882,6 +882,27 @@ button {
   animation: source-actor-round-doll 6s steps(32, end) infinite;
 }
 
+.source-selected-actor-song-2.source-selected-actor-5,
+.source-selected-actor-song-3.source-selected-actor-5,
+.source-selected-actor-song-5.source-selected-actor-5,
+.source-selected-actor-song-6.source-selected-actor-5 {
+  left: 252px;
+  top: 102px;
+  width: 112px;
+  height: 112px;
+  animation: source-actor-clock 5.8s steps(18, end) infinite;
+}
+
+.source-selected-actor-song-5.source-selected-actor-7,
+.source-selected-actor-song-7.source-selected-actor-7,
+.source-selected-actor-song-8.source-selected-actor-7 {
+  left: 276px;
+  top: 72px;
+  width: 76px;
+  height: 164px;
+  animation: source-actor-drummer 4.8s steps(16, end) infinite;
+}
+
 @keyframes source-actor-nutcracker {
   0%,
   100% {
@@ -995,6 +1016,32 @@ button {
 
   75% {
     transform: translate(20px, 1px) rotate(2deg);
+  }
+}
+
+@keyframes source-actor-clock {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  50% {
+    transform: translate(4px, -3px) rotate(1deg);
+  }
+}
+
+@keyframes source-actor-drummer {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  45% {
+    transform: translate(7px, -4px);
+  }
+
+  70% {
+    transform: translate(-5px, 2px);
   }
 }
 

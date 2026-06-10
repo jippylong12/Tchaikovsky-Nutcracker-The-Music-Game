@@ -919,7 +919,7 @@ function renderSelectedNutcrackerActors(
       const correctnessClass = feedback ? (track.valid ? " valid" : " invalid") : "";
       return `
         <img
-          class="source-selected-actor source-selected-actor-${track.number}${correctnessClass}"
+          class="source-selected-actor source-selected-actor-song-${song.id} source-selected-actor-${track.number}${correctnessClass}"
           data-source-animation="games/nutcrackergame/song${song.id}/characters/anim${track.number}.swf"
           src="${track.imagePath}"
           alt=""
