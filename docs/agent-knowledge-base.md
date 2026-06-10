@@ -40,6 +40,7 @@ The SWF pass writes ignored proof artifacts to `app/generated/nutcracker-source-
 The JPEG3 pass writes ignored repaired image proof artifacts to `app/generated/nutcracker-source-extract/direct-image-tags/`.
 
 The actor promotion pass reads the ignored SWF output and writes committed actor assets to `app/src/assets/nutcracker-source/song#-track#-actor.png`.
+It intentionally skips copying when ImageMagick reports the selected generated PNG is pixel-equivalent to the committed target, because `swfextract` can rewrite identical indexed PNG art with different bytes.
 
 ## Things Already Learned The Hard Way
 
@@ -48,7 +49,9 @@ The actor promotion pass reads the ignored SWF output and writes committed actor
 - `track*.swf` files are 600 x 460 MP3 soundstream carriers, not visual instrument sprites.
 - `characters/anim*.swf` files contain the visible actor/timeline content. Direct lossless bitmaps are extractable, but exact timeline playback is not implemented.
 - Do not reuse song 1 actor art for all eight song games. Several `characters/anim#.swf` files differ by song; for example, song 5 / 7 / 8 track 7 uses a standing drummer while song 1 track 7 uses the cannon. Run `npm run assets:nutcracker-actors` after `npm run assets:nutcracker-swf` and use `song#-track#-actor.png`.
-- Frame-specific SWF extraction/rendering is unreliable in this local toolchain. It can produce blank frames or crash on later character frames. Do not claim exact `anim*.swf` playback unless a more robust renderer is added and verified.
+- If `npm run assets:nutcracker-swf` causes actor PNG byte churn, rerun `npm run assets:nutcracker-actors`; the promotion script should skip pixel-equivalent copies so source-controlled actor files only change when the decoded art changes.
+- Frame-specific SWF extraction/rendering is unreliable in this local toolchain. It can produce blank frames or crash on later character frames. Rendering full `characters/anim*.swf` files with the local `swfrender` only produced transparent first-frame 600 x 460 PNGs in spot checks, and this build has no frame selector. Do not claim exact `anim*.swf` playback unless a more robust renderer is added and verified.
+- Do not put modern chooser status text such as `Ready`, `Locked`, or `Cleared` visibly over the preserved `nutchooser.swf` viewport. Keep door state in `data-door-state` / `aria-label`; visible door composition should come from the source door movie clip art and placement records.
 - Avoid using `status` as a shell loop variable in zsh; it is read-only. Use `rc` or another name.
 - `song1__song.actions.txt` is often the fastest way to confirm behavior. Useful source terms include `testCombination`, `showHint`, `helpme`, `nohelp`, `doubleClick`, `dragInstrument`, `hitArea.hitTest`, `instOnScene`, `addINST`, and `removeAnim`.
 - Be careful when mapping `instIMG#` help labels in `swfdump` output. `swfdump` can print symbol definitions after a root placement record, so a `helpme` constant pool printed after `PLACEOBJECT2 ... name "instIMG1"` may be defining a later symbol rather than the already placed root instance. Use the named root placement records plus ActionScript `_root.instIMG` + index references as the stable anchor.
@@ -71,6 +74,7 @@ The actor promotion pass reads the ignored SWF output and writes committed actor
 - Instrument hover/focus help mirrors source `helpme` strings where available.
 - Instrument hotspots expose `data-source-placement`, `data-source-vector-bounds`, and `data-source-hit-rect` so placement provenance can be inspected directly in DOM output and tests. The hit rects are slightly padded/dom-pragmatic where Flash vector hit shapes are too narrow for reliable modern interaction.
 - Selected actors use promoted per-song source-extracted character bitmaps and CSS motion derived from placement dumps, documented as a fallback rather than full timeline playback.
+- Chooser door cards expose `data-source-placement` from the original `m1` through `m8` `PLACEOBJECT2` records, while visible door number/status overlays have been removed from the source viewport.
 
 ## Known Remaining Gaps
 

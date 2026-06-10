@@ -777,17 +777,23 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
             const completed = progress.nutDoors[door];
             const unlocked = isNutcrackerDoorUnlocked(progress, song.id);
             const status = completed ? "Cleared" : unlocked ? "Ready" : "Locked";
+            const state = completed ? "cleared" : unlocked ? "ready" : "locked";
             return `
-              <article class="nutcracker-door-card" style="${getNutcrackerDoorStyle(song.id)}" aria-label="Door ${door} ${escapeHtml(song.title)}">
+              <article
+                class="nutcracker-door-card"
+                style="${getNutcrackerDoorStyle(song.id)}"
+                aria-label="Door ${door} ${escapeHtml(song.title)}"
+                data-source-placement="${escapeHtml(getNutcrackerDoorSourcePlacement(song.id))}"
+              >
                 <button
                   class="door-button nutcracker-door-button"
                   type="button"
                   data-nutcracker-door="${song.id}"
+                  data-door-state="${state}"
+                  aria-label="Door ${door}: ${escapeHtml(song.title)}. ${status}."
                   ${unlocked ? "" : "disabled"}
                 >
                   <img class="chooser-door-art" src="${chooserDoorUrl}" alt="" aria-hidden="true" />
-                  <span>${song.id}</span>
-                  <strong>${status}</strong>
                 </button>
                 <button
                   class="media-button door-preview-button sr-only"
@@ -980,6 +986,20 @@ function getNutcrackerDoorStyle(songId: NutcrackerSongId): string {
   };
   const position = positions[songId];
   return `left:${position.left}px;top:${position.top}px;width:${position.width}px;height:${position.height}px`;
+}
+
+function getNutcrackerDoorSourcePlacement(songId: NutcrackerSongId): string {
+  const placements: Record<NutcrackerSongId, string> = {
+    1: 'nutchooser.swf m1 id 0080 depth 0015 matrix scale 1.077 x -20.25 y -5.55 ratio 5',
+    2: 'nutchooser.swf m2 id 0080 depth 0033 matrix scale -1.077 x 658.65 y -6.40 ratio 5',
+    3: 'nutchooser.swf m3 id 0080 depth 0018 matrix scale 0.674 x 104.20 y 70.95 ratio 5',
+    4: 'nutchooser.swf m4 id 0080 depth 0021 matrix scale -0.673 x 532.85 y 70.95 ratio 5',
+    5: 'nutchooser.swf m5 id 0080 depth 0024 matrix scale 0.437 x 184.90 y 114.05 ratio 5',
+    6: 'nutchooser.swf m6 id 0080 depth 0027 matrix scale -0.436 x 446.55 y 112.95 ratio 5',
+    7: 'nutchooser.swf m7 id 0080 depth 0030 matrix scale 0.293 x 237.55 y 135.60 ratio 5',
+    8: 'nutchooser.swf m8 id 0080 depth 0036 matrix scale -0.293 x 397.90 y 136.70 ratio 5',
+  };
+  return placements[songId];
 }
 
 type SourceRect = {

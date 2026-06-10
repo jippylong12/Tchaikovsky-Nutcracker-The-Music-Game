@@ -119,7 +119,7 @@ The measured `PLACEOBJECT2 moves object` ranges in `song1__characters__anim*.pla
 * `anim7`: cannon depths move only about `12-23px` x and under `1px` y, so the cannon uses a short recoil.
 * `anim8`: round-doll depths cover roughly `670px` x and `22-27px` y, so the doll uses mostly horizontal gliding.
 
-Frame-specific SWF rendering was tested as a possible route to exact spritesheets, but this local `swfrender` build does not expose a frame option, and rendering frame-extracted character SWFs can crash on later frames. Until a more robust SWF timeline renderer is added, the CSS motion is the source-documented fallback rather than exact playback.
+Frame-specific SWF rendering was tested as a possible route to exact spritesheets, but this local `swfrender` build does not expose a frame option, and rendering frame-extracted character SWFs can crash on later frames. A later check also rendered representative full character SWFs such as `song5/characters/anim7.swf`, `song2/characters/anim5.swf`, and `song1/characters/anim1.swf`; all produced fully transparent 600 x 460 first-frame PNGs because the visible actor content starts after the initial frame. Until a more robust SWF timeline renderer is added, the promoted per-song bitmap plus CSS motion is the source-documented fallback rather than exact playback.
 
 ## Song scenery placement evidence
 
@@ -209,3 +209,5 @@ Main instrument hotspots now start the extracted track preview directly; the ear
 * `m6`: matrix scale -0.436, x 446.55, y 112.95.
 * `m7`: matrix scale 0.293, x 237.55, y 135.60.
 * `m8`: matrix scale -0.293, x 397.90, y 136.70.
+
+The chooser DOM now records those original placements in `data-source-placement` on each door card. Modern `Ready`, `Locked`, and `Cleared` state text is intentionally not visible in the 640 x 480 source viewport because the recovered Flash scene shows the door movie clips, not a modern status label overlay. The state remains available as `data-door-state` and `aria-label` for accessibility and automated checks.
