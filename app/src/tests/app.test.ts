@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createAppShell } from "../app";
 import { createAudioService, type AudioElementLike } from "../audio/audioService";
+import { getCorrectNutcrackerTrackNumbers, nutcrackerSongGames } from "../data/nutcrackerSongGames";
 import { dictionaryInstruments, readingActivities } from "../data/referenceContent";
 import { createProgressStore, progressStorageKey, type ProgressPersistence } from "../state/progressStore";
 import { statSync } from "node:fs";
@@ -155,6 +156,72 @@ describe("desktop app shell", () => {
 
     expect(mount.querySelectorAll(".route-list .route-button").length).toBeGreaterThan(18);
     expect(mount.querySelector(".route-panel .progress-panel")).not.toBeNull();
+  });
+
+  it("opens Nutcracker song doors from the chooser and previews recovered tracks", () => {
+    const mount = document.createElement("main");
+
+    createTestShell(mount);
+    mount.querySelector<HTMLButtonElement>('[data-route="nutcracker-chooser"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.disabled).toBe(false);
+    expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="2"]')?.disabled).toBe(true);
+    expect(mount.textContent).toContain("Ready");
+    expect(mount.textContent).toContain("Locked");
+
+    mount.querySelector<HTMLButtonElement>('[data-nutcracker-preview="1"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(mount.textContent).toContain("Dance of the Sugar Plum Fairy");
+    expect(mount.textContent).toContain("Track 1");
+    expect(mount.textContent).toContain("Start 10.2s");
+    expect(mount.textContent).toContain("Song doors");
+  });
+
+  it("checks each Nutcracker song game and unlocks the first progress key after all doors", () => {
+    const mount = document.createElement("main");
+
+    createTestShell(mount);
+
+    nutcrackerSongGames.forEach((song) => {
+      mount.querySelector<HTMLButtonElement>(`[data-route="${song.routeId}"]`)?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      getCorrectNutcrackerTrackNumbers(song).forEach((trackNumber) => {
+        mount
+          .querySelector<HTMLButtonElement>(`[data-song-id="${song.id}"][data-song-track="${trackNumber}"]`)
+          ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      });
+      mount
+        .querySelector<HTMLButtonElement>(`[data-song-id="${song.id}"][data-song-action="submit-song"]`)
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+      if (song.id < nutcrackerSongGames.length) {
+        expect(mount.textContent).toContain(`Correct arrangement. Door ${song.id + 1} is ready.`);
+      } else {
+        expect(mount.textContent).toContain("Correct arrangement. All Nutcracker song doors are cleared.");
+      }
+    });
+
+    expect(mount.textContent).toContain("1 of 9 keys");
+    expect(mount.textContent).toContain("Song doors");
+    expect(mount.textContent).toContain("8/8");
+  });
+
+  it("marks the next Nutcracker door ready after clearing a song", () => {
+    const mount = document.createElement("main");
+
+    createTestShell(mount);
+    mount.querySelector<HTMLButtonElement>('[data-route="song-1"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    getCorrectNutcrackerTrackNumbers(nutcrackerSongGames[0]).forEach((trackNumber) => {
+      mount
+        .querySelector<HTMLButtonElement>(`[data-song-id="1"][data-song-track="${trackNumber}"]`)
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    mount.querySelector<HTMLButtonElement>('[data-song-id="1"][data-song-action="submit-song"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    mount.querySelector<HTMLButtonElement>('[data-route="nutcracker-chooser"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.textContent).toContain("Cleared");
+    expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="2"]')?.textContent).toContain("Ready");
+    expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="2"]')?.disabled).toBe(false);
+    expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="3"]')?.disabled).toBe(true);
   });
 
   it("uses real local image assets for reading activities", () => {

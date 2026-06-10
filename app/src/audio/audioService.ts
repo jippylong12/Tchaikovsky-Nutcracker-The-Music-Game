@@ -4,7 +4,7 @@ export type AudioService = {
   preload: (path: string) => AudioHandle;
   playOneShot: (path: string) => AudioHandle;
   playLoop: (path: string) => AudioHandle;
-  playTrack: (path: string) => AudioHandle;
+  playTrack: (path: string, startTimeSeconds?: number) => AudioHandle;
   stop: (id: string) => void;
   stopSceneAudio: () => void;
   setMuted: (muted: boolean) => void;
@@ -114,8 +114,9 @@ export function createAudioService(options: AudioServiceOptions = {}): AudioServ
     return handle;
   };
 
-  const start = (path: string, kind: Exclude<AudioPlaybackKind, "preload">): AudioHandle => {
+  const start = (path: string, kind: Exclude<AudioPlaybackKind, "preload">, startTimeSeconds = 0): AudioHandle => {
     const handle = createHandle(path, kind);
+    handle.element.currentTime = Math.max(0, startTimeSeconds);
     active.set(handle.id, handle);
     handle.element
       .play()
@@ -157,7 +158,7 @@ export function createAudioService(options: AudioServiceOptions = {}): AudioServ
     },
     playOneShot: (path) => start(path, "one-shot"),
     playLoop: (path) => start(path, "loop"),
-    playTrack: (path) => start(path, "track"),
+    playTrack: (path, startTimeSeconds) => start(path, "track", startTimeSeconds),
     stop: (id) => {
       const handle = active.get(id);
       if (!handle) {

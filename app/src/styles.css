@@ -273,6 +273,19 @@ button {
   background: #eff9f8;
 }
 
+.door-button:disabled,
+.door-preview-button:disabled {
+  color: #8f8578;
+  border-color: #d2c3aa;
+  background: #e7ddca;
+  cursor: default;
+}
+
+.door-button:disabled span,
+.door-button:disabled strong {
+  color: #8f8578;
+}
+
 .menu-card span,
 .door-button span {
   overflow-wrap: anywhere;
@@ -311,6 +324,284 @@ button {
 .door-button span {
   color: var(--red);
   font-size: 26px;
+}
+
+.nutcracker-chooser {
+  grid-template-columns: 132px 1fr;
+  gap: 18px;
+  padding: 18px 20px;
+  background:
+    linear-gradient(90deg, rgba(245, 236, 216, 0.92), rgba(245, 236, 216, 0.66)),
+    radial-gradient(circle at 74% 18%, rgba(185, 130, 37, 0.2), transparent 34%),
+    #ede2cc;
+}
+
+.nutcracker-frame-art {
+  position: absolute;
+  inset: 8px 10px auto auto;
+  width: 438px;
+  height: 336px;
+  object-fit: fill;
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+.nutcracker-scene-copy {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  padding: 0;
+}
+
+.nutcracker-chooser .scene-copy h1 {
+  max-width: 118px;
+  color: #2a1840;
+  font-size: 32px;
+  line-height: 0.96;
+}
+
+.nutcracker-chooser .scene-copy p {
+  max-width: 118px;
+  font-size: 13px;
+}
+
+.nutcracker-door-grid {
+  position: relative;
+  z-index: 1;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  align-self: center;
+}
+
+.nutcracker-door-card {
+  display: grid;
+  grid-template-rows: 72px minmax(30px, auto) 28px;
+  gap: 4px;
+  min-width: 0;
+}
+
+.nutcracker-door-card p {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.nutcracker-door-button {
+  width: 100%;
+  height: 72px;
+  border: 2px solid #2d2241;
+  color: #2a1840;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 245, 0.92), rgba(211, 190, 145, 0.9)),
+    #fff8e8;
+  box-shadow: inset 0 0 0 3px rgba(85, 49, 78, 0.12);
+}
+
+.nutcracker-door-button span {
+  color: #2a1840;
+}
+
+.nutcracker-door-button strong {
+  color: var(--plum);
+}
+
+.door-preview-button {
+  min-height: 28px;
+  padding: 3px 5px;
+  font-size: 11px;
+}
+
+.nutcracker-song-scene {
+  grid-template-columns: 250px 1fr;
+  gap: 12px;
+  padding: 16px 18px;
+  background:
+    linear-gradient(90deg, rgba(245, 236, 216, 0.96), rgba(245, 236, 216, 0.8)),
+    #eee0c5;
+}
+
+.song-panel {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto auto auto auto minmax(0, 1fr) auto;
+  min-width: 0;
+  overflow: hidden;
+  padding: 6px 8px 0 0;
+}
+
+.song-frame-art {
+  position: absolute;
+  right: -78px;
+  bottom: -74px;
+  width: 276px;
+  height: 212px;
+  object-fit: fill;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.song-panel h1 {
+  margin: 0 0 8px;
+  color: var(--plum);
+  font-size: 23px;
+  line-height: 1.04;
+}
+
+.song-instruction,
+.song-feedback {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.song-meter {
+  margin: 10px 0;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.song-meter .meter-row {
+  min-height: 22px;
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.song-meter .meter-row strong {
+  flex: 0 0 74px;
+  color: var(--plum);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.song-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.song-actions .media-button,
+.song-actions .page-button {
+  min-height: 28px;
+  padding: 4px 7px;
+  font-size: 11px;
+}
+
+.song-feedback {
+  max-height: 58px;
+  overflow: auto;
+  color: var(--evergreen);
+  font-weight: 700;
+}
+
+.song-panel .asset-note {
+  max-height: 30px;
+  overflow: hidden;
+}
+
+.track-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  min-width: 0;
+}
+
+.track-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  gap: 4px;
+  min-width: 0;
+}
+
+.track-select-button {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  column-gap: 7px;
+  align-content: center;
+  align-items: center;
+  min-width: 0;
+  height: 72px;
+  padding: 6px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  background:
+    linear-gradient(180deg, #fffaf0, #eadbbf),
+    #fff8e8;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px rgba(255, 250, 240, 0.44);
+}
+
+.track-select-button img {
+  grid-row: 1 / 4;
+  width: 52px;
+  height: 54px;
+  object-fit: contain;
+  filter: sepia(0.1) contrast(1.12);
+}
+
+.track-select-button span,
+.track-select-button small {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.track-select-button strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-select-button small {
+  margin-top: 5px;
+  text-transform: none;
+}
+
+.track-select-button:hover,
+.track-select-button[aria-pressed="true"] {
+  border-color: var(--focus);
+  background: #eff9f8;
+}
+
+.track-card.valid .track-select-button {
+  border-color: var(--evergreen);
+}
+
+.track-card.invalid .track-select-button {
+  border-color: var(--red);
+}
+
+.track-audio-button {
+  position: relative;
+  width: 28px;
+  min-width: 28px;
+  height: 72px;
+  padding: 0;
+}
+
+.track-audio-button::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 10px solid #fffaf0;
+  content: "";
+  transform: translate(-35%, -50%);
 }
 
 .level-label {
@@ -768,11 +1059,23 @@ button {
   right: 18px;
   bottom: 58px;
   width: 292px;
+  max-height: 260px;
+  overflow: auto;
   padding: 14px;
   border: 1px solid var(--ink);
   color: var(--ink);
   background: #fff8e8;
   box-shadow: 0 8px 0 rgba(0, 0, 0, 0.14);
+  z-index: 20;
+}
+
+.help-modal::before {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 32, 0.14);
+  content: "";
+  pointer-events: none;
+  z-index: -1;
 }
 
 .help-modal h2 {

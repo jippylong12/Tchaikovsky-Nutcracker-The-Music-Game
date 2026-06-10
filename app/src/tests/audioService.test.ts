@@ -75,6 +75,21 @@ describe("audio service", () => {
     expect(elements[0]?.volume).toBe(0.25);
   });
 
+  it("starts track playback from a supplied offset", () => {
+    const elements: FakeAudioElement[] = [];
+    const audio = createAudioService({
+      createAudioElement: () => {
+        const element = new FakeAudioElement();
+        elements.push(element);
+        return element;
+      },
+    });
+
+    audio.playTrack("/local-media/audio/delayed-track.mp3", 10.2);
+
+    expect(elements[0]?.currentTime).toBe(10.2);
+  });
+
   it("records preload and missing-audio diagnostics", () => {
     const errors: string[] = [];
     let element: FakeAudioElement | undefined;

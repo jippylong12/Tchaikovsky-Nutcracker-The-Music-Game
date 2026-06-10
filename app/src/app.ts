@@ -1,3 +1,4 @@
+import nutChooserFrameUrl from "./assets/nutchooser-frame.png";
 import stageMarkUrl from "./assets/stage-mark.svg";
 import { createAudioService, type AudioService } from "./audio/audioService";
 import {
@@ -13,7 +14,20 @@ import {
   type ReadingRouteId,
   type SuiteTrack,
 } from "./data/referenceContent";
-import { getRouteById, isRouteId, mainMenuRoutes, routeGroups, routes, songRoutes, type RouteDefinition, type RouteId } from "./routes";
+import {
+  getCorrectNutcrackerTrackNumbers,
+  getNutcrackerSongGameByRoute,
+  getNutcrackerTrackStartSeconds,
+  isCorrectNutcrackerSelection,
+  isNutcrackerSongId,
+  isNutcrackerTrackNumber,
+  nutcrackerSongGames,
+  type NutcrackerSongGame,
+  type NutcrackerSongId,
+  type NutcrackerTrack,
+  type NutcrackerTrackNumber,
+} from "./data/nutcrackerSongGames";
+import { getRouteById, isRouteId, mainMenuRoutes, routeGroups, routes, type RouteDefinition, type RouteId } from "./routes";
 import { createProgressStore, type DoorKey, type GameKey, type ProgressStoreController } from "./state/progressStore";
 
 type ShellState = {
@@ -24,6 +38,8 @@ type ShellState = {
   readingPages: Record<ReadingRouteId, number>;
   activeDictionaryInstrumentId: string;
   activeSuiteTrackId: string | null;
+  nutcrackerSelections: Record<NutcrackerSongId, NutcrackerTrackNumber[]>;
+  nutcrackerFeedback: Record<NutcrackerSongId, string | null>;
 };
 
 export type AppShellOptions = {
@@ -50,6 +66,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     },
     activeDictionaryInstrumentId: dictionaryInstruments[0].id,
     activeSuiteTrackId: null,
+    nutcrackerSelections: createNutcrackerSelectionState(),
+    nutcrackerFeedback: createNutcrackerFeedbackState(),
   };
 
   const render = () => {
@@ -217,6 +235,63 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         }
       });
     });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-nutcracker-door]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const songId = Number(button.dataset.nutcrackerDoor);
+        if (isNutcrackerSongId(songId)) {
+          navigate(`song-${songId}`);
+        }
+      });
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-nutcracker-preview]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const songId = Number(button.dataset.nutcrackerPreview);
+        if (isNutcrackerSongId(songId)) {
+          const song = nutcrackerSongGames.find((item) => item.id === songId);
+          if (song) {
+            const track = getSuiteTrack(song.suiteTrackId);
+            shellState.activeSuiteTrackId = track.id;
+            playSceneAudio(track.audioPath, true);
+          }
+        }
+      });
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-song-track]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const songId = Number(button.dataset.songId);
+        const trackNumber = Number(button.dataset.songTrack);
+        if (isNutcrackerSongId(songId) && isNutcrackerTrackNumber(trackNumber)) {
+          toggleNutcrackerTrack(shellState, songId, trackNumber);
+          render();
+        }
+      });
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-song-track-audio]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const songId = Number(button.dataset.songId);
+        const trackNumber = Number(button.dataset.songTrackAudio);
+        if (isNutcrackerSongId(songId) && isNutcrackerTrackNumber(trackNumber)) {
+          const song = nutcrackerSongGames.find((item) => item.id === songId);
+          const track = song?.tracks.find((item) => item.number === trackNumber);
+          if (track) {
+            playSceneAudio(track.audioPath, true, getNutcrackerTrackStartSeconds(track));
+          }
+        }
+      });
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-song-action]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const songId = Number(button.dataset.songId);
+        if (isNutcrackerSongId(songId)) {
+          handleSongAction(songId, button.dataset.songAction);
+        }
+      });
+    });
   };
 
   const navigate = (routeId: RouteId) => {
@@ -238,9 +313,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     render();
   };
 
-  const playSceneAudio = (audioPath: string, loop: boolean) => {
+  const playSceneAudio = (audioPath: string, loop: boolean, startTimeSeconds = 0) => {
     audio.stopSceneAudio();
-    shellState.activeAudioId = loop ? audio.playTrack(audioPath).id : audio.playOneShot(audioPath).id;
+    shellState.activeAudioId = loop ? audio.playTrack(audioPath, startTimeSeconds).id : audio.playOneShot(audioPath).id;
     render();
   };
 
@@ -309,6 +384,44 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
   };
 
+  const handleSongAction = (songId: NutcrackerSongId, action: string | undefined) => {
+    const song = nutcrackerSongGames.find((item) => item.id === songId);
+    if (!song) {
+      return;
+    }
+
+    if (action === "play-theme") {
+      const track = getSuiteTrack(song.suiteTrackId);
+      shellState.activeSuiteTrackId = track.id;
+      playSceneAudio(track.audioPath, true);
+      return;
+    }
+
+    if (action === "reset-song") {
+      shellState.nutcrackerSelections[songId] = [];
+      shellState.nutcrackerFeedback[songId] = null;
+      render();
+      return;
+    }
+
+    if (action === "submit-song") {
+      if (isCorrectNutcrackerSelection(song, shellState.nutcrackerSelections[songId])) {
+        const snapshot = progress.markNutDoor(songId);
+        if (snapshot.openedNutDoorCount === nutcrackerSongGames.length) {
+          progress.markGameKey(1);
+        }
+        shellState.nutcrackerFeedback[songId] =
+          songId < nutcrackerSongGames.length
+            ? `Correct arrangement. Door ${songId + 1} is ready.`
+            : "Correct arrangement. All Nutcracker song doors are cleared.";
+      } else {
+        const expectedCount = getCorrectNutcrackerTrackNumbers(song).length;
+        shellState.nutcrackerFeedback[songId] = `Try again. Select ${expectedCount} matching tracks for ${song.title}.`;
+      }
+      render();
+    }
+  };
+
   render();
 }
 
@@ -348,27 +461,18 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
   }
 
   if (route.id === "nutcracker-chooser") {
-    return `
-      <div class="scene-body chooser-scene">
-        <div class="scene-copy">
-          <h1>${route.heading}</h1>
-          <p>${route.summary}</p>
-        </div>
-        <div class="door-grid" aria-label="Nutcracker song doors">
-          ${songRoutes
-            .map((songRoute, index) => {
-              const door = (index + 1) as DoorKey;
-              return `
-                <button class="door-button" type="button" data-scene-route="${songRoute.id}">
-                  <span>${door}</span>
-                  <strong>${progress.nutDoors[door] ? "Open" : "Closed"}</strong>
-                </button>
-              `;
-            })
-            .join("")}
-        </div>
-      </div>
-    `;
+    return renderNutcrackerChooser(progress);
+  }
+
+  const song = getNutcrackerSongGameByRoute(route.id);
+  if (song) {
+    return renderNutcrackerSongGame(
+      song,
+      progress.nutDoors[song.id],
+      shellState.nutcrackerSelections[song.id],
+      shellState.nutcrackerFeedback[song.id],
+      shellState.activeAudioId !== null,
+    );
   }
 
   return `
@@ -556,6 +660,120 @@ function renderSuiteTrackButton(track: SuiteTrack, activeTrackId: string): strin
   `;
 }
 
+function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["getSnapshot"]>): string {
+  return `
+    <div class="scene-body chooser-scene nutcracker-chooser">
+      <img class="nutcracker-frame-art" src="${nutChooserFrameUrl}" alt="" aria-hidden="true" />
+      <div class="scene-copy nutcracker-scene-copy">
+        <h1>Song Doors</h1>
+      </div>
+      <div class="door-grid nutcracker-door-grid" aria-label="Nutcracker song doors">
+        ${nutcrackerSongGames
+          .map((song) => {
+            const door = song.id as DoorKey;
+            const completed = progress.nutDoors[door];
+            const unlocked = isNutcrackerDoorUnlocked(progress, song.id);
+            const status = completed ? "Cleared" : unlocked ? "Ready" : "Locked";
+            return `
+              <article class="nutcracker-door-card" aria-label="Door ${door} ${escapeHtml(song.title)}">
+                <button
+                  class="door-button nutcracker-door-button"
+                  type="button"
+                  data-nutcracker-door="${song.id}"
+                  ${unlocked ? "" : "disabled"}
+                >
+                  <span>${song.id}</span>
+                  <strong>${status}</strong>
+                </button>
+                <p>${escapeHtml(song.title)}</p>
+                <button
+                  class="media-button door-preview-button"
+                  type="button"
+                  data-nutcracker-preview="${song.id}"
+                  ${unlocked ? "" : "disabled"}
+                >
+                  Preview
+                </button>
+              </article>
+            `;
+          })
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderNutcrackerSongGame(
+  song: NutcrackerSongGame,
+  completed: boolean,
+  selectedTrackNumbers: readonly NutcrackerTrackNumber[],
+  feedback: string | null,
+  isPlaying: boolean,
+): string {
+  const correctCount = getCorrectNutcrackerTrackNumbers(song).length;
+
+  return `
+    <div class="scene-body nutcracker-song-scene">
+      <section class="song-panel" aria-label="${escapeHtml(song.title)} controls">
+        <img class="song-frame-art" src="${nutChooserFrameUrl}" alt="" aria-hidden="true" />
+        <p class="level-label">Nutcracker song ${song.id}</p>
+        <h1>${escapeHtml(song.title)}</h1>
+        <p class="song-instruction">Select the ${correctCount} tracks that belong in this arrangement, then check the answer.</p>
+        <div class="song-meter">
+          <div class="meter-row"><span>Selected</span><strong>${selectedTrackNumbers.length}/${correctCount}</strong></div>
+          <div class="meter-row"><span>Door</span><strong>${completed ? "Cleared" : "Ready"}</strong></div>
+          <div class="meter-row"><span>Playback</span><strong>${isPlaying ? "Playing" : "Stopped"}</strong></div>
+        </div>
+        <div class="song-actions">
+          <button class="media-button" type="button" data-song-action="play-theme" data-song-id="${song.id}">Play theme</button>
+          <button class="media-button" type="button" data-song-action="submit-song" data-song-id="${song.id}">Check</button>
+          <button class="page-button" type="button" data-song-action="reset-song" data-song-id="${song.id}">Reset</button>
+        </div>
+        ${feedback ? `<p class="song-feedback">${escapeHtml(feedback)}</p>` : ""}
+        <p class="asset-note">Source: ${escapeHtml(song.sourcePath)}. Track streams extracted from recovered SWFs.</p>
+      </section>
+      <section class="track-board" aria-label="${escapeHtml(song.title)} track choices">
+        ${song.tracks.map((track) => renderNutcrackerTrackButton(song.id, track, selectedTrackNumbers, feedback)).join("")}
+      </section>
+    </div>
+  `;
+}
+
+function renderNutcrackerTrackButton(
+  songId: NutcrackerSongId,
+  track: NutcrackerTrack,
+  selectedTrackNumbers: readonly NutcrackerTrackNumber[],
+  feedback: string | null,
+): string {
+  const selected = selectedTrackNumbers.includes(track.number);
+  const feedbackClass = feedback ? (track.valid ? " valid" : selected ? " invalid" : "") : "";
+
+  return `
+    <article class="track-card${selected ? " selected" : ""}${feedbackClass}">
+      <button
+        class="track-select-button"
+        type="button"
+        data-song-id="${songId}"
+        data-song-track="${track.number}"
+        aria-pressed="${selected}"
+      >
+        <img src="${track.imagePath}" alt="" aria-hidden="true" />
+        <span>Track ${track.number}</span>
+        <strong>${escapeHtml(track.instrument)}</strong>
+        <small>${formatTrackStart(track)}${track.character ? ` / ${escapeHtml(track.character)}` : ""}</small>
+      </button>
+      <button
+        class="media-button track-audio-button"
+        type="button"
+        data-song-id="${songId}"
+        data-song-track-audio="${track.number}"
+        aria-label="Play ${escapeHtml(track.instrument)} track from first entry"
+        title="Play ${escapeHtml(track.instrument)} track from first entry"
+      ></button>
+    </article>
+  `;
+}
+
 function formatDuration(durationSeconds: number | null): string {
   if (!durationSeconds) {
     return "--:--";
@@ -565,6 +783,11 @@ function formatDuration(durationSeconds: number | null): string {
     .toString()
     .padStart(2, "0");
   return `${minutes}:${seconds}`;
+}
+
+function formatTrackStart(track: NutcrackerTrack): string {
+  const startSeconds = getNutcrackerTrackStartSeconds(track);
+  return startSeconds > 0 ? `Start ${startSeconds.toFixed(1)}s` : "Start 0.0s";
 }
 
 function escapeHtml(value: string): string {
@@ -578,6 +801,44 @@ function escapeHtml(value: string): string {
 
 function formatMultilineText(value: string): string {
   return escapeHtml(value).replace(/\n/g, "<br />");
+}
+
+function createNutcrackerSelectionState(): Record<NutcrackerSongId, NutcrackerTrackNumber[]> {
+  return Object.fromEntries(nutcrackerSongGames.map((song) => [song.id, []])) as unknown as Record<
+    NutcrackerSongId,
+    NutcrackerTrackNumber[]
+  >;
+}
+
+function createNutcrackerFeedbackState(): Record<NutcrackerSongId, string | null> {
+  return Object.fromEntries(nutcrackerSongGames.map((song) => [song.id, null])) as unknown as Record<NutcrackerSongId, string | null>;
+}
+
+function isNutcrackerDoorUnlocked(
+  progress: ReturnType<ProgressStoreController["getSnapshot"]>,
+  songId: NutcrackerSongId,
+): boolean {
+  if (songId === 1) {
+    return true;
+  }
+
+  return progress.nutDoors[(songId - 1) as DoorKey];
+}
+
+function toggleNutcrackerTrack(
+  shellState: ShellState,
+  songId: NutcrackerSongId,
+  trackNumber: NutcrackerTrackNumber,
+): void {
+  const selected = new Set(shellState.nutcrackerSelections[songId]);
+  if (selected.has(trackNumber)) {
+    selected.delete(trackNumber);
+  } else {
+    selected.add(trackNumber);
+  }
+
+  shellState.nutcrackerSelections[songId] = [...selected].sort((a, b) => a - b);
+  shellState.nutcrackerFeedback[songId] = null;
 }
 
 function renderMenuCard(route: RouteDefinition): string {
@@ -608,9 +869,21 @@ function renderHelp(route: RouteDefinition): string {
   return `
     <aside class="help-modal" aria-label="Scene help">
       <h2>${route.title}</h2>
-      <p>Scene route: ${route.id}. Flash target: ${route.levelTarget}. Route changes stop active scene audio and preserve saved progress locally.</p>
+      <p>${escapeHtml(getHelpText(route))}</p>
     </aside>
   `;
+}
+
+function getHelpText(route: RouteDefinition): string {
+  if (route.id === "nutcracker-chooser") {
+    return "Choose a song door.";
+  }
+
+  if (getNutcrackerSongGameByRoute(route.id)) {
+    return "All songs are played by 4 instruments! Listen to the original song and find 4 correct instruments.";
+  }
+
+  return "Route changes stop active scene audio and preserve saved progress locally.";
 }
 
 function updateProgress(button: HTMLButtonElement, progress: ProgressStoreController): void {
