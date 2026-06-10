@@ -10,6 +10,7 @@
 - Treat the recovered Flash files under `analysis/setup/app/games/` as the authority for behavior, placement, text, and assets.
 - For the Nutcracker song chooser/game work, read `docs/nutcracker-song-source-map.md` before changing UI or behavior.
 - For recurring agent lessons, gotchas, and exact commands, read `docs/agent-knowledge-base.md` before starting source-reconstruction work.
+- During source-reconstruction work, update `docs/nutcracker-song-source-map.md` with new source evidence and update `docs/agent-knowledge-base.md` with reusable mistakes/tool limits before claiming the pass is complete.
 - For broader architecture and source inventory context, use:
   - `docs/source-inventory.md`
   - `docs/behavior-map.md`

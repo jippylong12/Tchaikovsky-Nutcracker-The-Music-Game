@@ -350,41 +350,37 @@ button {
 }
 
 .nutcracker-chooser {
-  background:
-    radial-gradient(circle at 50% 42%, #f0c33c 0 18%, transparent 19%),
-    linear-gradient(180deg, #f7e6a9 0 32%, #d1384d 32% 42%, #1049a8 42% 100%);
+  background: #ffffff;
 }
 
 .nutcracker-chooser-hallway {
   position: absolute;
-  left: 0;
-  top: 0;
+  left: 88px;
+  top: 46px;
   z-index: 0;
-  width: 640px;
-  height: 480px;
-  object-fit: cover;
-  opacity: 0.7;
+  width: 589px;
+  height: 388px;
+  object-fit: fill;
   pointer-events: none;
 }
 
 .nutcracker-frame-art {
   position: absolute;
-  left: 20px;
-  top: 10px;
-  width: 600px;
-  height: 460px;
+  left: 6px;
+  top: -4px;
+  width: 633px;
+  height: 485px;
   object-fit: fill;
-  opacity: 0.88;
   pointer-events: none;
 }
 
 .nutcracker-chooser-instruments {
   position: absolute;
-  left: 44px;
+  left: 47px;
   top: 286px;
   z-index: 1;
-  width: 520px;
-  height: 174px;
+  width: 512px;
+  height: 171px;
   object-fit: fill;
   pointer-events: none;
 }
@@ -711,6 +707,10 @@ button {
 .source-alert-no {
   right: 86px;
   bottom: 18px;
+}
+
+.source-chooser-help-modal {
+  z-index: 30;
 }
 
 .track-card.source-track-hotspot {
@@ -1058,29 +1058,46 @@ button {
 
 .source-scene-actions {
   position: absolute;
-  right: 12px;
-  bottom: 10px;
+  inset: 0;
   z-index: 15;
-  display: flex;
-  gap: 6px;
+  pointer-events: none;
 }
 
 .source-scene-actions .scene-button {
+  position: absolute;
   min-width: 58px;
   min-height: 26px;
   padding: 0;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11px;
+  pointer-events: auto;
 }
 
-.source-scene-actions .source-hint-button {
-  width: 64px;
-  height: 28px;
+.source-scene-actions .chooser-source-help-button {
+  left: 556px;
+  top: 165px;
+  width: 66px;
+  height: 25px;
 }
 
-.source-scene-actions .source-exit-button {
+.source-scene-actions .chooser-source-help-button .source-control-help {
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
+.source-scene-actions .chooser-source-exit-button {
+  left: 586px;
+  top: 472px;
   width: 54px;
   height: 26px;
+}
+
+.source-scene-actions .chooser-source-exit-button .source-control-help {
+  right: 0;
+  left: auto;
+  top: -30px;
+  transform: none;
 }
 
 .level-label {

@@ -1,6 +1,7 @@
 import nutChooserFrameUrl from "./assets/nutcracker-source/nutchooser-frame-source.png";
 import chooserDoorUrl from "./assets/nutcracker-source/chooser-door.png";
 import chooserHallwayUrl from "./assets/nutcracker-source/chooser-hallway.png";
+import chooserHelpButtonArtUrl from "./assets/nutcracker-source/chooser-help-button-art.png";
 import chooserInstrumentsUrl from "./assets/nutcracker-source/chooser-instruments.png";
 import nutcrackerSongFrameUrl from "./assets/nutcracker-source/song-game-render.png";
 import song2SceneryUrl from "./assets/nutcracker-source/song2-scenery.png";
@@ -766,9 +767,27 @@ function renderSuiteTrackButton(track: SuiteTrack, activeTrackId: string): strin
 function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["getSnapshot"]>): string {
   return `
     <div class="scene-body chooser-scene nutcracker-chooser source-flash-scene">
-      <img class="nutcracker-chooser-hallway" src="${chooserHallwayUrl}" alt="" aria-hidden="true" />
-      <img class="nutcracker-frame-art" src="${nutChooserFrameUrl}" alt="" aria-hidden="true" />
-      <img class="nutcracker-chooser-instruments" src="${chooserInstrumentsUrl}" alt="" aria-hidden="true" />
+      <img
+        class="nutcracker-chooser-hallway"
+        src="${chooserHallwayUrl}"
+        alt=""
+        aria-hidden="true"
+        data-source-placement="nutchooser.swf id 0021 depth 0001 matrix scale 0.743 x 87.85 y 46.15"
+      />
+      <img
+        class="nutcracker-frame-art"
+        src="${nutChooserFrameUrl}"
+        alt=""
+        aria-hidden="true"
+        data-source-placement="nutchooser.swf id 0034 depth 0055 matrix scale 1.055 x 5.55 y -3.85 ratio 5"
+      />
+      <img
+        class="nutcracker-chooser-instruments"
+        src="${chooserInstrumentsUrl}"
+        alt=""
+        aria-hidden="true"
+        data-source-placement="nutchooser.swf id 0068 depth 0069 matrix scale 1.000 x 46.55 y 285.85 ratio 5 cxform add -209 -153 134 -223"
+      />
       <p class="sr-only">Nutcracker song doors</p>
       <div class="nutcracker-door-grid" aria-label="Nutcracker song doors">
         ${nutcrackerSongGames
@@ -1252,7 +1271,25 @@ function renderPrimaryActions(route: RouteDefinition): string {
 function renderSourceSceneActions(route: RouteDefinition): string {
   if (route.id === "nutcracker-chooser") {
     return `
-      <button class="scene-button source-label-button source-exit-button primary" type="button" data-action="exit">
+      <button
+        class="scene-button source-label-button chooser-source-help-button"
+        type="button"
+        data-action="help"
+        data-source-control="helpButton"
+        data-source-placement="nutchooser.swf helpButton id 0202 depth 0168 matrix scale 1.350 x 556.50 y 165.30 ratio 5"
+      >
+        <span class="source-control-help" aria-hidden="true">Help</span>
+        <img src="${chooserHelpButtonArtUrl}" alt="" aria-hidden="true" />
+        <span class="sr-only">Help</span>
+      </button>
+      <button
+        class="scene-button source-label-button chooser-source-exit-button primary"
+        type="button"
+        data-action="exit"
+        data-source-control="quiter"
+        data-source-placement="nutchooser.swf quiter id 0207 depth 0173 matrix scale 0.900 x 585.90 y 472.45 ratio 5"
+      >
+        <span class="source-control-help" aria-hidden="true">Quit the Game</span>
         <img src="${songExitLabelUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">EXIT</span>
       </button>
@@ -1267,6 +1304,14 @@ function renderSourceSceneActions(route: RouteDefinition): string {
 }
 
 function renderHelp(route: RouteDefinition): string {
+  if (route.id === "nutcracker-chooser") {
+    return `
+      <aside class="source-alert source-chooser-help-modal" aria-label="Scene help">
+        <p>${escapeHtml(getHelpText(route))}</p>
+      </aside>
+    `;
+  }
+
   if (getNutcrackerSongGameByRoute(route.id)) {
     return `
       <aside class="help-modal source-help-modal" aria-label="Scene help">

@@ -49,6 +49,7 @@ Committed source-backed assets live in `app/src/assets/nutcracker-source/`:
 * `chooser-door.png`: trimmed render of movie clip id 80 (`m#` door sprite) extracted from `nutchooser.swf`; used for chooser door buttons.
 * `chooser-hallway.png`: repaired and alpha-composited JPEG3 id 19 from `nutchooser.swf`; used as source-backed chooser hallway art.
 * `chooser-instruments.png`: trimmed render of sprite id 68 extracted from `nutchooser.swf`; used as source-backed chooser lower instrument art.
+* `chooser-help-button-art.png`: trimmed render of chooser shape id 198 from `nutchooser.swf`; used for the chooser `helpButton` source control because rendering the full button sprite id 202 failed with unresolved nested button id 200 in the local `swfrender`/`swfextract` path.
 * `song-hint-label.png`: trimmed render of text id 122 from `song1/song.swf`.
 * `song-change-song-label.png`: trimmed render of text id 130 from `song1/song.swf`; used for the source `CHANGE SONG` chooser control.
 * `song-listen-label.png`: trimmed render of text id 134 from `song1/song.swf`.
@@ -199,6 +200,12 @@ Main instrument hotspots now start the extracted track preview directly; the ear
 
 ## Chooser button placement evidence
 
+`nutchooser.swf` sets the movie background to white and places source scene assets with these records:
+
+* Background/composition sprite `id 0021`: depth `0001`, matrix scale `0.743`, x `87.85`, y `46.15`; this sprite contains the JPEG3 id `0019` background art and vector/color-shape composition. Extracting/rendering this sprite directly still fails locally with `No JPEG library compiled in`, so the DOM uses recovered `chooser-hallway.png` at the source matrix as a documented fallback.
+* Frame sprite `id 0034`: final depth `0055`, matrix scale `1.055`, x `5.55`, y `-3.85`, ratio `5`; the DOM places `nutchooser-frame-source.png` with that matrix instead of the earlier centered/faded approximation.
+* Instrument sprite `id 0068`: final depth `0069`, matrix scale `1.000`, x `46.55`, y `285.85`, ratio `5`, color transform add `-209 -153 134 -223`; the DOM places `chooser-instruments.png` at that matrix. The color transform is documented as an approximation gap until the extraction pipeline applies SWF CXForms to promoted sprite renders.
+
 `nutchooser.swf` places the shared door movie clip id 80 as instances `m1` through `m8`. The modern implementation uses these placement records as the basis for door hotspot positions:
 
 * `m1`: matrix scale 1.077, x -20.25, y -5.55.
@@ -211,3 +218,12 @@ Main instrument hotspots now start the extracted track preview directly; the ear
 * `m8`: matrix scale -0.293, x 397.90, y 136.70.
 
 The chooser DOM now records those original placements in `data-source-placement` on each door card. Modern `Ready`, `Locked`, and `Cleared` state text is intentionally not visible in the 640 x 480 source viewport because the recovered Flash scene shows the door movie clips, not a modern status label overlay. The state remains available as `data-door-state` and `aria-label` for accessibility and automated checks.
+
+The chooser also has its own source controls, not just the song-scene labels:
+
+* `helpButton`: sprite id `0202`, depth `0168`, matrix scale `1.350`, x `556.50`, y `165.30`, ratio `5`; its ActionScript hover string is `Help` and its release path sets `_root.theNextFrame` to `helpFrame`.
+* `quiter`: sprite id `0207`, depth `0173`, matrix scale `0.900`, x `585.90`, y `472.45`, ratio `5`; its ActionScript hover string is `Quit the Game` and its release path sets `_root.theNextFrame` to `warningFrame`.
+
+Rendering full chooser control sprites id `0202` and `0207` as isolated SWFs failed locally because nested button ids `0200` and `0206` were unresolved. Text id `0203` renders pixel-identically to the already committed `song-exit-label.png`, so the chooser reuses that source-identical label for `quiter` while recording the chooser-specific placement/control provenance in the DOM.
+
+The chooser help click no longer opens the generic app help modal inside the source viewport. It uses the same source-styled alert frame as a temporary fallback while the exact `helpFrame` content/talker animation remains unrecovered.
