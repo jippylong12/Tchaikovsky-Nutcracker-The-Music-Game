@@ -1676,6 +1676,54 @@ button {
   top: 164px;
 }
 
+.source-song-warning-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 34;
+  pointer-events: none;
+}
+
+.source-song-warningframe-talker {
+  position: absolute;
+  left: -163px;
+  top: -32px;
+  width: 378px;
+  height: 252px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.source-song-warning-choice {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.source-song-warning-choice img {
+  display: block;
+  width: auto;
+  height: 25px;
+  object-fit: contain;
+}
+
+.source-song-warning-yes {
+  left: 254px;
+  top: 196px;
+}
+
+.source-song-warning-no {
+  left: 347px;
+  top: 196px;
+}
+
 @media (max-width: 1120px) {
   body {
     min-width: 0;

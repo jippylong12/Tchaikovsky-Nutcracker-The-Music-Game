@@ -272,6 +272,33 @@ describe("desktop app shell", () => {
       "Select a\ndifferent\nsong",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dataset.sourceHelp).toBe("Quit the Game");
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dataset.songAction).toBe(
+      "confirm-exit-song",
+    );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dataset.sourceAction).toContain(
+      "warningFrame",
+    );
+    mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const songWarning = mount.querySelector<HTMLElement>(".source-song-warning-modal");
+    expect(songWarning).not.toBeNull();
+    expect(songWarning?.dataset.sourceFrame).toBe("song1/song.swf warningFrame");
+    expect(songWarning?.dataset.sourcePlacement).toContain("sprite id 0340");
+    expect(songWarning?.dataset.sourcePlacement).toContain("YES button id 0346");
+    expect(songWarning?.dataset.sourcePlacement).toContain("NO button id 0351");
+    expect(mount.querySelector<HTMLImageElement>(".source-song-warningframe-talker")?.src).toContain(
+      "song-warningframe-talker",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-song-warning-yes img")?.src).toContain(
+      "song-warning-yes-label",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-song-warning-no img")?.src).toContain("song-warning-no-label");
+    mount.querySelector<HTMLButtonElement>(".source-song-warning-no")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mount.querySelector(".source-song-warning-modal")).toBeNull();
+    expect(mount.textContent).toContain("Dance of the Sugar Plum Fairy");
+    mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    mount.querySelector<HTMLButtonElement>(".source-song-warning-yes")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')).not.toBeNull();
+    mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     hintButton?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.textContent).toBe("Hint");
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceFrame).toBe("4");

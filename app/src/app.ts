@@ -24,6 +24,9 @@ import songListenLabelUrl from "./assets/nutcracker-source/song-listen-label.png
 import songNoLabelUrl from "./assets/nutcracker-source/song-no-label.png";
 import songPlayAgainLabelUrl from "./assets/nutcracker-source/song-play-again-label.png";
 import songStopLabelUrl from "./assets/nutcracker-source/song-stop-label-blue.png";
+import songWarningNoLabelUrl from "./assets/nutcracker-source/song-warning-no-label.png";
+import songWarningYesLabelUrl from "./assets/nutcracker-source/song-warning-yes-label.png";
+import songWarningframeTalkerUrl from "./assets/nutcracker-source/song-warningframe-talker.png";
 import songYesLabelUrl from "./assets/nutcracker-source/song-yes-label.png";
 import stageMarkUrl from "./assets/stage-mark.svg";
 import { createAudioService, type AudioService } from "./audio/audioService";
@@ -63,6 +66,7 @@ type ShellState = {
   nutcrackerChooserWarningOpen: boolean;
   activeAudioId: string | null;
   pendingNutcrackerSongChange: NutcrackerSongId | null;
+  pendingNutcrackerSongExit: NutcrackerSongId | null;
   readingPages: Record<ReadingRouteId, number>;
   activeDictionaryInstrumentId: string;
   activeSuiteTrackId: string | null;
@@ -89,6 +93,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     nutcrackerChooserWarningOpen: false,
     activeAudioId: null,
     pendingNutcrackerSongChange: null,
+    pendingNutcrackerSongExit: null,
     readingPages: {
       story: 0,
       "composer-biography": 0,
@@ -440,6 +445,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     shellState.helpOpen = false;
     shellState.nutcrackerChooserWarningOpen = false;
     shellState.pendingNutcrackerSongChange = null;
+    shellState.pendingNutcrackerSongExit = null;
     audio.stopSceneAudio();
     shellState.activeAudioId = null;
     shellState.activeSuiteTrackId = null;
@@ -476,6 +482,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.helpOpen = false;
       shellState.nutcrackerChooserWarningOpen = false;
       shellState.pendingNutcrackerSongChange = null;
+      shellState.pendingNutcrackerSongExit = null;
       audio.stopSceneAudio();
       shellState.activeAudioId = null;
       shellState.activeSuiteTrackId = null;
@@ -485,6 +492,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
 
     if (action === "help") {
       shellState.nutcrackerChooserWarningOpen = false;
+      shellState.pendingNutcrackerSongExit = null;
       shellState.helpOpen = !shellState.helpOpen;
       render();
       return;
@@ -495,6 +503,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.activeAudioId = null;
       shellState.activeSuiteTrackId = null;
       shellState.helpOpen = false;
+      shellState.pendingNutcrackerSongChange = null;
+      shellState.pendingNutcrackerSongExit = null;
       shellState.nutcrackerChooserWarningOpen = true;
       render();
       return;
@@ -563,6 +573,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
 
     if (action === "play-theme") {
       shellState.pendingNutcrackerSongChange = null;
+      shellState.pendingNutcrackerSongExit = null;
       if (shellState.activeAudioId) {
         stopSceneAudio();
         return;
@@ -577,6 +588,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.nutcrackerSelections[songId] = [];
       shellState.nutcrackerFeedback[songId] = null;
       shellState.pendingNutcrackerSongChange = null;
+      shellState.pendingNutcrackerSongExit = null;
       render();
       return;
     }
@@ -586,24 +598,50 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.activeAudioId = null;
       shellState.activeSuiteTrackId = null;
       shellState.pendingNutcrackerSongChange = songId;
+      shellState.pendingNutcrackerSongExit = null;
       render();
       return;
     }
 
     if (action === "cancel-change-song") {
       shellState.pendingNutcrackerSongChange = null;
+      shellState.pendingNutcrackerSongExit = null;
       render();
       return;
     }
 
     if (action === "accept-change-song") {
       shellState.pendingNutcrackerSongChange = null;
+      shellState.pendingNutcrackerSongExit = null;
+      navigate("nutcracker-chooser");
+      return;
+    }
+
+    if (action === "confirm-exit-song") {
+      audio.stopSceneAudio();
+      shellState.activeAudioId = null;
+      shellState.activeSuiteTrackId = null;
+      shellState.pendingNutcrackerSongChange = null;
+      shellState.pendingNutcrackerSongExit = songId;
+      render();
+      return;
+    }
+
+    if (action === "cancel-exit-song") {
+      shellState.pendingNutcrackerSongExit = null;
+      render();
+      return;
+    }
+
+    if (action === "accept-exit-song") {
+      shellState.pendingNutcrackerSongExit = null;
       navigate("nutcracker-chooser");
       return;
     }
 
     if (action === "hint-song") {
       shellState.pendingNutcrackerSongChange = null;
+      shellState.pendingNutcrackerSongExit = null;
       showNutcrackerHint(song, shellState, progress);
       render();
       return;
@@ -666,6 +704,7 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
       shellState.nutcrackerFeedback[song.id],
       shellState.activeAudioId !== null,
       shellState.pendingNutcrackerSongChange === song.id,
+      shellState.pendingNutcrackerSongExit === song.id,
     );
   }
 
@@ -928,6 +967,7 @@ function renderNutcrackerSongGame(
   feedback: string | null,
   isPlaying: boolean,
   changePromptOpen: boolean,
+  exitWarningOpen: boolean,
 ): string {
   const selectedTrackCount = selectedTrackNumbers.length;
   const correctRequiredCount = getCorrectNutcrackerTrackNumbers(song).length;
@@ -966,7 +1006,7 @@ function renderNutcrackerSongGame(
             <img src="${songChangeSongLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">CHANGE SONG</span>
           </button>
-          <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-source-help="Quit the Game" data-source-help-frame="3" data-source-help-bounds="frame 3 edit ids 0234-0236 bbox approx 276x22 after 1.2 scale" data-scene-route="nutcracker-chooser">
+          <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-source-help="Quit the Game" data-source-help-frame="3" data-source-help-bounds="frame 3 edit ids 0234-0236 bbox approx 276x22 after 1.2 scale" data-source-action="sets _root.theNextFrame to warningFrame; drives _root.usmus to warningFrame/showUp" data-song-action="confirm-exit-song" data-song-id="${song.id}">
             <img src="${songExitLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">EXIT</span>
           </button>
@@ -988,6 +1028,7 @@ function renderNutcrackerSongGame(
         </div>
         ${sourceMessage ? renderNutcrackerHintCurtain(sourceMessage) : ""}
         ${changePromptOpen ? renderNutcrackerChangeSongPrompt(song.id) : ""}
+        ${exitWarningOpen ? renderNutcrackerSongExitWarning(song.id) : ""}
         <p class="sr-only">${completed ? "Door cleared." : "Door ready."} Source: ${escapeHtml(song.sourcePath)}. Track streams extracted from recovered SWFs.</p>
       </section>
     </div>
@@ -1024,6 +1065,47 @@ function renderNutcrackerChangeSongPrompt(songId: NutcrackerSongId): string {
       </button>
       <button class="source-alert-choice source-alert-no" type="button" data-song-action="cancel-change-song" data-song-id="${songId}">
         <img src="${songNoLabelUrl}" alt="" aria-hidden="true" />
+        <span class="sr-only">NO</span>
+      </button>
+    </aside>
+  `;
+}
+
+function renderNutcrackerSongExitWarning(songId: NutcrackerSongId): string {
+  return `
+    <aside
+      class="source-song-warning-modal"
+      aria-label="Exit song confirmation"
+      data-source-frame="song1/song.swf warningFrame"
+      data-source-placement="warningFrame places sprite id 0340 depth 0001 matrix scale 1.051 x -15.45 y 52.40 ratio 29; noAction id 0341 depth 0003 matrix scale 12.497 x -319.25 y -234.35 ratio 29; YES button id 0346 depth 0005 x -66.15 y -43.55; NO button id 0351 depth 0008 x 27.30 y -43.55; close sprite id 0352 depth 0011 x 96.30 y -143.70"
+    >
+      <img
+        class="source-song-warningframe-talker"
+        src="${songWarningframeTalkerUrl}"
+        alt=""
+        aria-hidden="true"
+        data-source-image="song1/song.swf warningFrame sprite id 0340 rendered in swfcombine translated wrapper x 140 y 80; direct swfrender clips negative-coordinate source art"
+      />
+      <button
+        class="source-song-warning-choice source-song-warning-yes"
+        type="button"
+        data-song-action="accept-exit-song"
+        data-song-id="${songId}"
+        data-source-button="song1/song.swf warningFrame YES button id 0346"
+        data-source-action="_level0.gotoAndPlay('comeAgain')"
+      >
+        <img src="${songWarningYesLabelUrl}" alt="" aria-hidden="true" />
+        <span class="sr-only">YES</span>
+      </button>
+      <button
+        class="source-song-warning-choice source-song-warning-no"
+        type="button"
+        data-song-action="cancel-exit-song"
+        data-song-id="${songId}"
+        data-source-button="song1/song.swf warningFrame NO button id 0351"
+        data-source-action="stopPreview; resumeInst; instFrameShow; restore speakers/focus/quiter buttonON"
+      >
+        <img src="${songWarningNoLabelUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">NO</span>
       </button>
     </aside>

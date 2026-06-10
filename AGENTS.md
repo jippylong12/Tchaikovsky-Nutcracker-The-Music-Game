@@ -37,6 +37,8 @@ For each Nutcracker chooser/song-game pass:
 5. Update `docs/agent-knowledge-base.md` with reusable mistakes, renderer limits, and exact commands.
 6. Run the validation baseline below before claiming the pass is ready for review.
 
+If Marcus reports that a page looks default, basic, or made up, treat that as a source-fidelity defect. Do not answer by only updating Linear or by polishing invented UI. Inspect the Flash source, extract/promote recoverable assets, update the source map and knowledge base, then change the page toward the recovered original.
+
 ## Validation Baseline
 
 Run these from `app/` after Nutcracker source-fidelity changes:

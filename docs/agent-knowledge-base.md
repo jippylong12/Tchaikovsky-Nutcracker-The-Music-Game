@@ -43,7 +43,7 @@ The JPEG3 pass writes ignored repaired image proof artifacts to `app/generated/n
 The actor promotion pass reads the ignored SWF output and writes committed actor assets to `app/src/assets/nutcracker-source/song#-track#-actor.png`.
 It intentionally skips copying when ImageMagick reports the selected generated PNG is pixel-equivalent to the committed target, because `swfextract` can rewrite identical indexed PNG art with different bytes.
 
-The UI promotion pass currently copies source UI bitmap evidence such as `song1__song/lossless-39.png` into correctly named committed assets like `song-curtain-scallop.png`. It also extracts/renders `nutchooser.swf` sprites `0169`, `0170`, and `0177`, promoting translated-wrapper renders to `chooser-helpframe-talker.png` and `chooser-warningframe-talker.png`, plus warning `YES`/`NO` source text labels.
+The UI promotion pass currently copies source UI bitmap evidence such as `song1__song/lossless-39.png` into correctly named committed assets like `song-curtain-scallop.png`. It also extracts/renders `nutchooser.swf` sprites `0169`, `0170`, and `0177`, promoting translated-wrapper renders to `chooser-helpframe-talker.png` and `chooser-warningframe-talker.png`, plus chooser warning `YES`/`NO` source text labels. The same script now promotes the song-scene `warningFrame` talker sprite id `0340` from `song1/song.swf` as `song-warningframe-talker.png`, plus song warning `YES`/`NO` labels from text ids `0345` and `0350`.
 
 ## Things Already Learned The Hard Way
 
@@ -63,6 +63,7 @@ The UI promotion pass currently copies source UI bitmap evidence such as `song1_
 - Do not add visible chooser help instructions such as "Choose a song door." inside the source viewport. The current `nutchooser` dumps show `helpframe` sprite/talker placement but no visible instructional `DEFINEEDITTEXT`/`DEFINETEXT` for that frame. Keep accessibility copy screen-reader-only unless a source text object is recovered.
 - Do not wire chooser `quiter` directly to the modern menu. Its ActionScript sets `_root.theNextFrame` to `warningFrame`. `warningFrame` places talker sprite id `0177`, noAction id `0178`, YES button id `0183`, NO button id `0188`, and close/transition sprite id `0189`. YES calls `_level0.gotoAndPlay("comeAgain")`; NO/close restore the chooser controls and send `quiter` to `buttonON`. Use promoted `chooser-warningframe-talker.png`, `chooser-warning-yes-label.png`, and `chooser-warning-no-label.png` before any fallback button styling.
 - Rendering isolated chooser warning buttons id `0183` / `0188` fails with unresolved child IDs, and `swfextract -f 24/25` did not produce renderable full-frame SWFs for the root warning frame. Compose the source frame, warning talker, and source text labels with `data-source-frame="nutchooser.swf warningFrame"` until a real display-list renderer can render the whole timeline frame.
+- Do not wire song-scene `listenSong` / `EXIT` directly to the chooser. Its ActionScript sets `_root.theNextFrame` to `warningFrame` and drives `_root.usmus` through the warning/showUp animation. `song1/song.swf warningFrame` places talker sprite id `0340`, noAction id `0341`, YES button id `0346`, NO button id `0351`, and close/transition sprite id `0352`. YES calls `_level0.gotoAndPlay("comeAgain")`; NO restores previews/instruments/speakers/focus/quiter state. Use promoted `song-warningframe-talker.png`, `song-warning-yes-label.png`, and `song-warning-no-label.png` before any fallback styling.
 - Avoid using `status` as a shell loop variable in zsh; it is read-only. Use `rc` or another name.
 - `song1__song.actions.txt` is often the fastest way to confirm behavior. Useful source terms include `testCombination`, `showHint`, `helpme`, `nohelp`, `doubleClick`, `dragInstrument`, `hitArea.hitTest`, `instOnScene`, `addINST`, and `removeAnim`.
 - Do not render `gameSolution` as if it were a visible text field. In the recovered dumps it is ActionScript state (`ok` / `try again`) with no `DEFINEEDITTEXT` binding. Visible hint/check copy is written to `_root.message` inside the `courtain` sprite.
@@ -98,12 +99,13 @@ The UI promotion pass currently copies source UI bitmap evidence such as `song1_
 - Chooser scene art now exposes `data-source-placement` for the recovered hallway/background, frame, instrument sprite, help button, and quit control. Keep adding provenance attributes when a visible element remains DOM/CSS-backed.
 - Chooser help uses the recovered chooser frame surface, records the `nutchooser.swf helpframe` placement for sprite `0170` / `noAction` id `0171`, and overlays `chooser-helpframe-talker.png` rendered from nested sprite `0169`, rather than sharing the song-scene help/courtain surfaces.
 - Chooser quit uses the recovered `nutchooser.swf warningFrame` path. The DOM warning surface records placements for `0177`, `0178`, `0183`, `0188`, and `0189`, uses source-rendered warning talker/YES/NO assets, maps NO to the source control-restore behavior, and maps YES to the app's equivalent leave/restart flow.
+- Song EXIT uses the recovered `song1/song.swf warningFrame` path. The DOM warning surface records placements for `0340`, `0341`, `0346`, `0351`, and `0352`, uses source-rendered warning talker/YES/NO assets, maps NO to the source control-restore behavior, and maps YES to the app's equivalent chooser-return flow.
 
 ## Known Remaining Gaps
 
 - Full `characters/anim*.swf` timeline playback is still missing.
 - Some song 2-8 scene composition remains source-derived but not full Flash display-list playback.
-- Song-scene `listenSong` release routes the SWF through a warning flow too, but that handler does not set `_root.message`; do not invent unknown static wording there. The chooser `quiter` warning has now been source-mapped separately through `nutchooser.swf warningFrame`.
+- Full root-frame rendering for song-scene `warningFrame` remains a display-list renderer gap. The app composes recovered sprite/text assets with source placement metadata and no invented warning wording until a renderer can play the complete frame.
 - Browser visual approval is still Marcus-gated. Automated checks can prove build/test/extraction health, not that the UI is approved.
 
 ## Commit Discipline
