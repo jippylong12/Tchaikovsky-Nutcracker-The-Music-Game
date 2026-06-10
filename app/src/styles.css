@@ -626,6 +626,8 @@ button {
   object-fit: contain;
   pointer-events: none;
   filter: drop-shadow(3px 5px 0 rgba(0, 0, 0, 0.28));
+  transform-origin: 50% 88%;
+  will-change: transform;
 }
 
 .source-selected-actor.valid {
@@ -641,6 +643,7 @@ button {
   top: 115px;
   width: 72px;
   height: 126px;
+  animation: source-actor-nutcracker 6.8s steps(36, end) infinite;
 }
 
 .source-selected-actor-2 {
@@ -648,6 +651,7 @@ button {
   top: 172px;
   width: 100px;
   height: 42px;
+  animation: source-actor-mouse 4.6s steps(24, end) infinite;
 }
 
 .source-selected-actor-3 {
@@ -655,6 +659,7 @@ button {
   top: 196px;
   width: 210px;
   height: 38px;
+  animation: source-actor-train 5.8s steps(30, end) infinite;
 }
 
 .source-selected-actor-4 {
@@ -662,6 +667,7 @@ button {
   top: 124px;
   width: 96px;
   height: 95px;
+  animation: source-actor-elephant 5.2s steps(28, end) infinite;
 }
 
 .source-selected-actor-5 {
@@ -669,6 +675,7 @@ button {
   top: 103px;
   width: 76px;
   height: 123px;
+  animation: source-actor-dancer 5.6s steps(30, end) infinite;
 }
 
 .source-selected-actor-6 {
@@ -676,6 +683,7 @@ button {
   top: 151px;
   width: 126px;
   height: 68px;
+  animation: source-actor-horseman 4.8s steps(24, end) infinite;
 }
 
 .source-selected-actor-7 {
@@ -683,6 +691,7 @@ button {
   top: 171px;
   width: 120px;
   height: 60px;
+  animation: source-actor-cannon 2.4s steps(12, end) infinite;
 }
 
 .source-selected-actor-8 {
@@ -690,6 +699,129 @@ button {
   top: 133px;
   width: 70px;
   height: 122px;
+  animation: source-actor-round-doll 6s steps(32, end) infinite;
+}
+
+@keyframes source-actor-nutcracker {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  30% {
+    transform: translate(22px, -3px) rotate(2deg);
+  }
+
+  60% {
+    transform: translate(-18px, -6px) rotate(-2deg);
+  }
+}
+
+@keyframes source-actor-mouse {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  45% {
+    transform: translate(-28px, -2px);
+  }
+
+  70% {
+    transform: translate(18px, 1px);
+  }
+}
+
+@keyframes source-actor-train {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(44px, -3px);
+  }
+}
+
+@keyframes source-actor-elephant {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  35% {
+    transform: translate(-20px, -4px) rotate(-2deg);
+  }
+
+  70% {
+    transform: translate(18px, 2px) rotate(2deg);
+  }
+}
+
+@keyframes source-actor-dancer {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  35% {
+    transform: translate(28px, -8px) rotate(3deg);
+  }
+
+  70% {
+    transform: translate(-20px, -2px) rotate(-2deg);
+  }
+}
+
+@keyframes source-actor-horseman {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(-24px, -6px);
+  }
+
+  55% {
+    transform: translate(32px, 3px);
+  }
+}
+
+@keyframes source-actor-cannon {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  18% {
+    transform: translate(-9px, 0) scale(0.98);
+  }
+
+  30% {
+    transform: translate(4px, 0) scale(1.01);
+  }
+}
+
+@keyframes source-actor-round-doll {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  45% {
+    transform: translate(-34px, -3px) rotate(-2deg);
+  }
+
+  75% {
+    transform: translate(20px, 1px) rotate(2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .source-selected-actor {
+    animation: none;
+  }
 }
 
 .source-track-hotspot.selected::after {

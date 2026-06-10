@@ -94,7 +94,24 @@ The installed `swfrender` can render `song1/song.swf`, but `nutchooser.swf` and 
 
 Because `swfrender` still cannot render full song 2-8 composites, the current implementation uses the source-rendered song 1 stage as the shared song-game scene reference, overlays recovered song-specific JPEG3 scenery where frame-1 display-list placement can be recovered, and places modern HTML hotspots at positions derived from the visible source render and `nutchooser.swf` placement data.
 
-The full `characters/anim*.swf` timelines are not yet played in the DOM. Instead, selected instruments render the source-extracted character/instrument lossless bitmap for that track on the stage. This is closer to the original than invisible-only selection state, but it is still a documented fallback for the real Flash behavior, which loads each `anim#.swf` into the corresponding `anim#` movie slot and plays timeline animation.
+The full `characters/anim*.swf` timelines are not yet played in the DOM. Instead, selected instruments render the source-extracted character/instrument lossless bitmap for that track on the stage and apply a small CSS motion pass derived from the SWF placement dumps. This is closer to the original than invisible-only or static selection state, but it is still a documented fallback for the real Flash behavior, which loads each `anim#.swf` into the corresponding `anim#` movie slot and plays timeline animation.
+
+## Character animation fallback evidence
+
+Each selected actor element now records its corresponding source movie as `data-source-animation="games/nutcrackergame/song#/characters/anim#.swf"`. The browser does not execute those SWFs, so the DOM fallback uses the extracted lossless actor bitmap plus restrained `steps()` CSS transforms. The transform direction and relative size come from the song 1 placement dumps under `app/generated/nutcracker-source-extract/full-swf-pass/dumps/`.
+
+The measured `PLACEOBJECT2 moves object` ranges in `song1__characters__anim*.placements.txt` show repeated timeline movement rather than static actors:
+
+* `anim1`: multiple depths move across roughly `510-648px` x and `64-189px` y, so the DOM Nutcracker uses a broad but bounded side-to-side walk/bob.
+* `anim2`: the main moving depths cover roughly `318-446px` x and `37-46px` y, so the mouse uses a flatter scurry.
+* `anim3`: the train depths cover roughly `803-813px` x and `40-41px` y, so the train uses mostly horizontal translation.
+* `anim4`: elephant depths cover roughly `480-514px` x and `42-48px` y, so the elephant uses a slow lateral sway.
+* `anim5`: dancer depths cover roughly `331-603px` x and `19-76px` y, so the dancer uses lateral motion with a stronger vertical lift.
+* `anim6`: horseman depths cover roughly `496-577px` x and `53-106px` y, so the horseman uses a gallop-like x/y bob.
+* `anim7`: cannon depths move only about `12-23px` x and under `1px` y, so the cannon uses a short recoil.
+* `anim8`: round-doll depths cover roughly `670px` x and `22-27px` y, so the doll uses mostly horizontal gliding.
+
+Frame-specific SWF rendering was tested as a possible route to exact spritesheets, but this local `swfrender` build does not expose a frame option, and rendering frame-extracted character SWFs can crash on later frames. Until a more robust SWF timeline renderer is added, the CSS motion is the source-documented fallback rather than exact playback.
 
 ## Song scenery placement evidence
 

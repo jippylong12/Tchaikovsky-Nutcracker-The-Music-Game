@@ -211,6 +211,9 @@ describe("desktop app shell", () => {
     instrumentButton?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
 
     expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.src).toContain("track1-nutcracker");
+    expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.dataset.sourceAnimation).toBe(
+      "games/nutcrackergame/song1/characters/anim1.swf",
+    );
   });
 
   it("checks each Nutcracker song game and unlocks the first progress key after all doors", () => {
