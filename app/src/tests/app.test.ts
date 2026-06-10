@@ -177,6 +177,12 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-instruments")?.dataset.sourcePlacement).toContain(
       "id 0068 depth 0069",
     );
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-instruments")?.src).toContain(
+      "chooser-instruments-cxform",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-instruments")?.dataset.sourceImage).toContain(
+      "CXForm add -209 -153 134 -223",
+    );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourcePlacement).toContain(
       "nutchooser.swf helpButton",
     );

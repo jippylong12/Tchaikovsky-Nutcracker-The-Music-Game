@@ -3,7 +3,7 @@ import chooserDoorUrl from "./assets/nutcracker-source/chooser-door.png";
 import chooserHallwayUrl from "./assets/nutcracker-source/chooser-hallway.png";
 import chooserHelpButtonArtUrl from "./assets/nutcracker-source/chooser-help-button-art.png";
 import chooserHelpframeTalkerUrl from "./assets/nutcracker-source/chooser-helpframe-talker.png";
-import chooserInstrumentsUrl from "./assets/nutcracker-source/chooser-instruments.png";
+import chooserInstrumentsCxformUrl from "./assets/nutcracker-source/chooser-instruments-cxform.png";
 import chooserWarningNoLabelUrl from "./assets/nutcracker-source/chooser-warning-no-label.png";
 import chooserWarningYesLabelUrl from "./assets/nutcracker-source/chooser-warning-yes-label.png";
 import chooserWarningframeTalkerUrl from "./assets/nutcracker-source/chooser-warningframe-talker.png";
@@ -917,10 +917,11 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
       />
       <img
         class="nutcracker-chooser-instruments"
-        src="${chooserInstrumentsUrl}"
+        src="${chooserInstrumentsCxformUrl}"
         alt=""
         aria-hidden="true"
         data-source-placement="nutchooser.swf id 0068 depth 0069 matrix scale 1.000 x 46.55 y 285.85 ratio 5 cxform add -209 -153 134 -223"
+        data-source-image="sprite id 0068 rendered and trimmed, then root depth 0069 CXForm add -209 -153 134 -223 applied by npm run assets:nutcracker-ui"
       />
       <p class="sr-only">Nutcracker song doors</p>
       <div class="nutcracker-door-grid" aria-label="Nutcracker song doors">

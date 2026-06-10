@@ -10,6 +10,7 @@ const appRoot = path.resolve(currentDir, "..");
 const projectRoot = path.resolve(appRoot, "..");
 const sourceRoot = path.join(appRoot, "generated/nutcracker-source-extract/full-swf-pass/direct-png");
 const targetRoot = path.join(appRoot, "src/assets/nutcracker-source");
+const chooserRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser");
 const helperRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-helpframe");
 const warningRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-warningframe");
 const songHelpRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-helpframe");
@@ -24,11 +25,28 @@ function runTool(command, args) {
   }
 }
 
+function imagesArePixelEquivalent(source, target) {
+  if (!existsSync(target)) {
+    return false;
+  }
+
+  const result = spawnSync("magick", ["compare", "-metric", "AE", source, target, "null:"], {
+    cwd: projectRoot,
+    encoding: "utf8",
+  });
+  return result.status === 0;
+}
+
 const uiAssets = [
   {
     source: path.join(sourceRoot, "song1__song/lossless-39.png"),
     target: "song-curtain-scallop.png",
     sourceId: "song1/song.swf DEFINEBITSLOSSLESS2 id 0039, used by courtain base sprite id 0042",
+  },
+  {
+    source: path.join(chooserRoot, "help-exit-sprite-68-cxform.png"),
+    target: "chooser-instruments-cxform.png",
+    sourceId: "nutchooser.swf sprite id 0068 rendered, trimmed, then root placement depth 0069 CXForm add -209 -153 134 -223 applied",
   },
   {
     source: path.join(helperRoot, "helpframe-169-wrapped.png"),
@@ -73,10 +91,53 @@ const uiAssets = [
 ];
 
 await mkdir(targetRoot, { recursive: true });
+await mkdir(chooserRoot, { recursive: true });
 await mkdir(helperRoot, { recursive: true });
 await mkdir(warningRoot, { recursive: true });
 await mkdir(songHelpRoot, { recursive: true });
 await mkdir(songWarningRoot, { recursive: true });
+
+const chooserInstrumentSwf = path.join(chooserRoot, "help-exit-sprite-68.swf");
+const chooserInstrumentPng = path.join(chooserRoot, "help-exit-sprite-68.png");
+const chooserInstrumentTrimmedPng = path.join(chooserRoot, "help-exit-sprite-68-trim.png");
+const chooserInstrumentCxformPng = path.join(chooserRoot, "help-exit-sprite-68-cxform.png");
+if (!existsSync(chooserInstrumentSwf)) {
+  runTool("swfextract", ["-i", "68", "-o", chooserInstrumentSwf, nutchooserSwf]);
+}
+if (!existsSync(chooserInstrumentPng)) {
+  runTool("swfrender", ["-o", chooserInstrumentPng, chooserInstrumentSwf]);
+}
+if (!existsSync(chooserInstrumentTrimmedPng)) {
+  runTool("magick", [chooserInstrumentPng, "-trim", "+repage", chooserInstrumentTrimmedPng]);
+}
+runTool("magick", [
+  chooserInstrumentTrimmedPng,
+  "-channel",
+  "R",
+  "-evaluate",
+  "subtract",
+  "81.9608%",
+  "+channel",
+  "-channel",
+  "G",
+  "-evaluate",
+  "subtract",
+  "60%",
+  "+channel",
+  "-channel",
+  "B",
+  "-evaluate",
+  "add",
+  "52.549%",
+  "+channel",
+  "-channel",
+  "A",
+  "-evaluate",
+  "subtract",
+  "87.451%",
+  "+channel",
+  chooserInstrumentCxformPng,
+]);
 
 for (const spriteId of ["169", "170"]) {
   const renderedPng = path.join(helperRoot, `helpframe-${spriteId}.png`);
@@ -228,6 +289,11 @@ for (const asset of uiAssets) {
   }
 
   const targetFile = path.join(targetRoot, asset.target);
+  if (imagesArePixelEquivalent(asset.source, targetFile)) {
+    console.log(`${path.relative(appRoot, targetFile)} unchanged (${asset.sourceId})`);
+    continue;
+  }
+
   await copyFile(asset.source, targetFile);
   console.log(`${path.relative(appRoot, asset.source)} -> ${path.relative(appRoot, targetFile)} (${asset.sourceId})`);
 }
