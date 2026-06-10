@@ -15,6 +15,7 @@ export type NutcrackerTrack = {
   readonly instrument: string;
   readonly valid: boolean;
   readonly firstFrame: number;
+  readonly previewStartSeconds: number;
   readonly character?: string;
   readonly audioPath: string;
   readonly imagePath: string;
@@ -31,7 +32,6 @@ export type NutcrackerSongGame = {
 
 const trackNumbers = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 const flashControlCharacter = String.fromCharCode(16);
-const nutcrackerTrackFrameRate = 15;
 const trackImagePaths = [
   nutcrackerUrl,
   mouseUrl,
@@ -42,6 +42,17 @@ const trackImagePaths = [
   cannonUrl,
   roundDollUrl,
 ] as const;
+
+const audioPreviewStartSeconds: Record<NutcrackerSongId, Record<NutcrackerTrackNumber, number>> = {
+  1: { 1: 0.7, 2: 1.3, 3: 0.7, 4: 0.7, 5: 10.9, 6: 0.7, 7: 0.7, 8: 19.3 },
+  2: { 1: 7.5, 2: 0.7, 3: 0.6, 4: 0.6, 5: 0.6, 6: 0.6, 7: 0.6, 8: 0.6 },
+  3: { 1: 0.6, 2: 0.6, 3: 2.6, 4: 0.6, 5: 0.6, 6: 0.6, 7: 0.6, 8: 0.6 },
+  4: { 1: 0.6, 2: 0.6, 3: 0.6, 4: 0.6, 5: 0.6, 6: 0.6, 7: 0.6, 8: 0.6 },
+  5: { 1: 0.6, 2: 0.6, 3: 0.6, 4: 7.5, 5: 0.6, 6: 0.6, 7: 0.6, 8: 0.6 },
+  6: { 1: 0.6, 2: 9.6, 3: 0.6, 4: 0.6, 5: 0.6, 6: 0.6, 7: 0.6, 8: 0.6 },
+  7: { 1: 0.6, 2: 0.7, 3: 0.6, 4: 0.6, 5: 1.7, 6: 0.6, 7: 0.6, 8: 0.6 },
+  8: { 1: 0.6, 2: 0.6, 3: 3.0, 4: 0.6, 5: 0.6, 6: 0.6, 7: 0.6, 8: 3.1 },
+};
 
 export const nutcrackerSongGames = [
   buildSongGame(1, "Dance of the Sugar Plum Fairy", "theme-3", [
@@ -145,6 +156,7 @@ function buildSongGame(
       instrument: track[0],
       valid: track[1],
       firstFrame: track[2],
+      previewStartSeconds: audioPreviewStartSeconds[id][(index + 1) as NutcrackerTrackNumber],
       character: track[3],
       audioPath: getNutcrackerTrackAudioPath(id, (index + 1) as NutcrackerTrackNumber),
       imagePath: trackImagePaths[index],
@@ -186,7 +198,7 @@ export function getNutcrackerTrackAudioPath(songId: NutcrackerSongId, trackNumbe
 }
 
 export function getNutcrackerTrackStartSeconds(track: NutcrackerTrack): number {
-  return Math.max(0, (track.firstFrame - 2) / nutcrackerTrackFrameRate);
+  return track.previewStartSeconds;
 }
 
 export function parseTrackInfoText(content: string, songId: NutcrackerSongId): readonly NutcrackerTrack[] {
@@ -201,6 +213,7 @@ export function parseTrackInfoText(content: string, songId: NutcrackerSongId): r
       instrument: normalizeInstrumentName(row?.instrument ?? `Track ${trackNumber}`),
       valid: trackFlags.get(trackNumber) === 1,
       firstFrame: firstFrames.get(trackNumber) ?? row?.firstFrame ?? 2,
+      previewStartSeconds: audioPreviewStartSeconds[songId][trackNumber],
       character: row?.character,
       audioPath: getNutcrackerTrackAudioPath(songId, trackNumber),
       imagePath: trackImagePaths[trackNumber - 1],

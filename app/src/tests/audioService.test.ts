@@ -88,6 +88,11 @@ describe("audio service", () => {
     audio.playTrack("/local-media/audio/delayed-track.mp3", 10.2);
 
     expect(elements[0]?.currentTime).toBe(10.2);
+    expect(elements[0]?.load).toHaveBeenCalled();
+
+    elements[0]?.dispatch("loadedmetadata");
+
+    expect(elements[0]?.currentTime).toBe(10.2);
   });
 
   it("records preload and missing-audio diagnostics", () => {

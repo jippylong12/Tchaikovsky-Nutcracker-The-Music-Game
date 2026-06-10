@@ -92,7 +92,7 @@ describe("desktop app shell", () => {
     mount.querySelector<HTMLButtonElement>('[data-progress="key"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     mount.querySelector<HTMLButtonElement>('[data-action="audio-preview"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(mount.textContent).toContain("1 of 9 keys");
+    expect(mount.textContent).toContain("Game keys1/9");
     expect(mount.textContent).toContain("Active");
     expect(window.localStorage.getItem(progressStorageKey)).toBeNull();
   });
@@ -173,8 +173,29 @@ describe("desktop app shell", () => {
 
     expect(mount.textContent).toContain("Dance of the Sugar Plum Fairy");
     expect(mount.textContent).toContain("Track 1");
-    expect(mount.textContent).toContain("Start 10.2s");
+    expect(mount.textContent).toContain("Start 10.9s");
+    expect(mount.textContent).toContain("Listen to the original song and find  4 correct instruments.");
+    expect(mount.querySelector<HTMLImageElement>(".song-source-frame")?.src).toContain("song-game-render");
+    expect(mount.textContent).toContain("HINT");
+    expect(mount.textContent).toContain("LISTEN");
+    expect(mount.textContent).toContain("EXIT");
+    expect(mount.textContent).not.toContain("Test");
+    expect(mount.textContent).not.toContain("Correct arrangement");
     expect(mount.textContent).toContain("Song doors");
+  });
+
+  it("renders recovered JPEG3 scenery on source-backed Nutcracker song scenes", () => {
+    const mount = document.createElement("main");
+
+    createTestShell(mount);
+    mount.querySelector<HTMLButtonElement>('[data-route="nutcracker-chooser"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway")?.src).toContain("chooser-hallway");
+
+    mount.querySelector<HTMLButtonElement>('[data-route="song-2"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    expect(mount.querySelector<HTMLImageElement>(".song-source-scenery-2-1")?.src).toContain("song2-scenery");
+    expect(mount.textContent).not.toContain("Test");
   });
 
   it("checks each Nutcracker song game and unlocks the first progress key after all doors", () => {
@@ -189,18 +210,12 @@ describe("desktop app shell", () => {
           .querySelector<HTMLButtonElement>(`[data-song-id="${song.id}"][data-song-track="${trackNumber}"]`)
           ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
       });
-      mount
-        .querySelector<HTMLButtonElement>(`[data-song-id="${song.id}"][data-song-action="submit-song"]`)
-        ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-      if (song.id < nutcrackerSongGames.length) {
-        expect(mount.textContent).toContain(`Correct arrangement. Door ${song.id + 1} is ready.`);
-      } else {
-        expect(mount.textContent).toContain("Correct arrangement. All Nutcracker song doors are cleared.");
-      }
+      expect(mount.textContent).toContain("ok");
+      expect(mount.textContent).toContain("PLAY AGAIN");
     });
 
-    expect(mount.textContent).toContain("1 of 9 keys");
+    expect(mount.textContent).toContain("Game keys1/9");
     expect(mount.textContent).toContain("Song doors");
     expect(mount.textContent).toContain("8/8");
   });
@@ -215,7 +230,6 @@ describe("desktop app shell", () => {
         .querySelector<HTMLButtonElement>(`[data-song-id="1"][data-song-track="${trackNumber}"]`)
         ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    mount.querySelector<HTMLButtonElement>('[data-song-id="1"][data-song-action="submit-song"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     mount.querySelector<HTMLButtonElement>('[data-route="nutcracker-chooser"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.textContent).toContain("Cleared");

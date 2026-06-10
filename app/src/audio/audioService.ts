@@ -116,7 +116,19 @@ export function createAudioService(options: AudioServiceOptions = {}): AudioServ
 
   const start = (path: string, kind: Exclude<AudioPlaybackKind, "preload">, startTimeSeconds = 0): AudioHandle => {
     const handle = createHandle(path, kind);
-    handle.element.currentTime = Math.max(0, startTimeSeconds);
+    const safeStartTimeSeconds = Math.max(0, startTimeSeconds);
+    const seekToStartTime = () => {
+      try {
+        handle.element.currentTime = safeStartTimeSeconds;
+      } catch {
+        // Some browsers reject seeking until metadata is available; the metadata listener retries.
+      }
+    };
+    seekToStartTime();
+    if (safeStartTimeSeconds > 0) {
+      handle.element.addEventListener("loadedmetadata", seekToStartTime);
+      handle.element.load();
+    }
     active.set(handle.id, handle);
     handle.element
       .play()

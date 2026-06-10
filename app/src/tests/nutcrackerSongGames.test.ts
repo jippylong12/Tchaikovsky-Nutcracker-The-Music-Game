@@ -50,12 +50,16 @@ describe("Nutcracker song game data", () => {
     });
   });
 
-  it("converts recovered first frames into preview start offsets", () => {
+  it("uses source-audio silence detection for preview start offsets", () => {
     const sugarPlum = nutcrackerSongGames[0];
     const vibraphone = sugarPlum.tracks.find((track) => track.number === 5);
     const saxophone = sugarPlum.tracks.find((track) => track.number === 8);
+    const waltz = nutcrackerSongGames[7];
+    const violin = waltz.tracks.find((track) => track.number === 2);
 
-    expect(vibraphone ? getNutcrackerTrackStartSeconds(vibraphone) : null).toBeCloseTo(10.2, 1);
-    expect(saxophone ? getNutcrackerTrackStartSeconds(saxophone) : null).toBeCloseTo(18.5, 1);
+    expect(vibraphone ? getNutcrackerTrackStartSeconds(vibraphone) : null).toBeCloseTo(10.9, 1);
+    expect(saxophone ? getNutcrackerTrackStartSeconds(saxophone) : null).toBeCloseTo(19.3, 1);
+    expect(violin?.firstFrame).toBe(559);
+    expect(violin ? getNutcrackerTrackStartSeconds(violin) : null).toBeCloseTo(0.6, 1);
   });
 });
