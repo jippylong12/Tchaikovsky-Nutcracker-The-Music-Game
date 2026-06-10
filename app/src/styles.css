@@ -550,13 +550,16 @@ button {
 
 .source-song-actions {
   position: absolute;
-  left: 239px;
-  top: 119px;
+  inset: 0;
   z-index: 4;
-  display: flex;
-  gap: 10px;
-  align-items: center;
   margin: 0;
+  pointer-events: none;
+}
+
+.source-song-actions .source-label-button,
+.source-song-actions .source-text-button {
+  position: absolute;
+  pointer-events: auto;
 }
 
 .source-label-button {
@@ -583,17 +586,69 @@ button {
 }
 
 .source-song-actions .source-listen-button {
+  left: 82px;
+  top: 164px;
   width: 72px;
   min-width: 72px;
+  height: 26px;
+  padding: 0;
+}
+
+.source-song-actions .source-hint-button {
+  left: 556px;
+  top: 165px;
+  width: 66px;
+  min-width: 66px;
+  height: 25px;
+  padding: 0;
+}
+
+.source-song-actions .source-exit-button {
+  left: 82px;
+  top: 266px;
+  width: 54px;
+  min-width: 54px;
   height: 24px;
   padding: 0;
 }
 
 .source-song-actions .source-play-again-button {
+  left: 278px;
+  top: 112px;
   width: 78px;
   min-width: 78px;
   height: 50px;
   padding: 0;
+}
+
+.source-text-button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: #050505;
+  background: transparent;
+  box-shadow: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.source-text-button:hover,
+.source-text-button:focus-visible {
+  outline: 3px solid rgba(255, 247, 168, 0.9);
+  outline-offset: 2px;
+  background: rgba(255, 247, 168, 0.12);
+}
+
+.source-change-song-button {
+  left: 556px;
+  top: 268px;
+  width: 68px;
+  height: 39px;
+  font-size: 11px;
+  line-height: 0.92;
 }
 
 .track-card.source-track-hotspot {
@@ -1360,6 +1415,45 @@ button {
   margin: 0;
   font-size: 13px;
   line-height: 1.4;
+}
+
+.source-help-modal {
+  left: 20px;
+  top: 10px;
+  right: auto;
+  bottom: auto;
+  width: 600px;
+  height: 460px;
+  max-height: none;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  color: #fff7a8;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.source-help-modal img {
+  position: absolute;
+  inset: 0;
+  width: 600px;
+  height: 460px;
+  object-fit: contain;
+}
+
+.source-help-modal p {
+  position: absolute;
+  left: 112px;
+  top: 74px;
+  width: 376px;
+  margin: 0;
+  color: #fff7a8;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 1.28;
+  text-align: center;
+  text-shadow: 2px 2px 0 #09135a;
 }
 
 @media (max-width: 1120px) {

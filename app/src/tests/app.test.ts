@@ -179,6 +179,13 @@ describe("desktop app shell", () => {
     expect(mount.textContent).toContain("HINT");
     expect(mount.textContent).toContain("LISTEN");
     expect(mount.textContent).toContain("EXIT");
+    const hintButton = mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]');
+    expect(hintButton?.dataset.songAction).toBe("hint-song");
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="hintButton"]')?.textContent).toContain("CHANGE");
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="songChooser"]')).not.toBeNull();
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')).not.toBeNull();
+    hintButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mount.textContent).toContain("All songs are played by 4 instruments!");
     expect(mount.textContent).not.toContain("Test");
     expect(mount.textContent).not.toContain("Correct arrangement");
     expect(mount.textContent).toContain("Song doors");

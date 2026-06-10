@@ -11,6 +11,7 @@ import song6SceneryUrl from "./assets/nutcracker-source/song6-scenery.png";
 import song7SceneryUrl from "./assets/nutcracker-source/song7-scenery.png";
 import song8SceneryUrl from "./assets/nutcracker-source/song8-scenery.png";
 import songExitLabelUrl from "./assets/nutcracker-source/song-exit-label.png";
+import songHelpArtUrl from "./assets/nutcracker-source/song-help-art.png";
 import songHintLabelUrl from "./assets/nutcracker-source/song-hint-label.png";
 import songListenLabelUrl from "./assets/nutcracker-source/song-listen-label.png";
 import songPlayAgainLabelUrl from "./assets/nutcracker-source/song-play-again-label.png";
@@ -480,6 +481,12 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       return;
     }
 
+    if (action === "hint-song") {
+      showNutcrackerHint(song, shellState, progress);
+      render();
+      return;
+    }
+
     if (action === "submit-song") {
       submitNutcrackerSong(song, shellState, progress);
       render();
@@ -778,11 +785,12 @@ function renderNutcrackerSongGame(
   const correctRequiredCount = getCorrectNutcrackerTrackNumbers(song).length;
   const correctSelectionCount = feedback ? countCorrectSelections(song, selectedTrackNumbers) : 0;
   const incorrectSelectionCount = feedback ? Math.max(0, selectedTrackCount - correctSelectionCount) : 0;
-  const message = feedback
+  const hintOnly = feedback === "hint";
+  const message = feedback && !hintOnly
     ? isCorrectNutcrackerSelection(song, selectedTrackNumbers)
       ? "ok"
       : `you have ${correctSelectionCount} correct instruments and ${incorrectSelectionCount} incorrect instruments`
-    : selectedTrackCount > 0 && selectedTrackCount < correctRequiredCount
+    : hintOnly || (selectedTrackCount > 0 && selectedTrackCount < correctRequiredCount)
       ? "All songs are played by 4 instruments!"
       : "Listen to the original song and find  4 correct instruments. Double click on the instruments or drag them onto the stage.";
 
@@ -795,10 +803,22 @@ function renderNutcrackerSongGame(
         <p class="song-source-message" aria-live="polite">${escapeHtml(message)}</p>
         ${renderSelectedNutcrackerActors(song, selectedTrackNumbers, feedback)}
         ${song.tracks.map((track) => renderNutcrackerTrackButton(song.id, track, selectedTrackNumbers, feedback)).join("")}
-        <div class="song-actions source-song-actions">
-          <button class="media-button source-label-button source-listen-button" type="button" data-song-action="play-theme" data-song-id="${song.id}">
+        <div class="song-actions source-song-actions" aria-label="Source song controls">
+          <button class="media-button source-label-button source-listen-button" type="button" data-source-control="songChooser" data-song-action="play-theme" data-song-id="${song.id}">
             <img src="${isPlaying ? songStopLabelUrl : songListenLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">${isPlaying ? "STOP" : "LISTEN"}</span>
+          </button>
+          <button class="scene-button source-label-button source-hint-button" type="button" data-source-control="helpButton" data-song-action="hint-song" data-song-id="${song.id}">
+            <img src="${songHintLabelUrl}" alt="" aria-hidden="true" />
+            <span class="sr-only">HINT</span>
+          </button>
+          <button class="scene-button source-text-button source-change-song-button" type="button" data-source-control="hintButton" data-scene-route="nutcracker-chooser">
+            <span>CHANGE</span>
+            <span>SONG</span>
+          </button>
+          <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-scene-route="nutcracker-chooser">
+            <img src="${songExitLabelUrl}" alt="" aria-hidden="true" />
+            <span class="sr-only">EXIT</span>
           </button>
           ${
             feedback
@@ -1043,6 +1063,19 @@ function submitNutcrackerSong(
   shellState.nutcrackerFeedback[song.id] = "try again";
 }
 
+function showNutcrackerHint(
+  song: NutcrackerSongGame,
+  shellState: ShellState,
+  progress: ProgressStoreController,
+): void {
+  if (shellState.nutcrackerSelections[song.id].length < getCorrectNutcrackerTrackNumbers(song).length) {
+    shellState.nutcrackerFeedback[song.id] = "hint";
+    return;
+  }
+
+  submitNutcrackerSong(song, shellState, progress);
+}
+
 function renderMenuCard(route: RouteDefinition): string {
   return `
     <button class="menu-card" type="button" data-scene-route="${route.id}">
@@ -1078,22 +1111,22 @@ function renderSourceSceneActions(route: RouteDefinition): string {
   }
 
   if (getNutcrackerSongGameByRoute(route.id)) {
-    return `
-      <button class="scene-button source-label-button source-hint-button" type="button" data-action="help">
-        <img src="${songHintLabelUrl}" alt="" aria-hidden="true" />
-        <span class="sr-only">HINT</span>
-      </button>
-      <button class="scene-button source-label-button source-exit-button primary" type="button" data-scene-route="nutcracker-chooser">
-        <img src="${songExitLabelUrl}" alt="" aria-hidden="true" />
-        <span class="sr-only">EXIT</span>
-      </button>
-    `;
+    return "";
   }
 
   return renderPrimaryActions(route);
 }
 
 function renderHelp(route: RouteDefinition): string {
+  if (getNutcrackerSongGameByRoute(route.id)) {
+    return `
+      <aside class="help-modal source-help-modal" aria-label="Scene help">
+        <img src="${songHelpArtUrl}" alt="" aria-hidden="true" />
+        <p>${escapeHtml(getHelpText(route))}</p>
+      </aside>
+    `;
+  }
+
   return `
     <aside class="help-modal" aria-label="Scene help">
       <h2>${route.title}</h2>
