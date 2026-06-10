@@ -1602,7 +1602,7 @@ button {
   object-fit: contain;
 }
 
-.source-help-modal p {
+.source-help-modal p:not(.sr-only) {
   position: absolute;
   left: 112px;
   top: 74px;
@@ -1614,6 +1614,31 @@ button {
   line-height: 1.28;
   text-align: center;
   text-shadow: 2px 2px 0 #09135a;
+}
+
+.source-help-modal .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.source-song-help-modal {
+  z-index: 30;
+}
+
+.source-song-help-modal .source-song-helpframe-talker {
+  left: -172px;
+  top: 2px;
+  right: auto;
+  bottom: auto;
+  width: 378px;
+  height: 252px;
+  object-fit: contain;
 }
 
 .source-chooser-help-modal {

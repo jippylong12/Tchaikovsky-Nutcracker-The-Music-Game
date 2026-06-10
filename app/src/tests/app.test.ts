@@ -295,15 +295,12 @@ describe("desktop app shell", () => {
     mount.querySelector<HTMLButtonElement>(".source-song-warning-no")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(mount.querySelector(".source-song-warning-modal")).toBeNull();
     expect(mount.textContent).toContain("Dance of the Sugar Plum Fairy");
-    mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    mount.querySelector<HTMLButtonElement>(".source-song-warning-yes")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')).not.toBeNull();
-    mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    hintButton?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
+    const refreshedHintButton = mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]');
+    refreshedHintButton?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.textContent).toBe("Hint");
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceFrame).toBe("4");
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceBounds).toContain("sprite id 0240");
-    hintButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    refreshedHintButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(mount.textContent).toContain("All songs are played by 4 instruments!");
     expect(mount.querySelector<HTMLElement>(".source-hint-alert")?.dataset.sourceFrame).toBe(
       "song1/song.swf courtain giveHint",
@@ -311,6 +308,9 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLElement>(".source-hint-alert")?.dataset.sourcePlacement).toContain(
       "_root.message edit id 0058",
     );
+    mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    mount.querySelector<HTMLButtonElement>(".source-song-warning-yes")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')).not.toBeNull();
     expect(mount.textContent).not.toContain("Test");
     expect(mount.textContent).not.toContain("Correct arrangement");
     expect(mount.textContent).toContain("Song doors");

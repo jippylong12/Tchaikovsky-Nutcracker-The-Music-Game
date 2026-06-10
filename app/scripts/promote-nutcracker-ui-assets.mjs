@@ -12,6 +12,7 @@ const sourceRoot = path.join(appRoot, "generated/nutcracker-source-extract/full-
 const targetRoot = path.join(appRoot, "src/assets/nutcracker-source");
 const helperRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-helpframe");
 const warningRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-warningframe");
+const songHelpRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-helpframe");
 const songWarningRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-warningframe");
 const nutchooserSwf = path.join(projectRoot, "analysis/setup/app/games/nutcrackergame/nutchooser.swf");
 const song1Swf = path.join(projectRoot, "analysis/setup/app/games/nutcrackergame/song1/song.swf");
@@ -50,6 +51,11 @@ const uiAssets = [
     sourceId: "nutchooser.swf warningFrame NO text id 0185, button id 0188, root placement x 35.30 y -76.55 ratio 24",
   },
   {
+    source: path.join(songHelpRoot, "helpframe-333-wrapped.png"),
+    target: "song-helpframe-talker.png",
+    sourceId: "song1/song.swf helpframe sprite id 0333 rendered in translated wrapper, placed by root helpframe at depth 0001 x -5.00 y 74.95 ratio 27",
+  },
+  {
     source: path.join(songWarningRoot, "song-warningframe-340-wrapped.png"),
     target: "song-warningframe-talker.png",
     sourceId: "song1/song.swf warningFrame sprite id 0340 rendered in translated wrapper, placed by root warningFrame at depth 0001 x -15.45 y 52.40 ratio 29",
@@ -69,6 +75,7 @@ const uiAssets = [
 await mkdir(targetRoot, { recursive: true });
 await mkdir(helperRoot, { recursive: true });
 await mkdir(warningRoot, { recursive: true });
+await mkdir(songHelpRoot, { recursive: true });
 await mkdir(songWarningRoot, { recursive: true });
 
 for (const spriteId of ["169", "170"]) {
@@ -143,6 +150,31 @@ for (const label of warningLabels) {
   if (!existsSync(labelTrimmedPng)) {
     runTool("magick", [labelPng, "-trim", "+repage", labelTrimmedPng]);
   }
+}
+
+const songHelpSpriteSwf = path.join(songHelpRoot, "helpframe-333.swf");
+if (!existsSync(songHelpSpriteSwf)) {
+  runTool("swfextract", ["-i", "333", "-o", songHelpSpriteSwf, song1Swf]);
+}
+
+const wrappedSongHelpSwf = path.join(songHelpRoot, "helpframe-333-wrapped.swf");
+const wrappedSongHelpPng = path.join(songHelpRoot, "helpframe-333-wrapped.png");
+if (!existsSync(wrappedSongHelpPng)) {
+  runTool("swfcombine", [
+    "--stack1",
+    "-X",
+    "360",
+    "-Y",
+    "240",
+    "-x",
+    "140",
+    "-y",
+    "60",
+    "-o",
+    wrappedSongHelpSwf,
+    songHelpSpriteSwf,
+  ]);
+  runTool("swfrender", ["-o", wrappedSongHelpPng, wrappedSongHelpSwf]);
 }
 
 const songWarningSpriteSwf = path.join(songWarningRoot, "song-warningframe-340.swf");

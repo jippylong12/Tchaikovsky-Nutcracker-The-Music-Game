@@ -19,6 +19,7 @@ import songChangeSongLabelUrl from "./assets/nutcracker-source/song-change-song-
 import songCurtainScallopUrl from "./assets/nutcracker-source/song-curtain-scallop.png";
 import songExitLabelUrl from "./assets/nutcracker-source/song-exit-label.png";
 import songHelpArtUrl from "./assets/nutcracker-source/song-help-art.png";
+import songHelpframeTalkerUrl from "./assets/nutcracker-source/song-helpframe-talker.png";
 import songHintLabelUrl from "./assets/nutcracker-source/song-hint-label.png";
 import songListenLabelUrl from "./assets/nutcracker-source/song-listen-label.png";
 import songNoLabelUrl from "./assets/nutcracker-source/song-no-label.png";
@@ -1607,9 +1608,28 @@ function renderHelp(route: RouteDefinition): string {
 
   if (getNutcrackerSongGameByRoute(route.id)) {
     return `
-      <aside class="help-modal source-help-modal" aria-label="Scene help">
-        <img src="${songHelpArtUrl}" alt="" aria-hidden="true" />
-        <p>${escapeHtml(getHelpText(route))}</p>
+      <aside
+        class="help-modal source-help-modal source-song-help-modal"
+        aria-label="Scene help"
+        data-source-frame="song1/song.swf helpframe"
+        data-source-placement="helpframe places sprite id 0333 depth 0001 matrix scale 1.051 x -5.00 y 74.95 ratio 27; noAction id 0334 depth 0003 matrix scale 12.497 x -319.25 y -234.35 ratio 27"
+        data-source-action="helpButton release sets _root.theNextFrame to helpFrame; drives _root.usmus to helpFrame/showUp; stops previews and disables quiter/focus"
+      >
+        <img
+          class="source-song-help-art"
+          src="${songHelpArtUrl}"
+          alt=""
+          aria-hidden="true"
+          data-source-image="song1/song.swf lossless bitmap id 0073; frame-surface asset used as source-backed help surface while full helpframe display-list playback remains pending"
+        />
+        <img
+          class="source-song-helpframe-talker"
+          src="${songHelpframeTalkerUrl}"
+          alt=""
+          aria-hidden="true"
+          data-source-image="song1/song.swf helpframe sprite id 0333 rendered in swfcombine translated wrapper x 140 y 60; direct swfrender clips negative-coordinate source art"
+        />
+        <p class="sr-only">${escapeHtml(getHelpText(route))}</p>
       </aside>
     `;
   }
