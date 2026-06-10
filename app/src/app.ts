@@ -2,6 +2,7 @@ import nutChooserFrameUrl from "./assets/nutcracker-source/nutchooser-frame-sour
 import chooserDoorUrl from "./assets/nutcracker-source/chooser-door.png";
 import chooserHallwayUrl from "./assets/nutcracker-source/chooser-hallway.png";
 import chooserHelpButtonArtUrl from "./assets/nutcracker-source/chooser-help-button-art.png";
+import chooserHelpframeTalkerUrl from "./assets/nutcracker-source/chooser-helpframe-talker.png";
 import chooserInstrumentsUrl from "./assets/nutcracker-source/chooser-instruments.png";
 import nutcrackerSongFrameUrl from "./assets/nutcracker-source/song-game-render.png";
 import song2SceneryUrl from "./assets/nutcracker-source/song2-scenery.png";
@@ -12,6 +13,7 @@ import song6SceneryUrl from "./assets/nutcracker-source/song6-scenery.png";
 import song7SceneryUrl from "./assets/nutcracker-source/song7-scenery.png";
 import song8SceneryUrl from "./assets/nutcracker-source/song8-scenery.png";
 import songChangeSongLabelUrl from "./assets/nutcracker-source/song-change-song-label.png";
+import songCurtainScallopUrl from "./assets/nutcracker-source/song-curtain-scallop.png";
 import songExitLabelUrl from "./assets/nutcracker-source/song-exit-label.png";
 import songHelpArtUrl from "./assets/nutcracker-source/song-help-art.png";
 import songHintLabelUrl from "./assets/nutcracker-source/song-hint-label.png";
@@ -400,6 +402,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
 
     flyingHelp.textContent = label;
+    flyingHelp.dataset.sourceFrame = sourceHelpElement.dataset.sourceHelpFrame ?? "2";
+    flyingHelp.dataset.sourceBounds = sourceHelpElement.dataset.sourceHelpBounds ?? "frame 2 edit ids 0231-0233 bbox approx 276x22 after 1.2 scale";
     flyingHelp.dataset.visible = "true";
 
     const viewportRect = viewport.getBoundingClientRect();
@@ -919,19 +923,19 @@ function renderNutcrackerSongGame(
         ${song.tracks.map((track) => renderNutcrackerTrackButton(song.id, track, selectedTrackNumbers, feedback)).join("")}
         ${renderNutcrackerFlyingHelp()}
         <div class="song-actions source-song-actions" aria-label="Source song controls">
-          <button class="media-button source-label-button source-listen-button" type="button" data-source-control="songChooser" data-source-help="${isPlaying ? "Stop the Music" : "Listen to the Original Music"}" data-song-action="play-theme" data-song-id="${song.id}">
+          <button class="media-button source-label-button source-listen-button" type="button" data-source-control="songChooser" data-source-help="${isPlaying ? "Stop the Music" : "Listen to the Original Music"}" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="play-theme" data-song-id="${song.id}">
             <img src="${isPlaying ? songStopLabelUrl : songListenLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">${isPlaying ? "STOP" : "LISTEN"}</span>
           </button>
-          <button class="scene-button source-label-button source-hint-button" type="button" data-source-control="helpButton" data-source-help="Hint" data-song-action="hint-song" data-song-id="${song.id}">
+          <button class="scene-button source-label-button source-hint-button" type="button" data-source-control="helpButton" data-source-help="Hint" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="hint-song" data-song-id="${song.id}">
             <img src="${songHintLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">HINT</span>
           </button>
-          <button class="scene-button source-label-button source-change-song-button" type="button" data-source-control="hintButton" data-source-help="Select a&#10;different&#10;song" data-song-action="confirm-change-song" data-song-id="${song.id}">
+          <button class="scene-button source-label-button source-change-song-button" type="button" data-source-control="hintButton" data-source-help="Select a&#10;different&#10;song" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="confirm-change-song" data-song-id="${song.id}">
             <img src="${songChangeSongLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">CHANGE SONG</span>
           </button>
-          <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-source-help="Quit the Game" data-scene-route="nutcracker-chooser">
+          <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-source-help="Quit the Game" data-source-help-frame="3" data-source-help-bounds="frame 3 edit ids 0234-0236 bbox approx 276x22 after 1.2 scale" data-scene-route="nutcracker-chooser">
             <img src="${songExitLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">EXIT</span>
           </button>
@@ -967,6 +971,7 @@ function renderNutcrackerHintCurtain(message: string): string {
       data-source-frame="song1/song.swf courtain giveHint"
       data-source-placement="courtain root id 0063 depth 0082 x 319.85 y 4.90; _root.message edit id 0058 depth 0007 matrix scale 0.953/0.843 x 132.90 y 96.80 ratio 14"
     >
+      ${renderNutcrackerCurtainArt()}
       <p>${escapeHtml(message)}</p>
     </aside>
   `;
@@ -980,6 +985,7 @@ function renderNutcrackerChangeSongPrompt(songId: NutcrackerSongId): string {
       data-source-frame="song1/song.swf courtain alert"
       data-source-placement="courtain root id 0063 depth 0082 x 319.85 y 4.90; _root.message edit id 0054 depth 0012 matrix x 155.90 y 97.10 ratio 4"
     >
+      ${renderNutcrackerCurtainArt()}
       <p>press "Yes" to change this song or "No" to cancel</p>
       <button class="source-alert-choice source-alert-yes" type="button" data-song-action="accept-change-song" data-song-id="${songId}">
         <img src="${songYesLabelUrl}" alt="" aria-hidden="true" />
@@ -990,6 +996,18 @@ function renderNutcrackerChangeSongPrompt(songId: NutcrackerSongId): string {
         <span class="sr-only">NO</span>
       </button>
     </aside>
+  `;
+}
+
+function renderNutcrackerCurtainArt(): string {
+  return `
+    <img
+      class="source-alert-curtain-art"
+      src="${songCurtainScallopUrl}"
+      alt=""
+      aria-hidden="true"
+      data-source-image="song1/song.swf lossless bitmap id 0039; courtain base sprite id 0042"
+    />
   `;
 }
 
@@ -1049,6 +1067,8 @@ function renderNutcrackerTrackButton(
       class="track-card source-track-hotspot source-track-hotspot-${track.number}${selected ? " selected" : ""}${feedbackClass}"
       style="${formatTrackHotspotStyle(hotspot.hitRect)}"
       data-source-help="${escapeHtml(getNutcrackerSourceHelpLabel(songId, track))}"
+      data-source-help-frame="${getNutcrackerSourceHelpFrame(songId, track)}"
+      data-source-help-bounds="${escapeHtml(getNutcrackerSourceHelpBounds(songId, track))}"
       data-source-placement="${escapeHtml(hotspot.placement)}"
       data-source-vector-bounds="${escapeHtml(hotspot.vectorBounds)}"
       data-source-hit-rect="${escapeHtml(formatSourceRect(hotspot.hitRect))}"
@@ -1077,6 +1097,8 @@ function renderNutcrackerFlyingHelp(): string {
       aria-hidden="true"
       data-source-control="flyinghelp"
       data-source-placement="song1/song.swf flyinghelp id 0257 depth 0306 initial matrix x 1143.85 y 195.55; helpme(a,b) sets _root.helpmessage, gotoAndStop(a), startDrag(this), _visible=1; nohelp() clears message, _visible=0, _x=10000"
+      data-source-frame="1"
+      data-source-bounds="frame 1 helpoff; frames 2/3 use edit text shadow stacks, frame 4 places sprite id 0240, frames 5-8 use shape ids 0241/0244/0246/0251/0252"
     ></aside>
   `;
 }
@@ -1189,6 +1211,20 @@ function getNutcrackerSourceHelpLabel(songId: NutcrackerSongId, track: Nutcracke
   }
 
   return track.instrument.toUpperCase();
+}
+
+function getNutcrackerSourceHelpFrame(songId: NutcrackerSongId, track: NutcrackerTrack): number {
+  const label = getNutcrackerSourceHelpLabel(songId, track);
+  return label === "SAXOPHONE" ? 3 : 2;
+}
+
+function getNutcrackerSourceHelpBounds(songId: NutcrackerSongId, track: NutcrackerTrack): string {
+  const frame = getNutcrackerSourceHelpFrame(songId, track);
+  if (frame === 3) {
+    return "frame 3 edit ids 0234-0236 bbox approx 276x22 after 1.2 scale";
+  }
+
+  return "frame 2 edit ids 0231-0233 bbox approx 276x22 after 1.2 scale";
 }
 
 function countCorrectSelections(song: NutcrackerSongGame, selectedTrackNumbers: readonly NutcrackerTrackNumber[]): number {
@@ -1395,8 +1431,21 @@ function renderSourceSceneActions(route: RouteDefinition): string {
 function renderHelp(route: RouteDefinition): string {
   if (route.id === "nutcracker-chooser") {
     return `
-      <aside class="source-alert source-chooser-help-modal" aria-label="Scene help">
-        <p>${escapeHtml(getHelpText(route))}</p>
+      <aside
+        class="help-modal source-help-modal source-chooser-help-modal"
+        aria-label="Scene help"
+        data-source-frame="nutchooser.swf helpframe"
+        data-source-placement="helpframe places sprite id 0170 depth 0001 matrix scale 1.051 x -0.90 y 39.65 ratio 22; noAction id 0171 depth 0003 matrix scale 12.497 x -319.25 y -234.35 ratio 22"
+      >
+        <img src="${nutChooserFrameUrl}" alt="" aria-hidden="true" />
+        <img
+          class="source-chooser-helpframe-talker"
+          src="${chooserHelpframeTalkerUrl}"
+          alt=""
+          aria-hidden="true"
+          data-source-image="nutchooser.swf nested talker sprite id 0169 rendered in swfcombine translated wrapper x 150 y 120; animated by helpframe sprite id 0170"
+        />
+        <p class="sr-only">${escapeHtml(getHelpText(route))}</p>
       </aside>
     `;
   }

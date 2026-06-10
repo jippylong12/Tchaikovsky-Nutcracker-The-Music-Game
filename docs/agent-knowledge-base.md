@@ -25,6 +25,7 @@ Run from `app/`:
 
 ```sh
 npm run assets:nutcracker-swf
+npm run assets:nutcracker-ui
 npm run assets:nutcracker-actors
 npm run assets:nutcracker-jpeg3
 ```
@@ -42,6 +43,8 @@ The JPEG3 pass writes ignored repaired image proof artifacts to `app/generated/n
 The actor promotion pass reads the ignored SWF output and writes committed actor assets to `app/src/assets/nutcracker-source/song#-track#-actor.png`.
 It intentionally skips copying when ImageMagick reports the selected generated PNG is pixel-equivalent to the committed target, because `swfextract` can rewrite identical indexed PNG art with different bytes.
 
+The UI promotion pass currently copies source UI bitmap evidence such as `song1__song/lossless-39.png` into correctly named committed assets like `song-curtain-scallop.png`. It also extracts/renders `nutchooser.swf` sprites `0169` and `0170`, promoting a translated-wrapper render of `0169` to `chooser-helpframe-talker.png` for chooser help.
+
 ## Things Already Learned The Hard Way
 
 - The local `swfrender` can render `song1/song.swf`, but `nutchooser.swf` and song 2-8 full composites fail with `No JPEG library compiled in`.
@@ -51,11 +54,13 @@ It intentionally skips copying when ImageMagick reports the selected generated P
 - Do not reuse song 1 actor art for all eight song games. Several `characters/anim#.swf` files differ by song; for example, song 5 / 7 / 8 track 7 uses a standing drummer while song 1 track 7 uses the cannon. Run `npm run assets:nutcracker-actors` after `npm run assets:nutcracker-swf` and use `song#-track#-actor.png`.
 - If `npm run assets:nutcracker-swf` causes actor PNG byte churn, rerun `npm run assets:nutcracker-actors`; the promotion script should skip pixel-equivalent copies so source-controlled actor files only change when the decoded art changes.
 - Frame-specific SWF extraction/rendering is unreliable in this local toolchain. It can produce blank frames or crash on later character frames. Rendering full `characters/anim*.swf` files with the local `swfrender` only produced transparent first-frame 600 x 460 PNGs in spot checks, and this build has no frame selector. Do not claim exact `anim*.swf` playback unless a more robust renderer is added and verified.
+- When `swfrender` clips a useful sprite because its source geometry has negative coordinates, try a translated wrapper before giving up: extract the sprite with `swfextract -i`, wrap it with `swfcombine --stack1 -X <w> -Y <h> -x <shiftX> -y <shiftY>`, then render the wrapper. This recovered a much more complete `nutchooser.swf` helpframe talker from nested sprite `0169` than direct rendering of `0169` or parent `0170`.
 - Do not put modern chooser status text such as `Ready`, `Locked`, or `Cleared` visibly over the preserved `nutchooser.swf` viewport. Keep door state in `data-door-state` / `aria-label`; visible door composition should come from the source door movie clip art and placement records.
 - Do not treat the Nutcracker chooser as a generic door grid with song-scene controls. `nutchooser.swf` has its own `helpButton` at x `556.50`, y `165.30` and `quiter` at x `585.90`, y `472.45`; use those source placements and ActionScript hover strings (`Help`, `Quit the Game`).
 - Rendering isolated chooser control sprites id `0202` / `0207` currently fails because nested button ids are unresolved. Render/promote the usable child art/text where possible, record the exact limitation, and keep `data-source-control` / `data-source-placement` in the DOM.
 - The chooser background sprite id `0021` still cannot be rendered directly with the local `swfrender` build because it depends on JPEG3 support. Use the recovered JPEG3/shape assets at the source matrices and document remaining CXForm gaps instead of adding arbitrary gradients or opacity.
-- Do not let the chooser help action fall back to the generic beige app modal inside the preserved viewport. Until the exact `helpFrame` content/talker animation is recovered, use a documented source-styled fallback and keep it visually above the chooser scene.
+- Do not let the chooser help action fall back to the generic beige app modal or song `courtain` alert inside the preserved viewport. `nutchooser.swf` has its own `helpframe` at frame 23: sprite id `0170` is placed at depth `0001` with matrix scale `1.051`, x `-0.90`, y `39.65`, ratio `22`, and `noAction` id `0171` is placed at depth `0003`. Sprite `0170` animates nested talker sprite `0169` at scale `0.799`; direct `0169` rendering has more visible source pixels than parent `0170`, and the translated wrapper render recovers still more by avoiding the fixed render-origin clip. Use the recovered chooser frame art, promoted `chooser-helpframe-talker.png`, and `data-source-frame="nutchooser.swf helpframe"` / `data-source-placement`; exact frame-by-frame helpframe playback still needs a display-list renderer.
+- Do not add visible chooser help instructions such as "Choose a song door." inside the source viewport. The current `nutchooser` dumps show `helpframe` sprite/talker placement but no visible instructional `DEFINEEDITTEXT`/`DEFINETEXT` for that frame. Keep accessibility copy screen-reader-only unless a source text object is recovered.
 - Avoid using `status` as a shell loop variable in zsh; it is read-only. Use `rc` or another name.
 - `song1__song.actions.txt` is often the fastest way to confirm behavior. Useful source terms include `testCombination`, `showHint`, `helpme`, `nohelp`, `doubleClick`, `dragInstrument`, `hitArea.hitTest`, `instOnScene`, `addINST`, and `removeAnim`.
 - Do not render `gameSolution` as if it were a visible text field. In the recovered dumps it is ActionScript state (`ok` / `try again`) with no `DEFINEEDITTEXT` binding. Visible hint/check copy is written to `_root.message` inside the `courtain` sprite.
@@ -64,7 +69,9 @@ It intentionally skips copying when ImageMagick reports the selected generated P
 - Do not guess the PLAY AGAIN position from the rendered label size. The source reset control is `gameController` sprite id `0115` at depth `0116`, matrix scale `1.140`, x `322.20`, y `317.70`; the winner timeline sends it to frame label `buttonAgain`.
 - Do not implement song hover labels as one static tooltip per hotspot. Flash has one `flyinghelp` sprite (`id 0257`, depth `0306`) that `helpme(a,b)` moves with `startDrag(this)` after setting `_root.helpmessage`; `nohelp()` hides it and moves it to x `10000`.
 - Song control hover labels also use `flyinghelp`, not `.source-control-help` spans. Preserve the ActionScript strings exactly: `Hint`, `Select a\ndifferent\nsong`, `Listen to the Original Music`, `Stop the Music`, and `Quit the Game`.
-- Be skeptical of old promoted asset names. `song-speaker.png` and `song-sound-icon.png` are direct bitmap evidence, but visual inspection showed they are not clean speaker/sound controls; `song-sound-icon.png` is curtain/scallop art, and the rendered song frame already contains the source side speaker panels.
+- `flyinghelp` is not a blue tooltip card. Song 1 instruments mostly call `helpme(2, label)`, saxophone calls frame 3, most song controls call frame 4, and quit calls frame 3. Frames 2/3 are layered `_root.helpmessage` edit-text stacks around 276 x 22 after scale; frame 4 places sprite id `0240`; frames 5-8 use shape ids `0241`, `0244`, `0246`, `0251`, and `0252`. The local renderer produced blank/near-blank output for the extracted shapes, so keep DOM styling as a source-geometry text fallback with `data-source-frame` / `data-source-bounds`, not an invented bordered box.
+- Be skeptical of old promoted asset names. `song-speaker.png` and `song-sound-icon.png` are direct bitmap evidence, but visual inspection showed they are not clean speaker/sound controls; `song-sound-icon.png` is curtain/scallop art, and the rendered song frame already contains the source side speaker panels. Use the correctly named `song-curtain-scallop.png` promoted by `npm run assets:nutcracker-ui` for the `courtain` overlay art.
+- `courtain` cannot yet be rendered exactly with the local tools. `swfextract -i 63 -P` preserves the root placement, but `swfrender` only renders the first internal frame; `swfextract -f 15`/`-f 20` produced empty/invalid frame SWFs for the hint/alert states. Use the exact extracted scallop bitmap plus documented DOM fallback text/buttons until a real SWF timeline renderer exists.
 - Be careful when mapping `instIMG#` help labels in `swfdump` output. `swfdump` can print symbol definitions after a root placement record, so a `helpme` constant pool printed after `PLACEOBJECT2 ... name "instIMG1"` may be defining a later symbol rather than the already placed root instance. Use the named root placement records plus ActionScript `_root.instIMG` + index references as the stable anchor.
 
 ## Source-Backed Behaviors Already Implemented
@@ -87,6 +94,7 @@ It intentionally skips copying when ImageMagick reports the selected generated P
 - Selected actors use promoted per-song source-extracted character bitmaps and CSS motion derived from placement dumps, documented as a fallback rather than full timeline playback.
 - Chooser door cards expose `data-source-placement` from the original `m1` through `m8` `PLACEOBJECT2` records, while visible door number/status overlays have been removed from the source viewport.
 - Chooser scene art now exposes `data-source-placement` for the recovered hallway/background, frame, instrument sprite, help button, and quit control. Keep adding provenance attributes when a visible element remains DOM/CSS-backed.
+- Chooser help uses the recovered chooser frame surface, records the `nutchooser.swf helpframe` placement for sprite `0170` / `noAction` id `0171`, and overlays `chooser-helpframe-talker.png` rendered from nested sprite `0169`, rather than sharing the song-scene help/courtain surfaces.
 
 ## Known Remaining Gaps
 

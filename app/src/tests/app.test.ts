@@ -188,7 +188,26 @@ describe("desktop app shell", () => {
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.textContent?.trim()).toBe("");
     mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(mount.querySelector(".source-chooser-help-modal")).not.toBeNull();
+    const chooserHelp = mount.querySelector<HTMLElement>(".source-chooser-help-modal");
+    expect(chooserHelp).not.toBeNull();
+    expect(chooserHelp?.dataset.sourceFrame).toBe("nutchooser.swf helpframe");
+    expect(chooserHelp?.dataset.sourcePlacement).toContain("sprite id 0170");
+    expect(chooserHelp?.dataset.sourcePlacement).toContain("noAction id 0171");
+    expect(mount.querySelector<HTMLImageElement>(".source-chooser-help-modal img")?.src).toContain(
+      "nutchooser-frame-source",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-chooser-helpframe-talker")?.src).toContain(
+      "chooser-helpframe-talker",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-chooser-helpframe-talker")?.dataset.sourceImage).toContain(
+      "sprite id 0169",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-chooser-helpframe-talker")?.dataset.sourceImage).toContain(
+      "translated wrapper x 150 y 120",
+    );
+    expect(mount.querySelector<HTMLParagraphElement>(".source-chooser-help-modal p")?.classList.contains("sr-only")).toBe(
+      true,
+    );
     expect(mount.querySelector(".source-chooser-help-modal h2")).toBeNull();
     mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
@@ -211,6 +230,10 @@ describe("desktop app shell", () => {
     );
     mount.querySelector<HTMLButtonElement>('[data-source-control="hintButton"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(mount.textContent).toContain('press "Yes" to change this song or "No" to cancel');
+    expect(mount.querySelector<HTMLImageElement>(".source-alert-curtain-art")?.src).toContain("song-curtain-scallop");
+    expect(mount.querySelector<HTMLImageElement>(".source-alert-curtain-art")?.dataset.sourceImage).toContain(
+      "bitmap id 0039",
+    );
     expect(mount.querySelector<HTMLImageElement>(".source-alert-yes img")?.src).toContain("song-yes-label");
     expect(mount.querySelector<HTMLImageElement>(".source-alert-no img")?.src).toContain("song-no-label");
     mount.querySelector<HTMLButtonElement>(".source-alert-no")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -226,6 +249,8 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dataset.sourceHelp).toBe("Quit the Game");
     hintButton?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.textContent).toBe("Hint");
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceFrame).toBe("4");
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceBounds).toContain("sprite id 0240");
     hintButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(mount.textContent).toContain("All songs are played by 4 instruments!");
     expect(mount.querySelector<HTMLElement>(".source-hint-alert")?.dataset.sourceFrame).toBe(
@@ -270,16 +295,19 @@ describe("desktop app shell", () => {
       "games/nutcrackergame/song1/characters/anim1.swf",
     );
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-1")?.dataset.sourceHelp).toBe("BASS");
+    expect(mount.querySelector<HTMLElement>(".source-track-hotspot-1")?.dataset.sourceHelpFrame).toBe("2");
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-1")?.dataset.sourcePlacement).toContain("instIMG1");
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-1")?.dataset.sourceVectorBounds).toContain("shape id 0172");
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-4")?.dataset.sourcePlacement).toContain("instIMG4");
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-4")?.dataset.sourceHitRect).toBe("246,334,154,44");
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceControl).toBe("flyinghelp");
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourcePlacement).toContain("id 0257 depth 0306");
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceBounds).toContain("frames 2/3");
     mount
       .querySelector<HTMLButtonElement>('[data-song-id="1"][data-song-track="7"]')
       ?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.textContent).toBe("DRUM");
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceFrame).toBe("2");
 
     mount.querySelector<HTMLButtonElement>('[data-route="song-5"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     mount

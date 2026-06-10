@@ -23,7 +23,19 @@
 - Prefer extracted or rendered source assets in `app/src/assets/nutcracker-source/` before drawing CSS approximations.
 - When a DOM fallback is necessary, document the exact SWF/tool limitation in `docs/nutcracker-song-source-map.md` or `docs/agent-knowledge-base.md`.
 - Do not add generic app controls inside the preserved 640 x 480 Flash viewport when a source control, source text object, or source ActionScript behavior exists.
+- If an asset name turns out to be wrong or misleading, add a correctly named promoted asset/script and update the docs instead of continuing to use the misleading name.
 - Keep `JIP-349` open for UI approval unless Marcus explicitly approves the UI. UI code changes should not be marked Done from automated checks alone.
+
+## Source-Reconstruction Loop
+
+For each Nutcracker chooser/song-game pass:
+
+1. Inspect the relevant source SWF/data dumps under `analysis/setup/app/games/` and generated evidence under `app/generated/nutcracker-source-extract/`.
+2. Promote or reuse source-backed runtime assets in `app/src/assets/nutcracker-source/` before adding DOM/CSS fallbacks.
+3. Add source provenance to the DOM for any fallback that remains.
+4. Update `docs/nutcracker-song-source-map.md` with the recovered placement/action/text evidence.
+5. Update `docs/agent-knowledge-base.md` with reusable mistakes, renderer limits, and exact commands.
+6. Run the validation baseline below before claiming the pass is ready for review.
 
 ## Validation Baseline
 
@@ -35,6 +47,7 @@ npm test
 npm run lint
 npm run build
 npm run assets:nutcracker-swf
+npm run assets:nutcracker-ui
 npm run assets:nutcracker-actors
 npm run assets:nutcracker-jpeg3
 ```
