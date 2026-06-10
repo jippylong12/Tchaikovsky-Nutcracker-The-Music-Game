@@ -1630,6 +1630,52 @@ button {
   object-fit: contain;
 }
 
+.source-chooser-warning-modal {
+  z-index: 32;
+}
+
+.source-chooser-warning-modal .source-chooser-warningframe-talker {
+  left: -97px;
+  top: -52px;
+  right: auto;
+  bottom: auto;
+  width: 378px;
+  height: 231px;
+  object-fit: contain;
+}
+
+.source-warning-choice {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.source-warning-choice img {
+  position: static;
+  display: block;
+  width: auto;
+  height: 25px;
+  object-fit: contain;
+}
+
+.source-warning-yes {
+  left: 260px;
+  top: 164px;
+}
+
+.source-warning-no {
+  left: 354px;
+  top: 164px;
+}
+
 @media (max-width: 1120px) {
   body {
     min-width: 0;

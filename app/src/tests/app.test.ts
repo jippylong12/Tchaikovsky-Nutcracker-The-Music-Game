@@ -210,6 +210,31 @@ describe("desktop app shell", () => {
     );
     expect(mount.querySelector(".source-chooser-help-modal h2")).toBeNull();
     mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const chooserWarning = mount.querySelector<HTMLElement>(".source-chooser-warning-modal");
+    expect(chooserWarning).not.toBeNull();
+    expect(chooserWarning?.dataset.sourceFrame).toBe("nutchooser.swf warningFrame");
+    expect(chooserWarning?.dataset.sourcePlacement).toContain("sprite id 0177");
+    expect(chooserWarning?.dataset.sourcePlacement).toContain("YES button id 0183");
+    expect(chooserWarning?.dataset.sourcePlacement).toContain("NO button id 0188");
+    expect(mount.querySelector<HTMLImageElement>(".source-chooser-warningframe-talker")?.src).toContain(
+      "chooser-warningframe-talker",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-chooser-warningframe-talker")?.dataset.sourceImage).toContain(
+      "sprite id 0177",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-warning-yes img")?.src).toContain("chooser-warning-yes-label");
+    expect(mount.querySelector<HTMLButtonElement>(".source-warning-yes")?.dataset.sourceAction).toContain("comeAgain");
+    expect(mount.querySelector<HTMLImageElement>(".source-warning-no img")?.src).toContain("chooser-warning-no-label");
+    expect(mount.querySelector<HTMLButtonElement>(".source-warning-no")?.dataset.sourceAction).toContain(
+      "quiter to buttonON",
+    );
+    mount.querySelector<HTMLButtonElement>(".source-warning-no")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mount.querySelector(".source-chooser-warning-modal")).toBeNull();
+    mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    mount.querySelector<HTMLButtonElement>(".source-warning-yes")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mount.textContent).toContain("Main Menu");
+    mount.querySelector<HTMLButtonElement>('[data-route="nutcracker-chooser"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     mount.querySelector<HTMLButtonElement>('[data-nutcracker-preview="1"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));

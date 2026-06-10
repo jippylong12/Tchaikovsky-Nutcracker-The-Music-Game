@@ -4,6 +4,9 @@ import chooserHallwayUrl from "./assets/nutcracker-source/chooser-hallway.png";
 import chooserHelpButtonArtUrl from "./assets/nutcracker-source/chooser-help-button-art.png";
 import chooserHelpframeTalkerUrl from "./assets/nutcracker-source/chooser-helpframe-talker.png";
 import chooserInstrumentsUrl from "./assets/nutcracker-source/chooser-instruments.png";
+import chooserWarningNoLabelUrl from "./assets/nutcracker-source/chooser-warning-no-label.png";
+import chooserWarningYesLabelUrl from "./assets/nutcracker-source/chooser-warning-yes-label.png";
+import chooserWarningframeTalkerUrl from "./assets/nutcracker-source/chooser-warningframe-talker.png";
 import nutcrackerSongFrameUrl from "./assets/nutcracker-source/song-game-render.png";
 import song2SceneryUrl from "./assets/nutcracker-source/song2-scenery.png";
 import song3SceneryPrimaryUrl from "./assets/nutcracker-source/song3-scenery-primary.png";
@@ -57,6 +60,7 @@ type ShellState = {
   routeId: RouteId;
   routeStack: RouteId[];
   helpOpen: boolean;
+  nutcrackerChooserWarningOpen: boolean;
   activeAudioId: string | null;
   pendingNutcrackerSongChange: NutcrackerSongId | null;
   readingPages: Record<ReadingRouteId, number>;
@@ -82,6 +86,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     routeId: "overture",
     routeStack: [],
     helpOpen: false,
+    nutcrackerChooserWarningOpen: false,
     activeAudioId: null,
     pendingNutcrackerSongChange: null,
     readingPages: {
@@ -127,6 +132,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
                   </footer>`
             }
             ${shellState.helpOpen ? renderHelp(route) : ""}
+            ${shellState.nutcrackerChooserWarningOpen && route.id === "nutcracker-chooser" ? renderChooserWarningFrame() : ""}
           </section>
           <nav class="route-panel" aria-label="Recovered game routes">
             <h2>Route Map</h2>
@@ -432,6 +438,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
     shellState.routeId = routeId;
     shellState.helpOpen = false;
+    shellState.nutcrackerChooserWarningOpen = false;
     shellState.pendingNutcrackerSongChange = null;
     audio.stopSceneAudio();
     shellState.activeAudioId = null;
@@ -467,6 +474,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     if (action === "back") {
       shellState.routeId = shellState.routeStack.pop() ?? "main-menu";
       shellState.helpOpen = false;
+      shellState.nutcrackerChooserWarningOpen = false;
       shellState.pendingNutcrackerSongChange = null;
       audio.stopSceneAudio();
       shellState.activeAudioId = null;
@@ -476,8 +484,31 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
 
     if (action === "help") {
+      shellState.nutcrackerChooserWarningOpen = false;
       shellState.helpOpen = !shellState.helpOpen;
       render();
+      return;
+    }
+
+    if (action === "chooser-warning") {
+      audio.stopSceneAudio();
+      shellState.activeAudioId = null;
+      shellState.activeSuiteTrackId = null;
+      shellState.helpOpen = false;
+      shellState.nutcrackerChooserWarningOpen = true;
+      render();
+      return;
+    }
+
+    if (action === "cancel-chooser-warning") {
+      shellState.nutcrackerChooserWarningOpen = false;
+      render();
+      return;
+    }
+
+    if (action === "accept-chooser-warning") {
+      shellState.nutcrackerChooserWarningOpen = false;
+      navigate("main-menu");
       return;
     }
 
@@ -1410,9 +1441,10 @@ function renderSourceSceneActions(route: RouteDefinition): string {
       <button
         class="scene-button source-label-button chooser-source-exit-button primary"
         type="button"
-        data-action="exit"
+        data-action="chooser-warning"
         data-source-control="quiter"
         data-source-placement="nutchooser.swf quiter id 0207 depth 0173 matrix scale 0.900 x 585.90 y 472.45 ratio 5"
+        data-source-action="sets _root.theNextFrame to warningFrame; warningFrame YES button id 0183 calls _level0.gotoAndPlay('comeAgain')"
       >
         <span class="source-control-help" aria-hidden="true">Quit the Game</span>
         <img src="${songExitLabelUrl}" alt="" aria-hidden="true" />
@@ -1426,6 +1458,47 @@ function renderSourceSceneActions(route: RouteDefinition): string {
   }
 
   return renderPrimaryActions(route);
+}
+
+function renderChooserWarningFrame(): string {
+  return `
+    <aside
+      class="help-modal source-help-modal source-chooser-warning-modal"
+      aria-label="Quit warning"
+      data-source-frame="nutchooser.swf warningFrame"
+      data-source-placement="warningFrame places sprite id 0177 depth 0001 matrix scale 1.051 x -10.05 y 18.50 ratio 24; noAction id 0178 depth 0003 matrix scale 12.497 x -319.25 y -234.35 ratio 24; YES button id 0183 depth 0005 x -58.15 y -76.55; NO button id 0188 depth 0008 x 35.30 y -76.55; close sprite id 0189 depth 0011 x 96.30 y -143.70"
+    >
+      <img src="${nutChooserFrameUrl}" alt="" aria-hidden="true" />
+      <img
+        class="source-chooser-warningframe-talker"
+        src="${chooserWarningframeTalkerUrl}"
+        alt=""
+        aria-hidden="true"
+        data-source-image="nutchooser.swf warningFrame sprite id 0177 rendered in swfcombine translated wrapper x 130 y 90; direct swfrender clips negative-coordinate source art"
+      />
+      <button
+        class="source-warning-choice source-warning-yes"
+        type="button"
+        data-action="accept-chooser-warning"
+        data-source-button="nutchooser.swf warningFrame YES button id 0183"
+        data-source-action="_level0.gotoAndPlay('comeAgain')"
+      >
+        <img src="${chooserWarningYesLabelUrl}" alt="" aria-hidden="true" />
+        <span class="sr-only">YES</span>
+      </button>
+      <button
+        class="source-warning-choice source-warning-no"
+        type="button"
+        data-action="cancel-chooser-warning"
+        data-source-button="nutchooser.swf warningFrame NO button id 0188"
+        data-source-action="restores chooser controls and sends quiter to buttonON"
+      >
+        <img src="${chooserWarningNoLabelUrl}" alt="" aria-hidden="true" />
+        <span class="sr-only">NO</span>
+      </button>
+      <p class="sr-only">Quit the game?</p>
+    </aside>
+  `;
 }
 
 function renderHelp(route: RouteDefinition): string {

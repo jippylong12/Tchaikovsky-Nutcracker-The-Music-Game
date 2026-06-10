@@ -11,6 +11,7 @@ const projectRoot = path.resolve(appRoot, "..");
 const sourceRoot = path.join(appRoot, "generated/nutcracker-source-extract/full-swf-pass/direct-png");
 const targetRoot = path.join(appRoot, "src/assets/nutcracker-source");
 const helperRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-helpframe");
+const warningRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-warningframe");
 const nutchooserSwf = path.join(projectRoot, "analysis/setup/app/games/nutcrackergame/nutchooser.swf");
 
 function runTool(command, args) {
@@ -31,10 +32,26 @@ const uiAssets = [
     target: "chooser-helpframe-talker.png",
     sourceId: "nutchooser.swf nested talker sprite id 0169 rendered in translated wrapper, animated by helpframe sprite id 0170 and placed by root helpframe at depth 0001 x -0.90 y 39.65 ratio 22",
   },
+  {
+    source: path.join(warningRoot, "warningframe-177-wrapped.png"),
+    target: "chooser-warningframe-talker.png",
+    sourceId: "nutchooser.swf warningFrame sprite id 0177 rendered in translated wrapper, placed by root warningFrame at depth 0001 x -10.05 y 18.50 ratio 24",
+  },
+  {
+    source: path.join(warningRoot, "warning-yes-text-180-trim.png"),
+    target: "chooser-warning-yes-label.png",
+    sourceId: "nutchooser.swf warningFrame YES text id 0180, button id 0183, root placement x -58.15 y -76.55 ratio 24",
+  },
+  {
+    source: path.join(warningRoot, "warning-no-text-185-trim.png"),
+    target: "chooser-warning-no-label.png",
+    sourceId: "nutchooser.swf warningFrame NO text id 0185, button id 0188, root placement x 35.30 y -76.55 ratio 24",
+  },
 ];
 
 await mkdir(targetRoot, { recursive: true });
 await mkdir(helperRoot, { recursive: true });
+await mkdir(warningRoot, { recursive: true });
 
 for (const spriteId of ["169", "170"]) {
   const renderedPng = path.join(helperRoot, `helpframe-${spriteId}.png`);
@@ -63,6 +80,51 @@ if (!existsSync(wrappedTalkerPng)) {
     path.join(helperRoot, "helpframe-169.swf"),
   ]);
   runTool("swfrender", ["-o", wrappedTalkerPng, wrappedTalkerSwf]);
+}
+
+const warningSpriteSwf = path.join(warningRoot, "warningframe-177.swf");
+if (!existsSync(warningSpriteSwf)) {
+  runTool("swfextract", ["-i", "177", "-o", warningSpriteSwf, nutchooserSwf]);
+}
+
+const wrappedWarningSwf = path.join(warningRoot, "warningframe-177-wrapped.swf");
+const wrappedWarningPng = path.join(warningRoot, "warningframe-177-wrapped.png");
+if (!existsSync(wrappedWarningPng)) {
+  runTool("swfcombine", [
+    "--stack1",
+    "-X",
+    "360",
+    "-Y",
+    "220",
+    "-x",
+    "130",
+    "-y",
+    "90",
+    "-o",
+    wrappedWarningSwf,
+    warningSpriteSwf,
+  ]);
+  runTool("swfrender", ["-o", wrappedWarningPng, wrappedWarningSwf]);
+}
+
+const warningLabels = [
+  { id: "180", source: "warning-yes-text-180.swf", rendered: "warning-yes-text-180.png", trimmed: "warning-yes-text-180-trim.png" },
+  { id: "185", source: "warning-no-text-185.swf", rendered: "warning-no-text-185.png", trimmed: "warning-no-text-185-trim.png" },
+];
+
+for (const label of warningLabels) {
+  const labelSwf = path.join(warningRoot, label.source);
+  const labelPng = path.join(warningRoot, label.rendered);
+  const labelTrimmedPng = path.join(warningRoot, label.trimmed);
+  if (!existsSync(labelSwf)) {
+    runTool("swfextract", ["-i", label.id, "-o", labelSwf, nutchooserSwf]);
+  }
+  if (!existsSync(labelPng)) {
+    runTool("swfrender", ["-o", labelPng, labelSwf]);
+  }
+  if (!existsSync(labelTrimmedPng)) {
+    runTool("magick", [labelPng, "-trim", "+repage", labelTrimmedPng]);
+  }
 }
 
 for (const asset of uiAssets) {
