@@ -249,6 +249,8 @@ Main instrument hotspots now start the extracted track preview directly; the ear
 
 The chooser DOM now records those original placements in `data-source-placement` on each door card. Modern `Ready`, `Locked`, and `Cleared` state text is intentionally not visible in the 640 x 480 source viewport because the recovered Flash scene shows the door movie clips, not a modern status label overlay. The state remains available as `data-door-state` and `aria-label` for accessibility and automated checks.
 
+Each `m#` door placement also has source on-load ActionScript. It derives `iam` from `this._name.substr(1,1)`, reads `_root.door#` from the variables loaded out of `games/data/nutdoors.txt`, and sets `this._visible` to `1` or `0`. The DOM mirrors the lock/open behavior with `disabled`, `data-door-state`, and ARIA, but does not apply modern visible dimming, hover outlines, glow filters, or extra shadows to the source door art. The source door movie clip render is the visible state until the full Flash door timeline/button states are recovered.
+
 The chooser also has its own source controls, not just the song-scene labels:
 
 * `helpButton`: sprite id `0202`, depth `0168`, matrix scale `1.350`, x `556.50`, y `165.30`, ratio `5`; its ActionScript hover string is `Help` and its release path sets `_root.theNextFrame` to `helpFrame`.

@@ -967,6 +967,7 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
                 style="${getNutcrackerDoorStyle(song.id)}"
                 aria-label="Door ${door} ${escapeHtml(song.title)}"
                 data-source-placement="${escapeHtml(getNutcrackerDoorSourcePlacement(song.id))}"
+                data-source-action="on load derives iam from instance name m# and sets this._visible from _root.door# loaded from games/data/nutdoors.txt"
               >
                 <button
                   class="door-button nutcracker-door-button"
@@ -976,7 +977,13 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
                   aria-label="Door ${door}: ${escapeHtml(song.title)}. ${status}."
                   ${unlocked ? "" : "disabled"}
                 >
-                  <img class="chooser-door-art" src="${chooserDoorUrl}" alt="" aria-hidden="true" />
+                  <img
+                    class="chooser-door-art"
+                    src="${chooserDoorUrl}"
+                    alt=""
+                    aria-hidden="true"
+                    data-source-image="trimmed render of nutchooser.swf movie clip id 0080; no modern hover glow, drop shadow, status label, or disabled opacity"
+                  />
                 </button>
                 <button
                   class="media-button door-preview-button sr-only"

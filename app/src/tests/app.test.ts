@@ -168,6 +168,9 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.dataset.doorState).toBe("ready");
     expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="2"]')?.dataset.doorState).toBe("locked");
     expect(mount.querySelector<HTMLElement>(".nutcracker-door-card")?.dataset.sourcePlacement).toContain("nutchooser.swf m1");
+    expect(mount.querySelector<HTMLElement>(".nutcracker-door-card")?.dataset.sourceAction).toContain(
+      "sets this._visible",
+    );
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-fill")?.src).toContain(
       "chooser-hallway-fill",
     );
@@ -221,6 +224,9 @@ describe("desktop app shell", () => {
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourcePlacement).toContain(
       "nutchooser.swf quiter",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".chooser-door-art")?.dataset.sourceImage).toContain(
+      "no modern hover glow",
     );
     expect(mount.querySelector<HTMLImageElement>('[data-source-control="helpButton"] img')?.src).toContain(
       "chooser-help-button-art",
