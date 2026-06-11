@@ -10,7 +10,9 @@ import chooserInstrumentsCxformUrl from "./assets/nutcracker-source/chooser-inst
 import chooserExitButtonArtUrl from "./assets/nutcracker-source/chooser-exit-button-art.png";
 import chooserExitLabelUrl from "./assets/nutcracker-source/chooser-exit-label.png";
 import chooserMagicKeyUrl from "./assets/nutcracker-source/chooser-magic-key.png";
+import chooserWarningNoBodyUrl from "./assets/nutcracker-source/chooser-warning-no-body.png";
 import chooserWarningNoLabelUrl from "./assets/nutcracker-source/chooser-warning-no-label.png";
+import chooserWarningYesBodyUrl from "./assets/nutcracker-source/chooser-warning-yes-body.png";
 import chooserWarningYesLabelUrl from "./assets/nutcracker-source/chooser-warning-yes-label.png";
 import chooserWarningframeTalkerUrl from "./assets/nutcracker-source/chooser-warningframe-talker.png";
 import nutcrackerSongFrameUrl from "./assets/nutcracker-source/song-game-render.png";
@@ -37,7 +39,9 @@ import songNoLabelUrl from "./assets/nutcracker-source/song-no-label.png";
 import songPlayAgainButtonBodyUrl from "./assets/nutcracker-source/song-play-again-button-body.png";
 import songPlayAgainLabelUrl from "./assets/nutcracker-source/song-play-again-label.png";
 import songStopLabelUrl from "./assets/nutcracker-source/song-stop-label-blue.png";
+import songWarningNoBodyUrl from "./assets/nutcracker-source/song-warning-no-body.png";
 import songWarningNoLabelUrl from "./assets/nutcracker-source/song-warning-no-label.png";
+import songWarningYesBodyUrl from "./assets/nutcracker-source/song-warning-yes-body.png";
 import songWarningYesLabelUrl from "./assets/nutcracker-source/song-warning-yes-label.png";
 import songWarningframeTalkerUrl from "./assets/nutcracker-source/song-warningframe-talker.png";
 import songYesLabelUrl from "./assets/nutcracker-source/song-yes-label.png";
@@ -1196,9 +1200,11 @@ function renderNutcrackerSongExitWarning(songId: NutcrackerSongId): string {
         data-song-action="accept-exit-song"
         data-song-id="${songId}"
         data-source-button="song1/song.swf warningFrame YES button id 0346"
+        data-source-body="song1/song.swf warningFrame YES visible body shape id 0344"
         data-source-action="_level0.gotoAndPlay('comeAgain')"
       >
-        <img src="${songWarningYesLabelUrl}" alt="" aria-hidden="true" />
+        <img class="source-warning-button-body" src="${songWarningYesBodyUrl}" alt="" aria-hidden="true" />
+        <img class="source-warning-button-label" src="${songWarningYesLabelUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">YES</span>
       </button>
       <button
@@ -1207,9 +1213,11 @@ function renderNutcrackerSongExitWarning(songId: NutcrackerSongId): string {
         data-song-action="cancel-exit-song"
         data-song-id="${songId}"
         data-source-button="song1/song.swf warningFrame NO button id 0351"
+        data-source-body="song1/song.swf warningFrame NO visible body shape id 0349"
         data-source-action="stopPreview; resumeInst; instFrameShow; restore speakers/focus/quiter buttonON"
       >
-        <img src="${songWarningNoLabelUrl}" alt="" aria-hidden="true" />
+        <img class="source-warning-button-body" src="${songWarningNoBodyUrl}" alt="" aria-hidden="true" />
+        <img class="source-warning-button-label" src="${songWarningNoLabelUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">NO</span>
       </button>
     </aside>
@@ -1721,9 +1729,11 @@ function renderChooserWarningFrame(): string {
         type="button"
         data-action="accept-chooser-warning"
         data-source-button="nutchooser.swf warningFrame YES button id 0183"
+        data-source-body="nutchooser.swf warningFrame YES normal body shape id 0179"
         data-source-action="_level0.gotoAndPlay('comeAgain')"
       >
-        <img src="${chooserWarningYesLabelUrl}" alt="" aria-hidden="true" />
+        <img class="source-warning-button-body" src="${chooserWarningYesBodyUrl}" alt="" aria-hidden="true" />
+        <img class="source-warning-button-label" src="${chooserWarningYesLabelUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">YES</span>
       </button>
       <button
@@ -1731,9 +1741,11 @@ function renderChooserWarningFrame(): string {
         type="button"
         data-action="cancel-chooser-warning"
         data-source-button="nutchooser.swf warningFrame NO button id 0188"
+        data-source-body="nutchooser.swf warningFrame NO normal body shape id 0184"
         data-source-action="restores chooser controls and sends quiter to buttonON"
       >
-        <img src="${chooserWarningNoLabelUrl}" alt="" aria-hidden="true" />
+        <img class="source-warning-button-body" src="${chooserWarningNoBodyUrl}" alt="" aria-hidden="true" />
+        <img class="source-warning-button-label" src="${chooserWarningNoLabelUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">NO</span>
       </button>
       <p class="sr-only">Quit the game?</p>

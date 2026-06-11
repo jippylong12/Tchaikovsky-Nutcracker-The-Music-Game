@@ -115,9 +115,19 @@ const uiAssets = [
     sourceId: "nutchooser.swf warningFrame sprite id 0177 rendered in translated wrapper, placed by root warningFrame at depth 0001 x -10.05 y 18.50 ratio 24",
   },
   {
+    source: path.join(warningRoot, "warning-yes-body-179-trim.png"),
+    target: "chooser-warning-yes-body.png",
+    sourceId: "nutchooser.swf warningFrame YES button id 0183 normal body shape id 0179, paired with text id 0180",
+  },
+  {
     source: path.join(warningRoot, "warning-yes-text-180-trim.png"),
     target: "chooser-warning-yes-label.png",
     sourceId: "nutchooser.swf warningFrame YES text id 0180, button id 0183, root placement x -58.15 y -76.55 ratio 24",
+  },
+  {
+    source: path.join(warningRoot, "warning-no-body-184-trim.png"),
+    target: "chooser-warning-no-body.png",
+    sourceId: "nutchooser.swf warningFrame NO button id 0188 normal body shape id 0184, paired with text id 0185",
   },
   {
     source: path.join(warningRoot, "warning-no-text-185-trim.png"),
@@ -160,9 +170,19 @@ const uiAssets = [
     sourceId: "song1/song.swf warningFrame sprite id 0340 rendered in translated wrapper, placed by root warningFrame at depth 0001 x -15.45 y 52.40 ratio 29",
   },
   {
+    source: path.join(songWarningRoot, "song-warning-yes-body-344-trim.png"),
+    target: "song-warning-yes-body.png",
+    sourceId: "song1/song.swf warningFrame YES button id 0346 visible body shape id 0344, paired with text id 0345",
+  },
+  {
     source: path.join(songWarningRoot, "song-warning-yes-text-345-trim.png"),
     target: "song-warning-yes-label.png",
     sourceId: "song1/song.swf warningFrame YES text id 0345, button id 0346, root placement x -66.15 y -43.55 ratio 29",
+  },
+  {
+    source: path.join(songWarningRoot, "song-warning-no-body-349-trim.png"),
+    target: "song-warning-no-body.png",
+    sourceId: "song1/song.swf warningFrame NO button id 0351 visible body shape id 0349, paired with text id 0350",
   },
   {
     source: path.join(songWarningRoot, "song-warning-no-text-350-trim.png"),
@@ -374,6 +394,26 @@ const warningLabels = [
   { id: "180", source: "warning-yes-text-180.swf", rendered: "warning-yes-text-180.png", trimmed: "warning-yes-text-180-trim.png" },
   { id: "185", source: "warning-no-text-185.swf", rendered: "warning-no-text-185.png", trimmed: "warning-no-text-185-trim.png" },
 ];
+
+const warningButtonBodies = [
+  { id: "179", source: "warning-yes-body-179.swf", rendered: "warning-yes-body-179.png", trimmed: "warning-yes-body-179-trim.png" },
+  { id: "184", source: "warning-no-body-184.swf", rendered: "warning-no-body-184.png", trimmed: "warning-no-body-184-trim.png" },
+];
+
+for (const body of warningButtonBodies) {
+  const bodySwf = path.join(warningRoot, body.source);
+  const bodyPng = path.join(warningRoot, body.rendered);
+  const bodyTrimmedPng = path.join(warningRoot, body.trimmed);
+  if (!existsSync(bodySwf)) {
+    runTool("swfextract", ["-i", body.id, "-o", bodySwf, nutchooserSwf]);
+  }
+  if (!existsSync(bodyPng)) {
+    runTool("swfrender", ["-o", bodyPng, bodySwf]);
+  }
+  if (!existsSync(bodyTrimmedPng)) {
+    runTool("magick", [bodyPng, "-trim", "+repage", bodyTrimmedPng]);
+  }
+}
 
 for (const label of warningLabels) {
   const labelSwf = path.join(warningRoot, label.source);
@@ -591,6 +631,26 @@ const songWarningLabels = [
   { id: "345", source: "song-warning-yes-text-345.swf", rendered: "song-warning-yes-text-345.png", trimmed: "song-warning-yes-text-345-trim.png" },
   { id: "350", source: "song-warning-no-text-350.swf", rendered: "song-warning-no-text-350.png", trimmed: "song-warning-no-text-350-trim.png" },
 ];
+
+const songWarningButtonBodies = [
+  { id: "344", source: "song-warning-yes-body-344.swf", rendered: "song-warning-yes-body-344.png", trimmed: "song-warning-yes-body-344-trim.png" },
+  { id: "349", source: "song-warning-no-body-349.swf", rendered: "song-warning-no-body-349.png", trimmed: "song-warning-no-body-349-trim.png" },
+];
+
+for (const body of songWarningButtonBodies) {
+  const bodySwf = path.join(songWarningRoot, body.source);
+  const bodyPng = path.join(songWarningRoot, body.rendered);
+  const bodyTrimmedPng = path.join(songWarningRoot, body.trimmed);
+  if (!existsSync(bodySwf)) {
+    runTool("swfextract", ["-i", body.id, "-o", bodySwf, song1Swf]);
+  }
+  if (!existsSync(bodyPng)) {
+    runTool("swfrender", ["-o", bodyPng, bodySwf]);
+  }
+  if (!existsSync(bodyTrimmedPng)) {
+    runTool("magick", [bodyPng, "-trim", "+repage", bodyTrimmedPng]);
+  }
+}
 
 for (const label of songWarningLabels) {
   const labelSwf = path.join(songWarningRoot, label.source);

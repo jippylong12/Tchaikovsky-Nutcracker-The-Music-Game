@@ -332,9 +332,21 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>(".source-chooser-warningframe-talker")?.dataset.sourceImage).toContain(
       "sprite id 0177",
     );
-    expect(mount.querySelector<HTMLImageElement>(".source-warning-yes img")?.src).toContain("chooser-warning-yes-label");
+    expect(mount.querySelector<HTMLButtonElement>(".source-warning-yes")?.dataset.sourceBody).toContain("shape id 0179");
+    expect(mount.querySelector<HTMLImageElement>(".source-warning-yes .source-warning-button-body")?.src).toContain(
+      "chooser-warning-yes-body",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-warning-yes .source-warning-button-label")?.src).toContain(
+      "chooser-warning-yes-label",
+    );
     expect(mount.querySelector<HTMLButtonElement>(".source-warning-yes")?.dataset.sourceAction).toContain("comeAgain");
-    expect(mount.querySelector<HTMLImageElement>(".source-warning-no img")?.src).toContain("chooser-warning-no-label");
+    expect(mount.querySelector<HTMLButtonElement>(".source-warning-no")?.dataset.sourceBody).toContain("shape id 0184");
+    expect(mount.querySelector<HTMLImageElement>(".source-warning-no .source-warning-button-body")?.src).toContain(
+      "chooser-warning-no-body",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-warning-no .source-warning-button-label")?.src).toContain(
+      "chooser-warning-no-label",
+    );
     expect(mount.querySelector<HTMLButtonElement>(".source-warning-no")?.dataset.sourceAction).toContain(
       "quiter to buttonON",
     );
@@ -426,10 +438,24 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>(".source-song-warningframe-talker")?.src).toContain(
       "song-warningframe-talker",
     );
-    expect(mount.querySelector<HTMLImageElement>(".source-song-warning-yes img")?.src).toContain(
+    expect(mount.querySelector<HTMLButtonElement>(".source-song-warning-yes")?.dataset.sourceBody).toContain(
+      "shape id 0344",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-song-warning-yes .source-warning-button-body")?.src).toContain(
+      "song-warning-yes-body",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-song-warning-yes .source-warning-button-label")?.src).toContain(
       "song-warning-yes-label",
     );
-    expect(mount.querySelector<HTMLImageElement>(".source-song-warning-no img")?.src).toContain("song-warning-no-label");
+    expect(mount.querySelector<HTMLButtonElement>(".source-song-warning-no")?.dataset.sourceBody).toContain(
+      "shape id 0349",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-song-warning-no .source-warning-button-body")?.src).toContain(
+      "song-warning-no-body",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-song-warning-no .source-warning-button-label")?.src).toContain(
+      "song-warning-no-label",
+    );
     mount.querySelector<HTMLButtonElement>(".source-song-warning-no")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(mount.querySelector(".source-song-warning-modal")).toBeNull();
     expect(mount.textContent).toContain("Dance of the Sugar Plum Fairy");
