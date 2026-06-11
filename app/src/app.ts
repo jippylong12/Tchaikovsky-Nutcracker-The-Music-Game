@@ -133,14 +133,16 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
             }
             ${renderScene(route, progressSnapshot, shellState)}
             ${
-              sourceFrameRoute && sourceSceneActions
-                ? `<div class="source-scene-actions" aria-label="Scene controls">${sourceSceneActions}</div>`
+              sourceFrameRoute
+                ? sourceSceneActions
+                  ? `<div class="source-scene-actions" aria-label="Scene controls">${sourceSceneActions}</div>`
+                  : ""
                 : `<footer class="scene-footer">
-                    <div class="scene-actions">
-                      ${renderPrimaryActions(route)}
-                    </div>
-                    <p class="status-label">640 x 480</p>
-                  </footer>`
+                  <div class="scene-actions">
+                    ${renderPrimaryActions(route)}
+                  </div>
+                  <p class="status-label">640 x 480</p>
+                </footer>`
             }
             ${shellState.helpOpen ? renderHelp(route) : ""}
             ${shellState.nutcrackerChooserWarningOpen && route.id === "nutcracker-chooser" ? renderChooserWarningFrame() : ""}
@@ -1000,6 +1002,7 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
           .join("")}
       </div>
       ${renderChooserSourceControls()}
+      ${renderNutcrackerFlyingHelp("chooser")}
     </div>
   `;
 }
@@ -1247,16 +1250,25 @@ function renderNutcrackerTrackButton(
   `;
 }
 
-function renderNutcrackerFlyingHelp(): string {
+function renderNutcrackerFlyingHelp(source: "song" | "chooser" = "song"): string {
+  const sourcePlacement = source === "song"
+    ? "song1/song.swf flyinghelp id 0257 depth 0306 initial matrix x 1143.85 y 195.55; helpme(a,b) sets _root.helpmessage, gotoAndStop(a), startDrag(this), _visible=1; nohelp() clears message, _visible=0, _x=10000"
+    : "nutchooser.swf button ids 0200 and 0206 call _root.helpme(frame,label) and _root.nohelp(); current dumps expose the button actions but not an independent chooser flyinghelp placement, so this DOM layer is a documented helpme fallback";
+  const sourceLayerModel = source === "song"
+    ? "frame 2 places edit ids 0231/0232/0233 at normalized layer offsets from source matrices; frame 3 places edit ids 0234/0235/0236 at normalized offsets from negative source matrices; frame 4 places sprite id 0240, which fades nested sprite id 0239 containing edit ids 0237/0238"
+    : "chooser control actions call helpme with frame 4 for Help and frame 3 for Quit the Game; no separate chooser flyinghelp display-list placement is recovered in the current dumps, so the DOM reuses the recovered song flyinghelp frame-layer fallback";
+  const sourceBounds = source === "song"
+    ? "frame 1 helpoff; frames 2/3 use edit text shadow stacks, frame 4 places sprite id 0240, frames 5-8 use shape ids 0241/0244/0246/0251/0252"
+    : "button id 0200 calls helpme(4, Help); button id 0206 calls helpme(3, Quit the Game); rollouts call nohelp";
   return `
     <aside
       class="source-flying-help"
       aria-hidden="true"
-      data-source-control="flyinghelp"
-      data-source-placement="song1/song.swf flyinghelp id 0257 depth 0306 initial matrix x 1143.85 y 195.55; helpme(a,b) sets _root.helpmessage, gotoAndStop(a), startDrag(this), _visible=1; nohelp() clears message, _visible=0, _x=10000"
-      data-source-layer-model="frame 2 places edit ids 0231/0232/0233 at normalized layer offsets from source matrices; frame 3 places edit ids 0234/0235/0236 at normalized offsets from negative source matrices; frame 4 places sprite id 0240, which fades nested sprite id 0239 containing edit ids 0237/0238"
+      data-source-control="${source === "song" ? "flyinghelp" : "chooser-helpme-fallback"}"
+      data-source-placement="${sourcePlacement}"
+      data-source-layer-model="${sourceLayerModel}"
       data-source-frame="1"
-      data-source-bounds="frame 1 helpoff; frames 2/3 use edit text shadow stacks, frame 4 places sprite id 0240, frames 5-8 use shape ids 0241/0244/0246/0251/0252"
+      data-source-bounds="${sourceBounds}"
     >
       <span class="source-flying-help-frame source-flying-help-frame-2" aria-hidden="true">
         <span class="source-flying-help-text source-flying-help-text-shadow source-flying-help-text-231"></span>
@@ -1588,8 +1600,10 @@ function renderChooserSourceControls(): string {
         data-source-control="helpButton"
         data-source-placement="nutchooser.swf helpButton root placement sprite id 0202 at depth 0168 matrix scale 1.350 x 556.50 y 165.30 ratio 5"
         data-source-state="sprite id 0202 buttonON places button id 0200 depth 0001 and shape id 0201 depth 0004; buttonOFF places shape id 0198 depth 0002 with alpha mul 0.4"
+        data-source-help="Help"
+        data-source-help-frame="4"
+        data-source-help-bounds="nutchooser.swf button id 0200 action pushes string Help, frame 4, and calls _root.helpme; rollout calls _root.nohelp"
       >
-        <span class="source-control-help" aria-hidden="true">Help</span>
         <img src="${chooserHelpButtonArtUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">Help</span>
       </button>
@@ -1601,8 +1615,10 @@ function renderChooserSourceControls(): string {
         data-source-placement="nutchooser.swf quiter root placement sprite id 0207 at depth 0173 matrix scale 0.900 x 585.90 y 472.45 ratio 5"
         data-source-state="sprite id 0207 buttonON places button id 0206 depth 0001; buttonOFF places chooser text id 0203 depth 0001 matrix scale 1.722 x -114.95 y -12.70 with CXForm add 102 102 204 0"
         data-source-action="sets _root.theNextFrame to warningFrame; warningFrame YES button id 0183 calls _level0.gotoAndPlay('comeAgain')"
+        data-source-help="Quit the Game"
+        data-source-help-frame="3"
+        data-source-help-bounds="nutchooser.swf button id 0206 action pushes string Quit the Game, frame 3, and calls _root.helpme; rollout calls _root.nohelp"
       >
-        <span class="source-control-help" aria-hidden="true">Quit the Game</span>
         <img src="${chooserExitLabelUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">EXIT</span>
       </button>

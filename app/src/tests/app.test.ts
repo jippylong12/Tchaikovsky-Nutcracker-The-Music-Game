@@ -220,12 +220,18 @@ describe("desktop app shell", () => {
       "CXForm add -209 -153 134 -223",
     );
     expect(mount.querySelector(".source-scene-actions")).toBeNull();
+    expect(mount.querySelector(".scene-footer")).toBeNull();
+    expect(mount.querySelector(".source-control-help")).toBeNull();
     expect(mount.querySelector(".chooser-source-controls")).not.toBeNull();
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourcePlacement).toContain(
       "nutchooser.swf helpButton",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourceState).toContain(
       "buttonON places button id 0200",
+    );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourceHelp).toBe("Help");
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourceHelpFrame).toBe(
+      "4",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.closest(".nutcracker-chooser")).not.toBeNull();
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourcePlacement).toContain(
@@ -234,7 +240,15 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceState).toContain(
       "buttonOFF places chooser text id 0203",
     );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceHelp).toBe(
+      "Quit the Game",
+    );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceHelpFrame).toBe("3");
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.closest(".nutcracker-chooser")).not.toBeNull();
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceControl).toBe("chooser-helpme-fallback");
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourcePlacement).toContain(
+      "nutchooser.swf button ids 0200 and 0206",
+    );
     expect(mount.querySelector<HTMLImageElement>(".chooser-door-art")?.dataset.sourceImage).toContain(
       "no modern hover glow",
     );
@@ -244,6 +258,11 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>('[data-source-control="quiter"] img')?.src).toContain(
       "chooser-exit-label",
     );
+    mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
+    expect(mount.querySelector<HTMLElement>(".source-flying-help-frame-4 .source-flying-help-text-fill")?.textContent).toBe(
+      "Help",
+    );
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceFrame).toBe("4");
     expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.textContent?.trim()).toBe("");
     mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     const chooserHelp = mount.querySelector<HTMLElement>(".source-chooser-help-modal");
