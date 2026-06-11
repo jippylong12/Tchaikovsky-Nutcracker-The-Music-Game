@@ -358,8 +358,18 @@ describe("desktop app shell", () => {
     expect(mount.textContent).toContain("EXIT");
     const hintButton = mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]');
     expect(hintButton?.dataset.songAction).toBe("hint-song");
+    expect(hintButton?.dataset.sourceBody).toContain("shape id 0119");
+    expect(mount.querySelector<HTMLImageElement>('[data-source-control="helpButton"] .source-button-body')?.src).toContain(
+      "song-control-help-body",
+    );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="hintButton"]')?.textContent).toContain("CHANGE");
-    expect(mount.querySelector<HTMLImageElement>('[data-source-control="hintButton"] img')?.src).toContain(
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="hintButton"]')?.dataset.sourceBody).toContain(
+      "shape id 0126",
+    );
+    expect(mount.querySelector<HTMLImageElement>('[data-source-control="hintButton"] .source-button-body')?.src).toContain(
+      "song-control-button-body",
+    );
+    expect(mount.querySelector<HTMLImageElement>('[data-source-control="hintButton"] .source-button-label')?.src).toContain(
       "song-change-song-label",
     );
     mount.querySelector<HTMLButtonElement>('[data-source-control="hintButton"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -384,6 +394,12 @@ describe("desktop app shell", () => {
     expect(mount.textContent).not.toContain('press "Yes" to change this song or "No" to cancel');
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="songChooser"]')).not.toBeNull();
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')).not.toBeNull();
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="songChooser"]')?.dataset.sourceBody).toContain(
+      "shape id 0126",
+    );
+    expect(mount.querySelector<HTMLImageElement>('[data-source-control="songChooser"] .source-button-body')?.src).toContain(
+      "song-control-button-body",
+    );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="songChooser"]')?.dataset.sourceHelp).toBe(
       "Listen to the Original Music",
     );
@@ -391,6 +407,9 @@ describe("desktop app shell", () => {
       "Select a\ndifferent\nsong",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dataset.sourceHelp).toBe("Quit the Game");
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dataset.sourceBody).toContain(
+      "shape id 0126",
+    );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dataset.songAction).toBe(
       "confirm-exit-song",
     );
@@ -548,6 +567,13 @@ describe("desktop app shell", () => {
       expect(mount.querySelector<HTMLElement>(".source-play-again-button")?.dataset.sourceControl).toBe("gameController");
       expect(mount.querySelector<HTMLElement>(".source-play-again-button")?.dataset.sourcePlacement).toContain(
         "id 0115 depth 0116",
+      );
+      expect(mount.querySelector<HTMLElement>(".source-play-again-button")?.dataset.sourceBody).toContain("shape id 0113");
+      expect(mount.querySelector<HTMLImageElement>(".source-play-again-button .source-button-body")?.src).toContain(
+        "song-play-again-button-body",
+      );
+      expect(mount.querySelector<HTMLImageElement>(".source-play-again-button .source-button-label")?.src).toContain(
+        "song-play-again-label",
       );
       if (song.id === nutcrackerSongGames.length) {
         expect(mount.querySelector<HTMLElement>(".source-song-keyframe")?.dataset.sourceFrame).toBe(

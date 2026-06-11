@@ -17,6 +17,7 @@ const helperRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutch
 const warningRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-warningframe");
 const magicKeyRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-magickey");
 const songCurtainRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-courtain");
+const songControlsRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-controls");
 const songHelpRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-helpframe");
 const songWarningRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-warningframe");
 const songKeyFrameRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-keyframe");
@@ -62,6 +63,21 @@ const uiAssets = [
     source: path.join(songCurtainRoot, "courtain-shape-41-trim.png"),
     target: "song-curtain-stars.png",
     sourceId: "song1/song.swf courtain base sprite id 0042 child shape id 0041 depth 0003 bbox -208.10 -261.85 205.75 -41.45",
+  },
+  {
+    source: path.join(songControlsRoot, "shape-119-trim.png"),
+    target: "song-control-help-body.png",
+    sourceId: "song1/song.swf helpButton sprite id 0120 buttonON child shape id 0119 depth 0004",
+  },
+  {
+    source: path.join(songControlsRoot, "shape-126-trim.png"),
+    target: "song-control-button-body.png",
+    sourceId: "song1/song.swf song control sprites id 0127/0133/0144 buttonON child shape id 0126",
+  },
+  {
+    source: path.join(songControlsRoot, "shape-113-trim.png"),
+    target: "song-play-again-button-body.png",
+    sourceId: "song1/song.swf gameController buttonAgain source shape id 0113, sibling to button id 0114",
   },
   {
     source: path.join(chooserRoot, "help-exit-sprite-68-cxform.png"),
@@ -163,6 +179,7 @@ await mkdir(helperRoot, { recursive: true });
 await mkdir(warningRoot, { recursive: true });
 await mkdir(magicKeyRoot, { recursive: true });
 await mkdir(songCurtainRoot, { recursive: true });
+await mkdir(songControlsRoot, { recursive: true });
 await mkdir(songHelpRoot, { recursive: true });
 await mkdir(songWarningRoot, { recursive: true });
 await mkdir(songKeyFrameRoot, { recursive: true });
@@ -471,6 +488,27 @@ runTool("magick", [
   "100",
   path.join(songCurtainRoot, "courtain-shape-40-cxform.png"),
 ]);
+
+const songControlShapes = [
+  { id: "113", source: "shape-113.swf", rendered: "shape-113.png", trimmed: "shape-113-trim.png" },
+  { id: "119", source: "shape-119.swf", rendered: "shape-119.png", trimmed: "shape-119-trim.png" },
+  { id: "126", source: "shape-126.swf", rendered: "shape-126.png", trimmed: "shape-126-trim.png" },
+];
+
+for (const shape of songControlShapes) {
+  const shapeSwf = path.join(songControlsRoot, shape.source);
+  const shapePng = path.join(songControlsRoot, shape.rendered);
+  const shapeTrimmedPng = path.join(songControlsRoot, shape.trimmed);
+  if (!existsSync(shapeSwf)) {
+    runTool("swfextract", ["-i", shape.id, "-o", shapeSwf, song1Swf]);
+  }
+  if (!existsSync(shapePng)) {
+    runTool("swfrender", ["-o", shapePng, shapeSwf]);
+  }
+  if (!existsSync(shapeTrimmedPng)) {
+    runTool("magick", [shapePng, "-trim", "+repage", shapeTrimmedPng]);
+  }
+}
 
 const songHelpSpriteSwf = path.join(songHelpRoot, "helpframe-333.swf");
 if (!existsSync(songHelpSpriteSwf)) {

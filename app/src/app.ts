@@ -22,6 +22,8 @@ import song6SceneryUrl from "./assets/nutcracker-source/song6-scenery.png";
 import song7SceneryUrl from "./assets/nutcracker-source/song7-scenery.png";
 import song8SceneryUrl from "./assets/nutcracker-source/song8-scenery.png";
 import songChangeSongLabelUrl from "./assets/nutcracker-source/song-change-song-label.png";
+import songControlButtonBodyUrl from "./assets/nutcracker-source/song-control-button-body.png";
+import songControlHelpBodyUrl from "./assets/nutcracker-source/song-control-help-body.png";
 import songCurtainCurveCxformUrl from "./assets/nutcracker-source/song-curtain-curve-cxform.png";
 import songCurtainFillUrl from "./assets/nutcracker-source/song-curtain-fill.png";
 import songCurtainStarsUrl from "./assets/nutcracker-source/song-curtain-stars.png";
@@ -32,6 +34,7 @@ import songHintLabelUrl from "./assets/nutcracker-source/song-hint-label.png";
 import songKeyFrameTalkerUrl from "./assets/nutcracker-source/song-keyframe-talker.png";
 import songListenLabelUrl from "./assets/nutcracker-source/song-listen-label.png";
 import songNoLabelUrl from "./assets/nutcracker-source/song-no-label.png";
+import songPlayAgainButtonBodyUrl from "./assets/nutcracker-source/song-play-again-button-body.png";
 import songPlayAgainLabelUrl from "./assets/nutcracker-source/song-play-again-label.png";
 import songStopLabelUrl from "./assets/nutcracker-source/song-stop-label-blue.png";
 import songWarningNoLabelUrl from "./assets/nutcracker-source/song-warning-no-label.png";
@@ -1069,20 +1072,24 @@ function renderNutcrackerSongGame(
         ${renderNutcrackerFlyingHelp()}
         ${showFinalKeyFrame ? renderNutcrackerSongKeyFrame() : ""}
         <div class="song-actions source-song-actions" aria-label="Source song controls">
-          <button class="media-button source-label-button source-listen-button" type="button" data-source-control="songChooser" data-source-help="${isPlaying ? "Stop the Music" : "Listen to the Original Music"}" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="play-theme" data-song-id="${song.id}">
-            <img src="${isPlaying ? songStopLabelUrl : songListenLabelUrl}" alt="" aria-hidden="true" />
+          <button class="media-button source-label-button source-listen-button" type="button" data-source-control="songChooser" data-source-body="song1/song.swf songChooser sprite id 0133 buttonON places shape id 0126 depth 0004" data-source-help="${isPlaying ? "Stop the Music" : "Listen to the Original Music"}" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="play-theme" data-song-id="${song.id}">
+            <img class="source-button-body" src="${songControlButtonBodyUrl}" alt="" aria-hidden="true" />
+            <img class="source-button-label" src="${isPlaying ? songStopLabelUrl : songListenLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">${isPlaying ? "STOP" : "LISTEN"}</span>
           </button>
-          <button class="scene-button source-label-button source-hint-button" type="button" data-source-control="helpButton" data-source-help="Hint" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="hint-song" data-song-id="${song.id}">
-            <img src="${songHintLabelUrl}" alt="" aria-hidden="true" />
+          <button class="scene-button source-label-button source-hint-button" type="button" data-source-control="helpButton" data-source-body="song1/song.swf helpButton sprite id 0120 buttonON places shape id 0119 depth 0004" data-source-help="Hint" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="hint-song" data-song-id="${song.id}">
+            <img class="source-button-body" src="${songControlHelpBodyUrl}" alt="" aria-hidden="true" />
+            <img class="source-button-label" src="${songHintLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">HINT</span>
           </button>
-          <button class="scene-button source-label-button source-change-song-button" type="button" data-source-control="hintButton" data-source-help="Select a&#10;different&#10;song" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="confirm-change-song" data-song-id="${song.id}">
-            <img src="${songChangeSongLabelUrl}" alt="" aria-hidden="true" />
+          <button class="scene-button source-label-button source-change-song-button" type="button" data-source-control="hintButton" data-source-body="song1/song.swf hintButton sprite id 0127 buttonON places shape id 0126 depth 0005 with scale 0.911" data-source-help="Select a&#10;different&#10;song" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="confirm-change-song" data-song-id="${song.id}">
+            <img class="source-button-body" src="${songControlButtonBodyUrl}" alt="" aria-hidden="true" />
+            <img class="source-button-label" src="${songChangeSongLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">CHANGE SONG</span>
           </button>
-          <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-source-help="Quit the Game" data-source-help-frame="3" data-source-help-bounds="frame 3 edit ids 0234-0236 bbox approx 276x22 after 1.2 scale" data-source-action="sets _root.theNextFrame to warningFrame; drives _root.usmus to warningFrame/showUp" data-song-action="confirm-exit-song" data-song-id="${song.id}">
-            <img src="${songExitLabelUrl}" alt="" aria-hidden="true" />
+          <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-source-body="song1/song.swf listenSong sprite id 0144 buttonON places shape id 0126 depth 0006" data-source-help="Quit the Game" data-source-help-frame="3" data-source-help-bounds="frame 3 edit ids 0234-0236 bbox approx 276x22 after 1.2 scale" data-source-action="sets _root.theNextFrame to warningFrame; drives _root.usmus to warningFrame/showUp" data-song-action="confirm-exit-song" data-song-id="${song.id}">
+            <img class="source-button-body" src="${songControlButtonBodyUrl}" alt="" aria-hidden="true" />
+            <img class="source-button-label" src="${songExitLabelUrl}" alt="" aria-hidden="true" />
             <span class="sr-only">EXIT</span>
           </button>
           ${
@@ -1092,10 +1099,12 @@ function renderNutcrackerSongGame(
                   type="button"
                   data-source-control="gameController"
                   data-source-placement="song1/song.swf gameController id 0115 depth 0116 matrix scale 1.140 x 322.20 y 317.70; buttonAgain frame places id 0114 at x -0.90 y 1.75 ratio 3"
+                  data-source-body="song1/song.swf gameController buttonAgain uses button id 0114 with source shape id 0113"
                   data-song-action="reset-song"
                   data-song-id="${song.id}"
                 >
-                  <img src="${songPlayAgainLabelUrl}" alt="" aria-hidden="true" />
+                  <img class="source-button-body" src="${songPlayAgainButtonBodyUrl}" alt="" aria-hidden="true" />
+                  <img class="source-button-label" src="${songPlayAgainLabelUrl}" alt="" aria-hidden="true" />
                   <span class="sr-only">PLAY AGAIN</span>
                 </button>`
               : ""
