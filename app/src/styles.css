@@ -353,17 +353,6 @@ button {
   background: #ffffff;
 }
 
-.nutcracker-chooser-hallway {
-  position: absolute;
-  left: 88px;
-  top: 46px;
-  z-index: 0;
-  width: 589px;
-  height: 388px;
-  object-fit: fill;
-  pointer-events: none;
-}
-
 .nutcracker-chooser-hallway-fill {
   position: absolute;
   left: 84px;
@@ -393,6 +382,17 @@ button {
   z-index: 0;
   width: 489px;
   height: 358px;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.nutcracker-chooser-hallway-tint {
+  position: absolute;
+  left: 88px;
+  top: 46px;
+  z-index: 0;
+  width: 457px;
+  height: 301px;
   object-fit: fill;
   pointer-events: none;
 }

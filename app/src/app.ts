@@ -1,8 +1,8 @@
 import nutChooserFrameUrl from "./assets/nutcracker-source/nutchooser-frame-source.png";
 import chooserDoorUrl from "./assets/nutcracker-source/chooser-door.png";
 import chooserHallwayFillUrl from "./assets/nutcracker-source/chooser-hallway-fill.png";
-import chooserHallwayUrl from "./assets/nutcracker-source/chooser-hallway.png";
 import chooserHallwayPortalCxformUrl from "./assets/nutcracker-source/chooser-hallway-portal-cxform.png";
+import chooserHallwayTintCxformUrl from "./assets/nutcracker-source/chooser-hallway-tint-cxform.png";
 import chooserHallwayVectorUrl from "./assets/nutcracker-source/chooser-hallway-vector.png";
 import chooserHelpButtonArtUrl from "./assets/nutcracker-source/chooser-help-button-art.png";
 import chooserHelpframeTalkerUrl from "./assets/nutcracker-source/chooser-helpframe-talker.png";
@@ -906,13 +906,6 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
   return `
     <div class="scene-body chooser-scene nutcracker-chooser source-flash-scene">
       <img
-        class="nutcracker-chooser-hallway"
-        src="${chooserHallwayUrl}"
-        alt=""
-        aria-hidden="true"
-        data-source-placement="nutchooser.swf id 0021 depth 0001 matrix scale 0.743 x 87.85 y 46.15"
-      />
-      <img
         class="nutcracker-chooser-hallway-fill"
         src="${chooserHallwayFillUrl}"
         alt=""
@@ -935,6 +928,14 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
         aria-hidden="true"
         data-source-placement="nutchooser.swf sprite id 0021 contains shape id 0018 at depth 0011; root scale 0.743 x 87.85 y 46.15; shape bbox [-19.65,-67.05,637.70,414.95]"
         data-source-image="shape id 0018 rendered with swfrender and trimmed by npm run assets:nutcracker-ui; full sprite id 0021 still blocked by local JPEG3 renderer support"
+      />
+      <img
+        class="nutcracker-chooser-hallway-tint"
+        src="${chooserHallwayTintCxformUrl}"
+        alt=""
+        aria-hidden="true"
+        data-source-placement="nutchooser.swf sprite id 0021 places shape id 0020 at depth 0012 with root scale 0.743 x 87.85 y 46.15; shape bbox [0.00,0.00,615.20,404.95]"
+        data-source-image="shape id 0020 uses bitmap id 0019 fill; alpha from repaired JPEG3 id 0019 resized to shape bbox, then CXForm mul 0 0 0 1 add 255 51 153 0 applied by npm run assets:nutcracker-ui"
       />
       <img
         class="nutcracker-frame-art"

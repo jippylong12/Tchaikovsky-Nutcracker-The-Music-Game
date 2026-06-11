@@ -168,9 +168,6 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.dataset.doorState).toBe("ready");
     expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="2"]')?.dataset.doorState).toBe("locked");
     expect(mount.querySelector<HTMLElement>(".nutcracker-door-card")?.dataset.sourcePlacement).toContain("nutchooser.swf m1");
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway")?.dataset.sourcePlacement).toContain(
-      "id 0021 depth 0001",
-    );
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-fill")?.src).toContain(
       "chooser-hallway-fill",
     );
@@ -197,6 +194,15 @@ describe("desktop app shell", () => {
     );
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-vector")?.dataset.sourceImage).toContain(
       "full sprite id 0021 still blocked",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-tint")?.src).toContain(
+      "chooser-hallway-tint-cxform",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-tint")?.dataset.sourcePlacement).toContain(
+      "shape id 0020",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-tint")?.dataset.sourceImage).toContain(
+      "CXForm mul 0 0 0 1 add 255 51 153 0",
     );
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-frame-art")?.dataset.sourcePlacement).toContain(
       "id 0034 depth 0055",
@@ -363,7 +369,6 @@ describe("desktop app shell", () => {
     createTestShell(mount);
     mount.querySelector<HTMLButtonElement>('[data-route="nutcracker-chooser"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway")?.src).toContain("chooser-hallway");
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-fill")?.src).toContain(
       "chooser-hallway-fill",
     );
@@ -372,6 +377,9 @@ describe("desktop app shell", () => {
     );
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-portal")?.src).toContain(
       "chooser-hallway-portal-cxform",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-tint")?.src).toContain(
+      "chooser-hallway-tint-cxform",
     );
 
     mount.querySelector<HTMLButtonElement>('[data-route="song-2"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));

@@ -66,6 +66,11 @@ const uiAssets = [
     sourceId: "nutchooser.swf background sprite id 0021 shape id 0017, child placement x 273.35 y 137.75 with CXForm add 143 60 -10 0",
   },
   {
+    source: path.join(chooserBackgroundRoot, "background-shape-20-tint-cxform.png"),
+    target: "chooser-hallway-tint-cxform.png",
+    sourceId: "nutchooser.swf background sprite id 0021 shape id 0020, bitmap id 0019 fill, child placement depth 0012 CXForm mul 0 0 0 1 add 255 51 153 0",
+  },
+  {
     source: path.join(helperRoot, "helpframe-169-wrapped.png"),
     target: "chooser-helpframe-talker.png",
     sourceId: "nutchooser.swf nested talker sprite id 0169 rendered in translated wrapper, animated by helpframe sprite id 0170 and placed by root helpframe at depth 0001 x -0.90 y 39.65 ratio 22",
@@ -223,6 +228,34 @@ runTool("magick", [
   "3.922%",
   "+channel",
   chooserPortalShapeCxformPng,
+]);
+
+const chooserTintShapeSwf = path.join(chooserBackgroundRoot, "background-shape-20.swf");
+const chooserTintAlphaPng = path.join(chooserBackgroundRoot, "background-shape-20-alpha.png");
+const chooserTintShapeCxformPng = path.join(chooserBackgroundRoot, "background-shape-20-tint-cxform.png");
+const chooserHallwaySourcePng = path.join(targetRoot, "chooser-hallway.png");
+if (!existsSync(chooserTintShapeSwf)) {
+  runTool("swfextract", ["-i", "20", "-o", chooserTintShapeSwf, nutchooserSwf]);
+}
+runTool("magick", [
+  chooserHallwaySourcePng,
+  "-resize",
+  "615x405!",
+  "-alpha",
+  "extract",
+  chooserTintAlphaPng,
+]);
+runTool("magick", [
+  "-size",
+  "615x405",
+  "xc:#ff3399",
+  chooserTintAlphaPng,
+  "-alpha",
+  "off",
+  "-compose",
+  "CopyOpacity",
+  "-composite",
+  chooserTintShapeCxformPng,
 ]);
 
 for (const spriteId of ["169", "170"]) {
