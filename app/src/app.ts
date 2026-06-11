@@ -22,7 +22,9 @@ import song6SceneryUrl from "./assets/nutcracker-source/song6-scenery.png";
 import song7SceneryUrl from "./assets/nutcracker-source/song7-scenery.png";
 import song8SceneryUrl from "./assets/nutcracker-source/song8-scenery.png";
 import songChangeSongLabelUrl from "./assets/nutcracker-source/song-change-song-label.png";
-import songCurtainScallopUrl from "./assets/nutcracker-source/song-curtain-scallop.png";
+import songCurtainCurveCxformUrl from "./assets/nutcracker-source/song-curtain-curve-cxform.png";
+import songCurtainFillUrl from "./assets/nutcracker-source/song-curtain-fill.png";
+import songCurtainStarsUrl from "./assets/nutcracker-source/song-curtain-stars.png";
 import songExitLabelUrl from "./assets/nutcracker-source/song-exit-label.png";
 import songHelpArtUrl from "./assets/nutcracker-source/song-help-art.png";
 import songHelpframeTalkerUrl from "./assets/nutcracker-source/song-helpframe-talker.png";
@@ -1208,11 +1210,25 @@ function renderNutcrackerSongExitWarning(songId: NutcrackerSongId): string {
 function renderNutcrackerCurtainArt(): string {
   return `
     <img
-      class="source-alert-curtain-art"
-      src="${songCurtainScallopUrl}"
+      class="source-alert-curtain-layer source-alert-curtain-fill"
+      src="${songCurtainFillUrl}"
       alt=""
       aria-hidden="true"
-      data-source-image="song1/song.swf lossless bitmap id 0039; courtain base sprite id 0042"
+      data-source-image="song1/song.swf courtain base sprite id 0042 child shape id 0038 depth 0001"
+    />
+    <img
+      class="source-alert-curtain-layer source-alert-curtain-curve"
+      src="${songCurtainCurveCxformUrl}"
+      alt=""
+      aria-hidden="true"
+      data-source-image="song1/song.swf courtain base sprite id 0042 child shape id 0040 depth 0002 matrix x 2.80 y -56.45 with CXForm add 0 102 255 0"
+    />
+    <img
+      class="source-alert-curtain-layer source-alert-curtain-stars"
+      src="${songCurtainStarsUrl}"
+      alt=""
+      aria-hidden="true"
+      data-source-image="song1/song.swf courtain base sprite id 0042 child shape id 0041 depth 0003"
     />
   `;
 }

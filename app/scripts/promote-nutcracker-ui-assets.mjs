@@ -16,6 +16,7 @@ const chooserControlsRoot = path.join(appRoot, "generated/nutcracker-source-extr
 const helperRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-helpframe");
 const warningRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-warningframe");
 const magicKeyRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-magickey");
+const songCurtainRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-courtain");
 const songHelpRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-helpframe");
 const songWarningRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-warningframe");
 const songKeyFrameRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-keyframe");
@@ -46,6 +47,21 @@ const uiAssets = [
     source: path.join(sourceRoot, "song1__song/lossless-39.png"),
     target: "song-curtain-scallop.png",
     sourceId: "song1/song.swf DEFINEBITSLOSSLESS2 id 0039, used by courtain base sprite id 0042",
+  },
+  {
+    source: path.join(songCurtainRoot, "courtain-shape-38-trim.png"),
+    target: "song-curtain-fill.png",
+    sourceId: "song1/song.swf courtain base sprite id 0042 child shape id 0038 depth 0001 bbox -219.20 -343.85 219.25 -4.05",
+  },
+  {
+    source: path.join(songCurtainRoot, "courtain-shape-40-cxform.png"),
+    target: "song-curtain-curve-cxform.png",
+    sourceId: "song1/song.swf courtain base sprite id 0042 child shape id 0040 depth 0002 x 2.80 y -56.45 with CXForm mul 0 0 0 1 add 0 102 255 0",
+  },
+  {
+    source: path.join(songCurtainRoot, "courtain-shape-41-trim.png"),
+    target: "song-curtain-stars.png",
+    sourceId: "song1/song.swf courtain base sprite id 0042 child shape id 0041 depth 0003 bbox -208.10 -261.85 205.75 -41.45",
   },
   {
     source: path.join(chooserRoot, "help-exit-sprite-68-cxform.png"),
@@ -146,6 +162,7 @@ await mkdir(chooserControlsRoot, { recursive: true });
 await mkdir(helperRoot, { recursive: true });
 await mkdir(warningRoot, { recursive: true });
 await mkdir(magicKeyRoot, { recursive: true });
+await mkdir(songCurtainRoot, { recursive: true });
 await mkdir(songHelpRoot, { recursive: true });
 await mkdir(songWarningRoot, { recursive: true });
 await mkdir(songKeyFrameRoot, { recursive: true });
@@ -422,6 +439,38 @@ if (!existsSync(wrappedMagicKeyPng)) {
   runTool("swfrender", ["-o", wrappedMagicKeyPng, wrappedMagicKeySwf]);
 }
 runTool("magick", [wrappedMagicKeyPng, "-trim", "+repage", wrappedMagicKeyTrimmedPng]);
+
+const curtainChildShapes = [
+  { id: "38", source: "courtain-shape-38.swf", rendered: "courtain-shape-38.png", trimmed: "courtain-shape-38-trim.png" },
+  { id: "40", source: "courtain-shape-40.swf", rendered: "courtain-shape-40.png", trimmed: "courtain-shape-40-trim.png" },
+  { id: "41", source: "courtain-shape-41.swf", rendered: "courtain-shape-41.png", trimmed: "courtain-shape-41-trim.png" },
+];
+
+for (const shape of curtainChildShapes) {
+  const shapeSwf = path.join(songCurtainRoot, shape.source);
+  const shapePng = path.join(songCurtainRoot, shape.rendered);
+  const shapeTrimmedPng = path.join(songCurtainRoot, shape.trimmed);
+  if (!existsSync(shapeSwf)) {
+    runTool("swfextract", ["-i", shape.id, "-o", shapeSwf, song1Swf]);
+  }
+  if (!existsSync(shapePng)) {
+    runTool("swfrender", ["-o", shapePng, shapeSwf]);
+  }
+  if (!existsSync(shapeTrimmedPng)) {
+    runTool("magick", [shapePng, "-trim", "+repage", shapeTrimmedPng]);
+  }
+}
+
+runTool("magick", [
+  path.join(songCurtainRoot, "courtain-shape-40-trim.png"),
+  "-alpha",
+  "on",
+  "-fill",
+  "#0066ff",
+  "-colorize",
+  "100",
+  path.join(songCurtainRoot, "courtain-shape-40-cxform.png"),
+]);
 
 const songHelpSpriteSwf = path.join(songHelpRoot, "helpframe-333.swf");
 if (!existsSync(songHelpSpriteSwf)) {

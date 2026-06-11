@@ -364,9 +364,19 @@ describe("desktop app shell", () => {
     );
     mount.querySelector<HTMLButtonElement>('[data-source-control="hintButton"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(mount.textContent).toContain('press "Yes" to change this song or "No" to cancel');
-    expect(mount.querySelector<HTMLImageElement>(".source-alert-curtain-art")?.src).toContain("song-curtain-scallop");
-    expect(mount.querySelector<HTMLImageElement>(".source-alert-curtain-art")?.dataset.sourceImage).toContain(
-      "bitmap id 0039",
+    expect(mount.querySelector<HTMLImageElement>(".source-alert-curtain-fill")?.src).toContain("song-curtain-fill");
+    expect(mount.querySelector<HTMLImageElement>(".source-alert-curtain-fill")?.dataset.sourceImage).toContain(
+      "shape id 0038",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-alert-curtain-curve")?.src).toContain(
+      "song-curtain-curve-cxform",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-alert-curtain-curve")?.dataset.sourceImage).toContain(
+      "shape id 0040",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-alert-curtain-stars")?.src).toContain("song-curtain-stars");
+    expect(mount.querySelector<HTMLImageElement>(".source-alert-curtain-stars")?.dataset.sourceImage).toContain(
+      "shape id 0041",
     );
     expect(mount.querySelector<HTMLImageElement>(".source-alert-yes img")?.src).toContain("song-yes-label");
     expect(mount.querySelector<HTMLImageElement>(".source-alert-no img")?.src).toContain("song-no-label");

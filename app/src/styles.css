@@ -685,61 +685,63 @@ button {
 
 .source-alert {
   position: absolute;
-  left: 100px;
-  top: 118px;
+  left: 101px;
+  top: -80px;
   z-index: 10;
-  width: 440px;
-  min-height: 154px;
-  border: 1px solid rgba(0, 102, 255, 0.82);
+  width: 476px;
+  height: 340px;
+  border: 0;
   color: #fff7a8;
-  background: rgba(0, 31, 84, 0.94);
-  box-shadow: 0 0 0 2px rgba(0, 18, 55, 0.68);
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
 }
 
 .source-hint-alert {
-  top: 78px;
-  min-height: 174px;
   pointer-events: none;
-}
-
-.source-hint-alert p {
-  margin-top: 70px;
 }
 
 .source-alert::before,
 .source-alert::after {
+  display: none;
+}
+
+.source-alert-curtain-layer {
   position: absolute;
-  content: "";
-  pointer-events: none;
-}
-
-.source-alert::before {
-  inset: 10px 14px 12px;
-  border: 1px solid rgba(0, 204, 255, 0.68);
-}
-
-.source-alert::after {
-  inset: 16px 22px 18px;
-  border: 1px solid rgba(255, 247, 168, 0.45);
-}
-
-.source-alert-curtain-art {
-  position: absolute;
-  top: -12px;
-  left: 14px;
   z-index: 1;
   display: block;
-  width: 412px;
-  height: 138px;
   image-rendering: auto;
   pointer-events: none;
 }
 
+.source-alert-curtain-fill {
+  left: 0;
+  top: 0;
+  width: 476px;
+  height: 340px;
+}
+
+.source-alert-curtain-stars {
+  left: 11px;
+  top: 82px;
+  width: 463px;
+  height: 156px;
+}
+
+.source-alert-curtain-curve {
+  left: 17px;
+  top: 261px;
+  width: 454px;
+  height: 99px;
+}
+
 .source-alert p {
-  position: relative;
+  position: absolute;
+  left: 93px;
+  top: 180px;
   z-index: 2;
-  width: 292px;
-  margin: 62px auto 8px;
+  width: 270px;
+  margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 14px;
   line-height: 1.18;
@@ -776,13 +778,13 @@ button {
 }
 
 .source-alert-yes {
-  left: 118px;
-  bottom: 20px;
+  left: 126px;
+  top: 278px;
 }
 
 .source-alert-no {
-  right: 118px;
-  bottom: 20px;
+  right: 126px;
+  top: 278px;
 }
 
 .track-card.source-track-hotspot {
