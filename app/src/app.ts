@@ -7,6 +7,7 @@ import chooserHallwayVectorUrl from "./assets/nutcracker-source/chooser-hallway-
 import chooserHelpButtonArtUrl from "./assets/nutcracker-source/chooser-help-button-art.png";
 import chooserHelpframeTalkerUrl from "./assets/nutcracker-source/chooser-helpframe-talker.png";
 import chooserInstrumentsCxformUrl from "./assets/nutcracker-source/chooser-instruments-cxform.png";
+import chooserExitButtonArtUrl from "./assets/nutcracker-source/chooser-exit-button-art.png";
 import chooserExitLabelUrl from "./assets/nutcracker-source/chooser-exit-label.png";
 import chooserWarningNoLabelUrl from "./assets/nutcracker-source/chooser-warning-no-label.png";
 import chooserWarningYesLabelUrl from "./assets/nutcracker-source/chooser-warning-yes-label.png";
@@ -1614,14 +1615,15 @@ function renderChooserSourceControls(): string {
         data-action="chooser-warning"
         data-source-control="quiter"
         data-source-placement="nutchooser.swf quiter root placement sprite id 0207 at depth 0173 matrix scale 0.900 x 585.90 y 472.45 ratio 5"
-        data-source-state="sprite id 0207 buttonON places button id 0206 depth 0001; source sibling text id 0204 renders the normal peach EXIT label; buttonOFF places blue text id 0203 depth 0001 matrix scale 1.722 x -114.95 y -12.70 with CXForm add 102 102 204 0"
-        data-source-image="normal visible EXIT label uses buttonON text id 0204; text id 0203 is the blue buttonOFF label"
+        data-source-state="sprite id 0207 buttonON places button id 0206 depth 0001; button id 0206 source art is recovered as shape id 0205 plus source sibling text id 0204 normal peach EXIT label; buttonOFF places blue text id 0203 depth 0001 matrix scale 1.722 x -114.95 y -12.70 with CXForm add 102 102 204 0"
+        data-source-image="normal visible EXIT button body uses shape id 0205 and label uses text id 0204; text id 0203 is the blue buttonOFF label; isolated button id 0206 rendering remains a local tooling gap"
         data-source-action="sets _root.theNextFrame to warningFrame; warningFrame YES button id 0183 calls _level0.gotoAndPlay('comeAgain')"
         data-source-help="Quit the Game"
         data-source-help-frame="3"
         data-source-help-bounds="nutchooser.swf button id 0206 action pushes string Quit the Game, frame 3, and calls _root.helpme; rollout calls _root.nohelp"
       >
-        <img src="${chooserExitLabelUrl}" alt="" aria-hidden="true" />
+        <img class="chooser-exit-button-art" src="${chooserExitButtonArtUrl}" alt="" aria-hidden="true" />
+        <img class="chooser-exit-label-art" src="${chooserExitLabelUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">EXIT</span>
       </button>
     </div>

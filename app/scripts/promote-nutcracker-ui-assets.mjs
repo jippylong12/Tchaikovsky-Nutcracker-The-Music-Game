@@ -96,6 +96,11 @@ const uiAssets = [
     sourceId: "nutchooser.swf quiter buttonON EXIT text id 0204, sibling to button id 0206; text id 0203 is the buttonOFF label",
   },
   {
+    source: path.join(chooserControlsRoot, "quiter-shape-205-trim.png"),
+    target: "chooser-exit-button-art.png",
+    sourceId: "nutchooser.swf quiter buttonON button id 0206 uses shape id 0205 as the source button body; isolated button id 0206 render is not reliable locally",
+  },
+  {
     source: path.join(chooserControlsRoot, "help-button-on-shape-201-trim.png"),
     target: "chooser-help-button-art.png",
     sourceId: "nutchooser.swf helpButton buttonON shape id 0201, placed by sprite id 0202 at depth 0004",
@@ -344,6 +349,7 @@ const chooserControlLabels = [
 
 const chooserControlShapes = [
   { id: "201", source: "help-button-on-shape-201.swf", rendered: "help-button-on-shape-201.png", trimmed: "help-button-on-shape-201-trim.png" },
+  { id: "205", source: "quiter-shape-205.swf", rendered: "quiter-shape-205.png", trimmed: "quiter-shape-205-trim.png" },
 ];
 
 for (const shape of chooserControlShapes) {

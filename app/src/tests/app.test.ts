@@ -244,7 +244,10 @@ describe("desktop app shell", () => {
       "nutchooser.swf quiter",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceState).toContain(
-      "text id 0204 renders the normal peach EXIT label",
+      "shape id 0205",
+    );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceImage).toContain(
+      "shape id 0205",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceImage).toContain(
       "text id 0204",
@@ -267,7 +270,10 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>('[data-source-control="helpButton"] img')?.src).toContain(
       "chooser-help-button-art",
     );
-    expect(mount.querySelector<HTMLImageElement>('[data-source-control="quiter"] img')?.src).toContain(
+    expect(mount.querySelector<HTMLImageElement>('[data-source-control="quiter"] .chooser-exit-button-art')?.src).toContain(
+      "chooser-exit-button-art",
+    );
+    expect(mount.querySelector<HTMLImageElement>('[data-source-control="quiter"] .chooser-exit-label-art')?.src).toContain(
       "chooser-exit-label",
     );
     mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
