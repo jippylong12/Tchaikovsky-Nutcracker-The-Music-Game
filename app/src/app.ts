@@ -1,6 +1,7 @@
 import nutChooserFrameUrl from "./assets/nutcracker-source/nutchooser-frame-source.png";
 import chooserDoorUrl from "./assets/nutcracker-source/chooser-door.png";
 import chooserHallwayUrl from "./assets/nutcracker-source/chooser-hallway.png";
+import chooserHallwayVectorUrl from "./assets/nutcracker-source/chooser-hallway-vector.png";
 import chooserHelpButtonArtUrl from "./assets/nutcracker-source/chooser-help-button-art.png";
 import chooserHelpframeTalkerUrl from "./assets/nutcracker-source/chooser-helpframe-talker.png";
 import chooserInstrumentsCxformUrl from "./assets/nutcracker-source/chooser-instruments-cxform.png";
@@ -908,6 +909,14 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
         alt=""
         aria-hidden="true"
         data-source-placement="nutchooser.swf id 0021 depth 0001 matrix scale 0.743 x 87.85 y 46.15"
+      />
+      <img
+        class="nutcracker-chooser-hallway-vector"
+        src="${chooserHallwayVectorUrl}"
+        alt=""
+        aria-hidden="true"
+        data-source-placement="nutchooser.swf sprite id 0021 contains shape id 0018 at depth 0011; root scale 0.743 x 87.85 y 46.15; shape bbox [-19.65,-67.05,637.70,414.95]"
+        data-source-image="shape id 0018 rendered with swfrender and trimmed by npm run assets:nutcracker-ui; full sprite id 0021 still blocked by local JPEG3 renderer support"
       />
       <img
         class="nutcracker-frame-art"

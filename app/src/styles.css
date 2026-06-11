@@ -364,6 +364,17 @@ button {
   pointer-events: none;
 }
 
+.nutcracker-chooser-hallway-vector {
+  position: absolute;
+  left: 73px;
+  top: -4px;
+  z-index: 0;
+  width: 489px;
+  height: 358px;
+  object-fit: fill;
+  pointer-events: none;
+}
+
 .nutcracker-frame-art {
   position: absolute;
   left: 6px;

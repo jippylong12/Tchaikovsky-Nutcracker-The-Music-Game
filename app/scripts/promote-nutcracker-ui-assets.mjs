@@ -11,6 +11,7 @@ const projectRoot = path.resolve(appRoot, "..");
 const sourceRoot = path.join(appRoot, "generated/nutcracker-source-extract/full-swf-pass/direct-png");
 const targetRoot = path.join(appRoot, "src/assets/nutcracker-source");
 const chooserRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser");
+const chooserBackgroundRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-background");
 const chooserControlsRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-controls");
 const helperRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-helpframe");
 const warningRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-warningframe");
@@ -48,6 +49,11 @@ const uiAssets = [
     source: path.join(chooserRoot, "help-exit-sprite-68-cxform.png"),
     target: "chooser-instruments-cxform.png",
     sourceId: "nutchooser.swf sprite id 0068 rendered, trimmed, then root placement depth 0069 CXForm add -209 -153 134 -223 applied",
+  },
+  {
+    source: path.join(chooserBackgroundRoot, "background-shape-18-trim.png"),
+    target: "chooser-hallway-vector.png",
+    sourceId: "nutchooser.swf background sprite id 0021 shape id 0018, root placement depth 0001 scale 0.743 x 87.85 y 46.15",
   },
   {
     source: path.join(helperRoot, "helpframe-169-wrapped.png"),
@@ -98,6 +104,7 @@ const uiAssets = [
 
 await mkdir(targetRoot, { recursive: true });
 await mkdir(chooserRoot, { recursive: true });
+await mkdir(chooserBackgroundRoot, { recursive: true });
 await mkdir(chooserControlsRoot, { recursive: true });
 await mkdir(helperRoot, { recursive: true });
 await mkdir(warningRoot, { recursive: true });
@@ -145,6 +152,19 @@ runTool("magick", [
   "+channel",
   chooserInstrumentCxformPng,
 ]);
+
+const chooserBackgroundShapeSwf = path.join(chooserBackgroundRoot, "background-shape-18.swf");
+const chooserBackgroundShapePng = path.join(chooserBackgroundRoot, "background-shape-18.png");
+const chooserBackgroundShapeTrimmedPng = path.join(chooserBackgroundRoot, "background-shape-18-trim.png");
+if (!existsSync(chooserBackgroundShapeSwf)) {
+  runTool("swfextract", ["-i", "18", "-o", chooserBackgroundShapeSwf, nutchooserSwf]);
+}
+if (!existsSync(chooserBackgroundShapePng)) {
+  runTool("swfrender", ["-o", chooserBackgroundShapePng, chooserBackgroundShapeSwf]);
+}
+if (!existsSync(chooserBackgroundShapeTrimmedPng)) {
+  runTool("magick", [chooserBackgroundShapePng, "-trim", "+repage", chooserBackgroundShapeTrimmedPng]);
+}
 
 for (const spriteId of ["169", "170"]) {
   const renderedPng = path.join(helperRoot, `helpframe-${spriteId}.png`);
