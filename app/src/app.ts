@@ -1,5 +1,6 @@
 import nutChooserFrameUrl from "./assets/nutcracker-source/nutchooser-frame-source.png";
 import chooserDoorUrl from "./assets/nutcracker-source/chooser-door.png";
+import chooserHallwayFillUrl from "./assets/nutcracker-source/chooser-hallway-fill.png";
 import chooserHallwayUrl from "./assets/nutcracker-source/chooser-hallway.png";
 import chooserHallwayPortalCxformUrl from "./assets/nutcracker-source/chooser-hallway-portal-cxform.png";
 import chooserHallwayVectorUrl from "./assets/nutcracker-source/chooser-hallway-vector.png";
@@ -910,6 +911,14 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
         alt=""
         aria-hidden="true"
         data-source-placement="nutchooser.swf id 0021 depth 0001 matrix scale 0.743 x 87.85 y 46.15"
+      />
+      <img
+        class="nutcracker-chooser-hallway-fill"
+        src="${chooserHallwayFillUrl}"
+        alt=""
+        aria-hidden="true"
+        data-source-placement="nutchooser.swf sprite id 0021 places shape id 0016 at depth 0001 with root scale 0.743 x 87.85 y 46.15; shape bbox [-5.25,30.05,612.45,387.00]"
+        data-source-image="shape id 0016 rendered with swfrender and trimmed by npm run assets:nutcracker-ui"
       />
       <img
         class="nutcracker-chooser-hallway-portal"

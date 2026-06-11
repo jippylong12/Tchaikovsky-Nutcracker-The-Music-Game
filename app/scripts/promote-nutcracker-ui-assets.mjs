@@ -51,6 +51,11 @@ const uiAssets = [
     sourceId: "nutchooser.swf sprite id 0068 rendered, trimmed, then root placement depth 0069 CXForm add -209 -153 134 -223 applied",
   },
   {
+    source: path.join(chooserBackgroundRoot, "background-shape-16-trim.png"),
+    target: "chooser-hallway-fill.png",
+    sourceId: "nutchooser.swf background sprite id 0021 shape id 0016, root placement depth 0001 scale 0.743 x 87.85 y 46.15",
+  },
+  {
     source: path.join(chooserBackgroundRoot, "background-shape-18-trim.png"),
     target: "chooser-hallway-vector.png",
     sourceId: "nutchooser.swf background sprite id 0021 shape id 0018, root placement depth 0001 scale 0.743 x 87.85 y 46.15",
@@ -169,6 +174,19 @@ if (!existsSync(chooserBackgroundShapePng)) {
 }
 if (!existsSync(chooserBackgroundShapeTrimmedPng)) {
   runTool("magick", [chooserBackgroundShapePng, "-trim", "+repage", chooserBackgroundShapeTrimmedPng]);
+}
+
+const chooserFillShapeSwf = path.join(chooserBackgroundRoot, "background-shape-16.swf");
+const chooserFillShapePng = path.join(chooserBackgroundRoot, "background-shape-16.png");
+const chooserFillShapeTrimmedPng = path.join(chooserBackgroundRoot, "background-shape-16-trim.png");
+if (!existsSync(chooserFillShapeSwf)) {
+  runTool("swfextract", ["-i", "16", "-o", chooserFillShapeSwf, nutchooserSwf]);
+}
+if (!existsSync(chooserFillShapePng)) {
+  runTool("swfrender", ["-o", chooserFillShapePng, chooserFillShapeSwf]);
+}
+if (!existsSync(chooserFillShapeTrimmedPng)) {
+  runTool("magick", [chooserFillShapePng, "-trim", "+repage", chooserFillShapeTrimmedPng]);
 }
 
 const chooserPortalShapeSwf = path.join(chooserBackgroundRoot, "background-shape-17.swf");
