@@ -1710,6 +1710,23 @@ button {
   object-fit: contain;
 }
 
+.source-song-keyframe {
+  position: absolute;
+  left: -16px;
+  top: 53px;
+  z-index: 25;
+  width: 523px;
+  height: 97px;
+  pointer-events: none;
+}
+
+.source-song-keyframe img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
 .source-chooser-help-modal {
   z-index: 30;
 }

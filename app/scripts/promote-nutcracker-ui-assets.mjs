@@ -18,6 +18,7 @@ const warningRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutc
 const magicKeyRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-magickey");
 const songHelpRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-helpframe");
 const songWarningRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-warningframe");
+const songKeyFrameRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-keyframe");
 const nutchooserSwf = path.join(projectRoot, "analysis/setup/app/games/nutcrackergame/nutchooser.swf");
 const song1Swf = path.join(projectRoot, "analysis/setup/app/games/nutcrackergame/song1/song.swf");
 
@@ -117,6 +118,11 @@ const uiAssets = [
     sourceId: "song1/song.swf helpframe sprite id 0333 rendered in translated wrapper, placed by root helpframe at depth 0001 x -5.00 y 74.95 ratio 27",
   },
   {
+    source: path.join(songKeyFrameRoot, "keyframe-355-wrapped-trim.png"),
+    target: "song-keyframe-talker.png",
+    sourceId: "song1/song.swf keyFrame sprite id 0355 rendered in translated wrapper, placed by root keyFrame at depth 0001 x -15.05 y 53.20 ratio 30; shown after final Nutcracker door grants gameKey1",
+  },
+  {
     source: path.join(songWarningRoot, "song-warningframe-340-wrapped.png"),
     target: "song-warningframe-talker.png",
     sourceId: "song1/song.swf warningFrame sprite id 0340 rendered in translated wrapper, placed by root warningFrame at depth 0001 x -15.45 y 52.40 ratio 29",
@@ -142,6 +148,7 @@ await mkdir(warningRoot, { recursive: true });
 await mkdir(magicKeyRoot, { recursive: true });
 await mkdir(songHelpRoot, { recursive: true });
 await mkdir(songWarningRoot, { recursive: true });
+await mkdir(songKeyFrameRoot, { recursive: true });
 
 const chooserInstrumentSwf = path.join(chooserRoot, "help-exit-sprite-68.swf");
 const chooserInstrumentPng = path.join(chooserRoot, "help-exit-sprite-68.png");
@@ -440,6 +447,33 @@ if (!existsSync(wrappedSongHelpPng)) {
   ]);
   runTool("swfrender", ["-o", wrappedSongHelpPng, wrappedSongHelpSwf]);
 }
+
+const songKeyFrameSpriteSwf = path.join(songKeyFrameRoot, "keyframe-355.swf");
+if (!existsSync(songKeyFrameSpriteSwf)) {
+  runTool("swfextract", ["-i", "355", "-o", songKeyFrameSpriteSwf, song1Swf]);
+}
+
+const wrappedSongKeyFrameSwf = path.join(songKeyFrameRoot, "keyframe-355-wrapped.swf");
+const wrappedSongKeyFramePng = path.join(songKeyFrameRoot, "keyframe-355-wrapped.png");
+const wrappedSongKeyFrameTrimmedPng = path.join(songKeyFrameRoot, "keyframe-355-wrapped-trim.png");
+if (!existsSync(wrappedSongKeyFramePng)) {
+  runTool("swfcombine", [
+    "--stack1",
+    "-X",
+    "700",
+    "-Y",
+    "260",
+    "-x",
+    "260",
+    "-y",
+    "120",
+    "-o",
+    wrappedSongKeyFrameSwf,
+    songKeyFrameSpriteSwf,
+  ]);
+  runTool("swfrender", ["-o", wrappedSongKeyFramePng, wrappedSongKeyFrameSwf]);
+}
+runTool("magick", [wrappedSongKeyFramePng, "-trim", "+repage", wrappedSongKeyFrameTrimmedPng]);
 
 const songWarningSpriteSwf = path.join(songWarningRoot, "song-warningframe-340.swf");
 if (!existsSync(songWarningSpriteSwf)) {

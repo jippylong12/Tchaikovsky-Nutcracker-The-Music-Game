@@ -27,6 +27,7 @@ import songExitLabelUrl from "./assets/nutcracker-source/song-exit-label.png";
 import songHelpArtUrl from "./assets/nutcracker-source/song-help-art.png";
 import songHelpframeTalkerUrl from "./assets/nutcracker-source/song-helpframe-talker.png";
 import songHintLabelUrl from "./assets/nutcracker-source/song-hint-label.png";
+import songKeyFrameTalkerUrl from "./assets/nutcracker-source/song-keyframe-talker.png";
 import songListenLabelUrl from "./assets/nutcracker-source/song-listen-label.png";
 import songNoLabelUrl from "./assets/nutcracker-source/song-no-label.png";
 import songPlayAgainLabelUrl from "./assets/nutcracker-source/song-play-again-label.png";
@@ -716,6 +717,7 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
       progress.nutDoors[song.id],
       shellState.nutcrackerSelections[song.id],
       shellState.nutcrackerFeedback[song.id],
+      progress.openedNutDoorCount === nutcrackerSongGames.length,
       shellState.activeAudioId !== null,
       shellState.pendingNutcrackerSongChange === song.id,
       shellState.pendingNutcrackerSongExit === song.id,
@@ -1033,6 +1035,7 @@ function renderNutcrackerSongGame(
   completed: boolean,
   selectedTrackNumbers: readonly NutcrackerTrackNumber[],
   feedback: string | null,
+  allNutcrackerDoorsComplete: boolean,
   isPlaying: boolean,
   changePromptOpen: boolean,
   exitWarningOpen: boolean,
@@ -1043,6 +1046,7 @@ function renderNutcrackerSongGame(
   const incorrectSelectionCount = feedback ? Math.max(0, selectedTrackCount - correctSelectionCount) : 0;
   const hintOnly = feedback === "hint";
   const selectionCorrect = isCorrectNutcrackerSelection(song, selectedTrackNumbers);
+  const showFinalKeyFrame = feedback === "ok" && allNutcrackerDoorsComplete;
   const sourceMessage = feedback && !hintOnly
     ? selectionCorrect
       ? null
@@ -1061,6 +1065,7 @@ function renderNutcrackerSongGame(
         ${renderSelectedNutcrackerActors(song, selectedTrackNumbers, feedback)}
         ${song.tracks.map((track) => renderNutcrackerTrackButton(song.id, track, selectedTrackNumbers, feedback)).join("")}
         ${renderNutcrackerFlyingHelp()}
+        ${showFinalKeyFrame ? renderNutcrackerSongKeyFrame() : ""}
         <div class="song-actions source-song-actions" aria-label="Source song controls">
           <button class="media-button source-label-button source-listen-button" type="button" data-source-control="songChooser" data-source-help="${isPlaying ? "Stop the Music" : "Listen to the Original Music"}" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="play-theme" data-song-id="${song.id}">
             <img src="${isPlaying ? songStopLabelUrl : songListenLabelUrl}" alt="" aria-hidden="true" />
@@ -1100,6 +1105,26 @@ function renderNutcrackerSongGame(
         <p class="sr-only">${completed ? "Door cleared." : "Door ready."} Source: ${escapeHtml(song.sourcePath)}. Track streams extracted from recovered SWFs.</p>
       </section>
     </div>
+  `;
+}
+
+function renderNutcrackerSongKeyFrame(): string {
+  return `
+    <aside
+      class="source-song-keyframe"
+      aria-label="Nutcracker completion key"
+      data-source-frame="song1/song.swf keyFrame"
+      data-source-placement="keyFrame places sprite id 0355 depth 0001 matrix scale 1.051 x -15.05 y 53.20 ratio 30; noAction id 0356 depth 0003"
+      data-source-action="winner timeline calls saveNutDoor; when _level0.nutDoorsVisited equals 7 it calls saveKey1.exe, sets gameKey1, sets _root.theNextFrame to keyFrame, and drives _root.usmus to showUp"
+    >
+      <img
+        src="${songKeyFrameTalkerUrl}"
+        alt=""
+        aria-hidden="true"
+        data-source-image="song1/song.swf keyFrame sprite id 0355 rendered in swfcombine translated wrapper -X 700 -Y 260 -x 260 -y 120; direct render clips negative-coordinate source art"
+      />
+      <p class="sr-only">Nutcracker song key earned.</p>
+    </aside>
   `;
 }
 

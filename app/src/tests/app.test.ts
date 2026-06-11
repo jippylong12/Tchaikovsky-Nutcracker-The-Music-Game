@@ -539,6 +539,19 @@ describe("desktop app shell", () => {
       expect(mount.querySelector<HTMLElement>(".source-play-again-button")?.dataset.sourcePlacement).toContain(
         "id 0115 depth 0116",
       );
+      if (song.id === nutcrackerSongGames.length) {
+        expect(mount.querySelector<HTMLElement>(".source-song-keyframe")?.dataset.sourceFrame).toBe(
+          "song1/song.swf keyFrame",
+        );
+        expect(mount.querySelector<HTMLElement>(".source-song-keyframe")?.dataset.sourceAction).toContain(
+          "saveKey1.exe",
+        );
+        expect(mount.querySelector<HTMLImageElement>(".source-song-keyframe img")?.src).toContain(
+          "song-keyframe-talker",
+        );
+      } else {
+        expect(mount.querySelector(".source-song-keyframe")).toBeNull();
+      }
     });
 
     expect(mount.textContent).toContain("Game keys1/9");
