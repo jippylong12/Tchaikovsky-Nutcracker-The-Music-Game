@@ -418,6 +418,17 @@ button {
   pointer-events: none;
 }
 
+.nutcracker-chooser-magic-key {
+  position: absolute;
+  left: 293px;
+  top: 142px;
+  z-index: 4;
+  width: 46px;
+  height: 73px;
+  object-fit: fill;
+  pointer-events: none;
+}
+
 .nutcracker-door-grid {
   position: absolute;
   inset: 0;

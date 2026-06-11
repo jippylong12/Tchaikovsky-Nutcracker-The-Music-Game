@@ -9,6 +9,7 @@ import chooserHelpframeTalkerUrl from "./assets/nutcracker-source/chooser-helpfr
 import chooserInstrumentsCxformUrl from "./assets/nutcracker-source/chooser-instruments-cxform.png";
 import chooserExitButtonArtUrl from "./assets/nutcracker-source/chooser-exit-button-art.png";
 import chooserExitLabelUrl from "./assets/nutcracker-source/chooser-exit-label.png";
+import chooserMagicKeyUrl from "./assets/nutcracker-source/chooser-magic-key.png";
 import chooserWarningNoLabelUrl from "./assets/nutcracker-source/chooser-warning-no-label.png";
 import chooserWarningYesLabelUrl from "./assets/nutcracker-source/chooser-warning-yes-label.png";
 import chooserWarningframeTalkerUrl from "./assets/nutcracker-source/chooser-warningframe-talker.png";
@@ -1003,8 +1004,27 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
           .join("")}
       </div>
       ${renderChooserSourceControls()}
+      ${renderChooserMagicKey(progress)}
       ${renderNutcrackerFlyingHelp("chooser")}
     </div>
+  `;
+}
+
+function renderChooserMagicKey(progress: ReturnType<ProgressStoreController["getSnapshot"]>): string {
+  const visible = progress.openedNutDoorCount === nutcrackerSongGames.length;
+  return `
+    <img
+      class="nutcracker-chooser-magic-key"
+      src="${chooserMagicKeyUrl}"
+      alt=""
+      aria-hidden="true"
+      data-source-instance="magicKey"
+      data-source-visible="${visible ? "true" : "false"}"
+      data-source-placement="nutchooser.swf places magicKey sprite id 0213 at depth 0175 matrix scale 0.642 x 316.05 y 175.80 ratio 5"
+      data-source-action="on load reads _level0.nutDoorsVisited; sets this._visible to 1 only when nutDoorsVisited equals 8, otherwise 0"
+      data-source-image="sprite id 0213 rendered in swfcombine wrapper -X 180 -Y 180 -x 80 -y 90 to avoid negative-coordinate clipping; trimmed output promoted by npm run assets:nutcracker-ui"
+      ${visible ? "" : "hidden"}
+    />
   `;
 }
 

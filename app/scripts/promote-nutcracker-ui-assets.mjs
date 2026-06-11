@@ -15,6 +15,7 @@ const chooserBackgroundRoot = path.join(appRoot, "generated/nutcracker-source-ex
 const chooserControlsRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-controls");
 const helperRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-helpframe");
 const warningRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-warningframe");
+const magicKeyRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-magickey");
 const songHelpRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-helpframe");
 const songWarningRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-warningframe");
 const nutchooserSwf = path.join(projectRoot, "analysis/setup/app/games/nutcrackergame/nutchooser.swf");
@@ -106,6 +107,11 @@ const uiAssets = [
     sourceId: "nutchooser.swf helpButton buttonON shape id 0201, placed by sprite id 0202 at depth 0004",
   },
   {
+    source: path.join(magicKeyRoot, "magickey-213-wrapped-trim.png"),
+    target: "chooser-magic-key.png",
+    sourceId: "nutchooser.swf magicKey sprite id 0213 rendered in translated wrapper, root depth 0175 scale 0.642 x 316.05 y 175.80; visible only when nutDoorsVisited == 8",
+  },
+  {
     source: path.join(songHelpRoot, "helpframe-333-wrapped.png"),
     target: "song-helpframe-talker.png",
     sourceId: "song1/song.swf helpframe sprite id 0333 rendered in translated wrapper, placed by root helpframe at depth 0001 x -5.00 y 74.95 ratio 27",
@@ -133,6 +139,7 @@ await mkdir(chooserBackgroundRoot, { recursive: true });
 await mkdir(chooserControlsRoot, { recursive: true });
 await mkdir(helperRoot, { recursive: true });
 await mkdir(warningRoot, { recursive: true });
+await mkdir(magicKeyRoot, { recursive: true });
 await mkdir(songHelpRoot, { recursive: true });
 await mkdir(songWarningRoot, { recursive: true });
 
@@ -381,6 +388,33 @@ for (const label of chooserControlLabels) {
     runTool("magick", [labelPng, "-trim", "+repage", labelTrimmedPng]);
   }
 }
+
+const magicKeySwf = path.join(magicKeyRoot, "magickey-213.swf");
+if (!existsSync(magicKeySwf)) {
+  runTool("swfextract", ["-i", "213", "-o", magicKeySwf, nutchooserSwf]);
+}
+
+const wrappedMagicKeySwf = path.join(magicKeyRoot, "magickey-213-wrapped.swf");
+const wrappedMagicKeyPng = path.join(magicKeyRoot, "magickey-213-wrapped.png");
+const wrappedMagicKeyTrimmedPng = path.join(magicKeyRoot, "magickey-213-wrapped-trim.png");
+if (!existsSync(wrappedMagicKeyPng)) {
+  runTool("swfcombine", [
+    "--stack1",
+    "-X",
+    "180",
+    "-Y",
+    "180",
+    "-x",
+    "80",
+    "-y",
+    "90",
+    "-o",
+    wrappedMagicKeySwf,
+    magicKeySwf,
+  ]);
+  runTool("swfrender", ["-o", wrappedMagicKeyPng, wrappedMagicKeySwf]);
+}
+runTool("magick", [wrappedMagicKeyPng, "-trim", "+repage", wrappedMagicKeyTrimmedPng]);
 
 const songHelpSpriteSwf = path.join(songHelpRoot, "helpframe-333.swf");
 if (!existsSync(songHelpSpriteSwf)) {

@@ -27,6 +27,7 @@
 - If two rendered assets are pixel-identical but come from different source symbols or scenes, prefer a correctly named source-local promotion for the runtime import and document why. Pixel identity is not enough reason to keep misleading provenance.
 - If a full sprite/frame render fails, inspect its child shapes/text/bitmaps before accepting a broad fallback. Promote recoverable child layers and document the remaining display-list or tooling gap in the source map and knowledge base.
 - If a source button cannot be flattened as one symbol, compose recoverable source child layers rather than falling back to label-only or CSS-only UI. Example: chooser `quiter` uses shape id `0205` plus text id `0204` because button id `0206` renders locally as a 1 x 1 placeholder.
+- For completion, reward, unlock, or progress visuals, inspect hidden/root-gated source instances before creating new badges or indicators. Example: chooser `magicKey` is sprite id `0213`, hidden until `nutDoorsVisited == 8`, and should be promoted from source art rather than replaced by generic completion UI.
 - Keep `JIP-349` open for UI approval unless Marcus explicitly approves the UI. UI code changes should not be marked Done from automated checks alone.
 
 ## Source-Reconstruction Loop

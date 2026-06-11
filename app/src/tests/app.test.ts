@@ -3,7 +3,12 @@ import { createAppShell } from "../app";
 import { createAudioService, type AudioElementLike } from "../audio/audioService";
 import { getCorrectNutcrackerTrackNumbers, nutcrackerSongGames } from "../data/nutcrackerSongGames";
 import { dictionaryInstruments, readingActivities } from "../data/referenceContent";
-import { createProgressStore, progressStorageKey, type ProgressPersistence } from "../state/progressStore";
+import {
+  createProgressStore,
+  progressStorageKey,
+  type ProgressPersistence,
+  type ProgressStoreController,
+} from "../state/progressStore";
 import { statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -34,9 +39,11 @@ function createMemoryPersistence(): ProgressPersistence {
   };
 }
 
-function createTestShell(mount: HTMLElement): void {
+function createTestShell(mount: HTMLElement, configureProgress?: (progress: ProgressStoreController) => void): void {
+  const progress = createProgressStore(createMemoryPersistence());
+  configureProgress?.(progress);
   createAppShell(mount, {
-    progress: createProgressStore(createMemoryPersistence()),
+    progress,
     audio: createAudioService({
       createAudioElement: () => new FakeAudioElement(),
     }),
@@ -276,6 +283,13 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>('[data-source-control="quiter"] .chooser-exit-label-art')?.src).toContain(
       "chooser-exit-label",
     );
+    const hiddenMagicKey = mount.querySelector<HTMLImageElement>(".nutcracker-chooser-magic-key");
+    expect(hiddenMagicKey?.src).toContain("chooser-magic-key");
+    expect(hiddenMagicKey?.hidden).toBe(true);
+    expect(hiddenMagicKey?.dataset.sourceVisible).toBe("false");
+    expect(hiddenMagicKey?.dataset.sourcePlacement).toContain("sprite id 0213 at depth 0175");
+    expect(hiddenMagicKey?.dataset.sourceAction).toContain("nutDoorsVisited equals 8");
+    expect(hiddenMagicKey?.dataset.sourceImage).toContain("swfcombine wrapper");
     mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dispatchEvent(new FocusEvent("focus", { bubbles: false }));
     expect(mount.querySelector<HTMLElement>(".source-flying-help-frame-4 .source-flying-help-text-fill")?.textContent).toBe(
       "Help",
@@ -414,6 +428,22 @@ describe("desktop app shell", () => {
     expect(mount.textContent).not.toContain("Test");
     expect(mount.textContent).not.toContain("Correct arrangement");
     expect(mount.textContent).toContain("Song doors");
+  });
+
+  it("shows the source magic key only after all Nutcracker doors are complete", () => {
+    const mount = document.createElement("main");
+
+    createTestShell(mount, (progress) => {
+      nutcrackerSongGames.forEach((song) => {
+        progress.markNutDoor(song.id);
+      });
+    });
+    mount.querySelector<HTMLButtonElement>('[data-route="nutcracker-chooser"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    const magicKey = mount.querySelector<HTMLImageElement>(".nutcracker-chooser-magic-key");
+    expect(magicKey?.hidden).toBe(false);
+    expect(magicKey?.dataset.sourceVisible).toBe("true");
+    expect(magicKey?.src).toContain("chooser-magic-key");
   });
 
   it("renders recovered JPEG3 scenery on source-backed Nutcracker song scenes", () => {
