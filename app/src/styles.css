@@ -471,10 +471,15 @@ button {
 }
 
 .chooser-source-exit-button {
-  left: 586px;
-  top: 472px;
-  width: 54px;
-  height: 26px;
+  left: 578px;
+  top: 464px;
+  width: 39px;
+  height: 13px;
+}
+
+.chooser-source-help-button img,
+.chooser-source-exit-button img {
+  object-fit: fill;
 }
 
 .nutcracker-song-scene {

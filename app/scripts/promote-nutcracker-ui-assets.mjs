@@ -91,9 +91,9 @@ const uiAssets = [
     sourceId: "nutchooser.swf warningFrame NO text id 0185, button id 0188, root placement x 35.30 y -76.55 ratio 24",
   },
   {
-    source: path.join(chooserControlsRoot, "quiter-text-203-trim.png"),
+    source: path.join(chooserControlsRoot, "quiter-text-204-trim.png"),
     target: "chooser-exit-label.png",
-    sourceId: "nutchooser.swf quiter EXIT text id 0203, placed by sprite id 0207 buttonOFF frame at depth 0001",
+    sourceId: "nutchooser.swf quiter buttonON EXIT text id 0204, sibling to button id 0206; text id 0203 is the buttonOFF label",
   },
   {
     source: path.join(chooserControlsRoot, "help-button-on-shape-201-trim.png"),
@@ -339,6 +339,7 @@ for (const label of warningLabels) {
 
 const chooserControlLabels = [
   { id: "203", source: "quiter-text-203.swf", rendered: "quiter-text-203.png", trimmed: "quiter-text-203-trim.png" },
+  { id: "204", source: "quiter-text-204.swf", rendered: "quiter-text-204.png", trimmed: "quiter-text-204-trim.png" },
 ];
 
 const chooserControlShapes = [

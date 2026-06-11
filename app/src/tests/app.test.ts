@@ -244,7 +244,13 @@ describe("desktop app shell", () => {
       "nutchooser.swf quiter",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceState).toContain(
-      "buttonOFF places chooser text id 0203",
+      "text id 0204 renders the normal peach EXIT label",
+    );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceImage).toContain(
+      "text id 0204",
+    );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceImage).toContain(
+      "text id 0203 is the blue buttonOFF label",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceHelp).toBe(
       "Quit the Game",
