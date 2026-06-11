@@ -4,6 +4,7 @@ import chooserHallwayUrl from "./assets/nutcracker-source/chooser-hallway.png";
 import chooserHelpButtonArtUrl from "./assets/nutcracker-source/chooser-help-button-art.png";
 import chooserHelpframeTalkerUrl from "./assets/nutcracker-source/chooser-helpframe-talker.png";
 import chooserInstrumentsCxformUrl from "./assets/nutcracker-source/chooser-instruments-cxform.png";
+import chooserExitLabelUrl from "./assets/nutcracker-source/chooser-exit-label.png";
 import chooserWarningNoLabelUrl from "./assets/nutcracker-source/chooser-warning-no-label.png";
 import chooserWarningYesLabelUrl from "./assets/nutcracker-source/chooser-warning-yes-label.png";
 import chooserWarningframeTalkerUrl from "./assets/nutcracker-source/chooser-warningframe-talker.png";
@@ -1551,7 +1552,7 @@ function renderSourceSceneActions(route: RouteDefinition): string {
         data-source-action="sets _root.theNextFrame to warningFrame; warningFrame YES button id 0183 calls _level0.gotoAndPlay('comeAgain')"
       >
         <span class="source-control-help" aria-hidden="true">Quit the Game</span>
-        <img src="${songExitLabelUrl}" alt="" aria-hidden="true" />
+        <img src="${chooserExitLabelUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">EXIT</span>
       </button>
     `;

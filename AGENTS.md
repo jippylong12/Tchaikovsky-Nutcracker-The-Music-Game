@@ -24,6 +24,7 @@
 - When a DOM fallback is necessary, document the exact SWF/tool limitation in `docs/nutcracker-song-source-map.md` or `docs/agent-knowledge-base.md`.
 - Do not add generic app controls inside the preserved 640 x 480 Flash viewport when a source control, source text object, or source ActionScript behavior exists.
 - If an asset name turns out to be wrong or misleading, add a correctly named promoted asset/script and update the docs instead of continuing to use the misleading name.
+- If two rendered assets are pixel-identical but come from different source symbols or scenes, prefer a correctly named source-local promotion for the runtime import and document why. Pixel identity is not enough reason to keep misleading provenance.
 - Keep `JIP-349` open for UI approval unless Marcus explicitly approves the UI. UI code changes should not be marked Done from automated checks alone.
 
 ## Source-Reconstruction Loop

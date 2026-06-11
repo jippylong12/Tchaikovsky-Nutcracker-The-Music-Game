@@ -192,6 +192,9 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>('[data-source-control="helpButton"] img')?.src).toContain(
       "chooser-help-button-art",
     );
+    expect(mount.querySelector<HTMLImageElement>('[data-source-control="quiter"] img')?.src).toContain(
+      "chooser-exit-label",
+    );
     expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.textContent?.trim()).toBe("");
     mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     const chooserHelp = mount.querySelector<HTMLElement>(".source-chooser-help-modal");

@@ -11,6 +11,7 @@ const projectRoot = path.resolve(appRoot, "..");
 const sourceRoot = path.join(appRoot, "generated/nutcracker-source-extract/full-swf-pass/direct-png");
 const targetRoot = path.join(appRoot, "src/assets/nutcracker-source");
 const chooserRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser");
+const chooserControlsRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-controls");
 const helperRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-helpframe");
 const warningRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-warningframe");
 const songHelpRoot = path.join(appRoot, "generated/nutcracker-source-extract/song-helpframe");
@@ -69,6 +70,11 @@ const uiAssets = [
     sourceId: "nutchooser.swf warningFrame NO text id 0185, button id 0188, root placement x 35.30 y -76.55 ratio 24",
   },
   {
+    source: path.join(chooserControlsRoot, "quiter-text-203-trim.png"),
+    target: "chooser-exit-label.png",
+    sourceId: "nutchooser.swf quiter EXIT text id 0203, placed by sprite id 0207 buttonOFF frame at depth 0001",
+  },
+  {
     source: path.join(songHelpRoot, "helpframe-333-wrapped.png"),
     target: "song-helpframe-talker.png",
     sourceId: "song1/song.swf helpframe sprite id 0333 rendered in translated wrapper, placed by root helpframe at depth 0001 x -5.00 y 74.95 ratio 27",
@@ -92,6 +98,7 @@ const uiAssets = [
 
 await mkdir(targetRoot, { recursive: true });
 await mkdir(chooserRoot, { recursive: true });
+await mkdir(chooserControlsRoot, { recursive: true });
 await mkdir(helperRoot, { recursive: true });
 await mkdir(warningRoot, { recursive: true });
 await mkdir(songHelpRoot, { recursive: true });
@@ -202,6 +209,25 @@ for (const label of warningLabels) {
   const labelSwf = path.join(warningRoot, label.source);
   const labelPng = path.join(warningRoot, label.rendered);
   const labelTrimmedPng = path.join(warningRoot, label.trimmed);
+  if (!existsSync(labelSwf)) {
+    runTool("swfextract", ["-i", label.id, "-o", labelSwf, nutchooserSwf]);
+  }
+  if (!existsSync(labelPng)) {
+    runTool("swfrender", ["-o", labelPng, labelSwf]);
+  }
+  if (!existsSync(labelTrimmedPng)) {
+    runTool("magick", [labelPng, "-trim", "+repage", labelTrimmedPng]);
+  }
+}
+
+const chooserControlLabels = [
+  { id: "203", source: "quiter-text-203.swf", rendered: "quiter-text-203.png", trimmed: "quiter-text-203-trim.png" },
+];
+
+for (const label of chooserControlLabels) {
+  const labelSwf = path.join(chooserControlsRoot, label.source);
+  const labelPng = path.join(chooserControlsRoot, label.rendered);
+  const labelTrimmedPng = path.join(chooserControlsRoot, label.trimmed);
   if (!existsSync(labelSwf)) {
     runTool("swfextract", ["-i", label.id, "-o", labelSwf, nutchooserSwf]);
   }
