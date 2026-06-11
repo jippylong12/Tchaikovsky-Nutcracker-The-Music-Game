@@ -115,6 +115,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     const progressSnapshot = progress.getSnapshot();
     const audioState = audio.getState();
     const sourceFrameRoute = isNutcrackerSourceFrameRoute(route.id);
+    const sourceSceneActions = sourceFrameRoute ? renderSourceSceneActions(route) : "";
     mount.innerHTML = `
       <section class="app-shell" aria-label="Desktop app shell">
         <div class="desktop-frame">
@@ -132,8 +133,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
             }
             ${renderScene(route, progressSnapshot, shellState)}
             ${
-              sourceFrameRoute
-                ? `<div class="source-scene-actions" aria-label="Scene controls">${renderSourceSceneActions(route)}</div>`
+              sourceFrameRoute && sourceSceneActions
+                ? `<div class="source-scene-actions" aria-label="Scene controls">${sourceSceneActions}</div>`
                 : `<footer class="scene-footer">
                     <div class="scene-actions">
                       ${renderPrimaryActions(route)}
@@ -998,6 +999,7 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
           })
           .join("")}
       </div>
+      ${renderChooserSourceControls()}
     </div>
   `;
 }
@@ -1566,13 +1568,26 @@ function renderPrimaryActions(route: RouteDefinition): string {
 
 function renderSourceSceneActions(route: RouteDefinition): string {
   if (route.id === "nutcracker-chooser") {
-    return `
+    return "";
+  }
+
+  if (getNutcrackerSongGameByRoute(route.id)) {
+    return "";
+  }
+
+  return renderPrimaryActions(route);
+}
+
+function renderChooserSourceControls(): string {
+  return `
+    <div class="chooser-source-controls" aria-label="Source chooser controls">
       <button
         class="scene-button source-label-button chooser-source-help-button"
         type="button"
         data-action="help"
         data-source-control="helpButton"
-        data-source-placement="nutchooser.swf helpButton id 0202 depth 0168 matrix scale 1.350 x 556.50 y 165.30 ratio 5"
+        data-source-placement="nutchooser.swf helpButton root placement sprite id 0202 at depth 0168 matrix scale 1.350 x 556.50 y 165.30 ratio 5"
+        data-source-state="sprite id 0202 buttonON places button id 0200 depth 0001 and shape id 0201 depth 0004; buttonOFF places shape id 0198 depth 0002 with alpha mul 0.4"
       >
         <span class="source-control-help" aria-hidden="true">Help</span>
         <img src="${chooserHelpButtonArtUrl}" alt="" aria-hidden="true" />
@@ -1583,21 +1598,16 @@ function renderSourceSceneActions(route: RouteDefinition): string {
         type="button"
         data-action="chooser-warning"
         data-source-control="quiter"
-        data-source-placement="nutchooser.swf quiter id 0207 depth 0173 matrix scale 0.900 x 585.90 y 472.45 ratio 5"
+        data-source-placement="nutchooser.swf quiter root placement sprite id 0207 at depth 0173 matrix scale 0.900 x 585.90 y 472.45 ratio 5"
+        data-source-state="sprite id 0207 buttonON places button id 0206 depth 0001; buttonOFF places chooser text id 0203 depth 0001 matrix scale 1.722 x -114.95 y -12.70 with CXForm add 102 102 204 0"
         data-source-action="sets _root.theNextFrame to warningFrame; warningFrame YES button id 0183 calls _level0.gotoAndPlay('comeAgain')"
       >
         <span class="source-control-help" aria-hidden="true">Quit the Game</span>
         <img src="${chooserExitLabelUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">EXIT</span>
       </button>
-    `;
-  }
-
-  if (getNutcrackerSongGameByRoute(route.id)) {
-    return "";
-  }
-
-  return renderPrimaryActions(route);
+    </div>
+  `;
 }
 
 function renderChooserWarningFrame(): string {

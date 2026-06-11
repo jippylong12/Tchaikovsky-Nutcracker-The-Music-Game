@@ -219,12 +219,22 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-instruments")?.dataset.sourceImage).toContain(
       "CXForm add -209 -153 134 -223",
     );
+    expect(mount.querySelector(".source-scene-actions")).toBeNull();
+    expect(mount.querySelector(".chooser-source-controls")).not.toBeNull();
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourcePlacement).toContain(
       "nutchooser.swf helpButton",
     );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourceState).toContain(
+      "buttonON places button id 0200",
+    );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.closest(".nutcracker-chooser")).not.toBeNull();
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourcePlacement).toContain(
       "nutchooser.swf quiter",
     );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceState).toContain(
+      "buttonOFF places chooser text id 0203",
+    );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.closest(".nutcracker-chooser")).not.toBeNull();
     expect(mount.querySelector<HTMLImageElement>(".chooser-door-art")?.dataset.sourceImage).toContain(
       "no modern hover glow",
     );

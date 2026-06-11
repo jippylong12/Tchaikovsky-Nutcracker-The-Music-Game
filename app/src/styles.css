@@ -446,6 +446,50 @@ button {
   pointer-events: none;
 }
 
+.chooser-source-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.chooser-source-controls .scene-button {
+  position: absolute;
+  min-width: 58px;
+  min-height: 26px;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  pointer-events: auto;
+}
+
+.chooser-source-help-button {
+  left: 556px;
+  top: 165px;
+  width: 66px;
+  height: 25px;
+}
+
+.chooser-source-help-button .source-control-help {
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
+.chooser-source-exit-button {
+  left: 586px;
+  top: 472px;
+  width: 54px;
+  height: 26px;
+}
+
+.chooser-source-exit-button .source-control-help {
+  right: 0;
+  left: auto;
+  top: -30px;
+  transform: none;
+}
+
 .nutcracker-song-scene {
   background: #003154;
 }
@@ -1131,33 +1175,6 @@ button {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11px;
   pointer-events: auto;
-}
-
-.source-scene-actions .chooser-source-help-button {
-  left: 556px;
-  top: 165px;
-  width: 66px;
-  height: 25px;
-}
-
-.source-scene-actions .chooser-source-help-button .source-control-help {
-  right: 0;
-  left: auto;
-  transform: none;
-}
-
-.source-scene-actions .chooser-source-exit-button {
-  left: 586px;
-  top: 472px;
-  width: 54px;
-  height: 26px;
-}
-
-.source-scene-actions .chooser-source-exit-button .source-control-help {
-  right: 0;
-  left: auto;
-  top: -30px;
-  transform: none;
 }
 
 .level-label {
