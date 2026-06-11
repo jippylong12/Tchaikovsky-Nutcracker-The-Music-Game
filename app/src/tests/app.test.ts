@@ -174,6 +174,15 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-vector")?.src).toContain(
       "chooser-hallway-vector",
     );
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-portal")?.src).toContain(
+      "chooser-hallway-portal-cxform",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-portal")?.dataset.sourcePlacement).toContain(
+      "shape id 0017",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-portal")?.dataset.sourceImage).toContain(
+      "CXForm add 143 60 -10 0",
+    );
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-vector")?.dataset.sourcePlacement).toContain(
       "shape id 0018",
     );
@@ -348,6 +357,9 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway")?.src).toContain("chooser-hallway");
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-vector")?.src).toContain(
       "chooser-hallway-vector",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-portal")?.src).toContain(
+      "chooser-hallway-portal-cxform",
     );
 
     mount.querySelector<HTMLButtonElement>('[data-route="song-2"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));

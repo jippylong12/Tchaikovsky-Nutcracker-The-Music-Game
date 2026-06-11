@@ -56,6 +56,11 @@ const uiAssets = [
     sourceId: "nutchooser.swf background sprite id 0021 shape id 0018, root placement depth 0001 scale 0.743 x 87.85 y 46.15",
   },
   {
+    source: path.join(chooserBackgroundRoot, "background-shape-17-cxform.png"),
+    target: "chooser-hallway-portal-cxform.png",
+    sourceId: "nutchooser.swf background sprite id 0021 shape id 0017, child placement x 273.35 y 137.75 with CXForm add 143 60 -10 0",
+  },
+  {
     source: path.join(helperRoot, "helpframe-169-wrapped.png"),
     target: "chooser-helpframe-talker.png",
     sourceId: "nutchooser.swf nested talker sprite id 0169 rendered in translated wrapper, animated by helpframe sprite id 0170 and placed by root helpframe at depth 0001 x -0.90 y 39.65 ratio 22",
@@ -165,6 +170,42 @@ if (!existsSync(chooserBackgroundShapePng)) {
 if (!existsSync(chooserBackgroundShapeTrimmedPng)) {
   runTool("magick", [chooserBackgroundShapePng, "-trim", "+repage", chooserBackgroundShapeTrimmedPng]);
 }
+
+const chooserPortalShapeSwf = path.join(chooserBackgroundRoot, "background-shape-17.swf");
+const chooserPortalShapePng = path.join(chooserBackgroundRoot, "background-shape-17.png");
+const chooserPortalShapeTrimmedPng = path.join(chooserBackgroundRoot, "background-shape-17-trim.png");
+const chooserPortalShapeCxformPng = path.join(chooserBackgroundRoot, "background-shape-17-cxform.png");
+if (!existsSync(chooserPortalShapeSwf)) {
+  runTool("swfextract", ["-i", "17", "-o", chooserPortalShapeSwf, nutchooserSwf]);
+}
+if (!existsSync(chooserPortalShapePng)) {
+  runTool("swfrender", ["-o", chooserPortalShapePng, chooserPortalShapeSwf]);
+}
+if (!existsSync(chooserPortalShapeTrimmedPng)) {
+  runTool("magick", [chooserPortalShapePng, "-trim", "+repage", chooserPortalShapeTrimmedPng]);
+}
+runTool("magick", [
+  chooserPortalShapeTrimmedPng,
+  "-channel",
+  "R",
+  "-evaluate",
+  "add",
+  "56.078%",
+  "+channel",
+  "-channel",
+  "G",
+  "-evaluate",
+  "add",
+  "23.529%",
+  "+channel",
+  "-channel",
+  "B",
+  "-evaluate",
+  "subtract",
+  "3.922%",
+  "+channel",
+  chooserPortalShapeCxformPng,
+]);
 
 for (const spriteId of ["169", "170"]) {
   const renderedPng = path.join(helperRoot, `helpframe-${spriteId}.png`);
