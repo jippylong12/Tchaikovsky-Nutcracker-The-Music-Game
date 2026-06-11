@@ -96,6 +96,11 @@ const uiAssets = [
     sourceId: "nutchooser.swf quiter EXIT text id 0203, placed by sprite id 0207 buttonOFF frame at depth 0001",
   },
   {
+    source: path.join(chooserControlsRoot, "help-button-on-shape-201-trim.png"),
+    target: "chooser-help-button-art.png",
+    sourceId: "nutchooser.swf helpButton buttonON shape id 0201, placed by sprite id 0202 at depth 0004",
+  },
+  {
     source: path.join(songHelpRoot, "helpframe-333-wrapped.png"),
     target: "song-helpframe-talker.png",
     sourceId: "song1/song.swf helpframe sprite id 0333 rendered in translated wrapper, placed by root helpframe at depth 0001 x -5.00 y 74.95 ratio 27",
@@ -335,6 +340,25 @@ for (const label of warningLabels) {
 const chooserControlLabels = [
   { id: "203", source: "quiter-text-203.swf", rendered: "quiter-text-203.png", trimmed: "quiter-text-203-trim.png" },
 ];
+
+const chooserControlShapes = [
+  { id: "201", source: "help-button-on-shape-201.swf", rendered: "help-button-on-shape-201.png", trimmed: "help-button-on-shape-201-trim.png" },
+];
+
+for (const shape of chooserControlShapes) {
+  const shapeSwf = path.join(chooserControlsRoot, shape.source);
+  const shapePng = path.join(chooserControlsRoot, shape.rendered);
+  const shapeTrimmedPng = path.join(chooserControlsRoot, shape.trimmed);
+  if (!existsSync(shapeSwf)) {
+    runTool("swfextract", ["-i", shape.id, "-o", shapeSwf, nutchooserSwf]);
+  }
+  if (!existsSync(shapePng)) {
+    runTool("swfrender", ["-o", shapePng, shapeSwf]);
+  }
+  if (!existsSync(shapeTrimmedPng)) {
+    runTool("magick", [shapePng, "-trim", "+repage", shapeTrimmedPng]);
+  }
+}
 
 for (const label of chooserControlLabels) {
   const labelSwf = path.join(chooserControlsRoot, label.source);

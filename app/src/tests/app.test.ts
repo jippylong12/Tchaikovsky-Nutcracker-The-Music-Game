@@ -229,6 +229,12 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourceState).toContain(
       "buttonON places button id 0200",
     );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourceImage).toContain(
+      "shape id 0201",
+    );
+    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.getAttribute("class")).toContain(
+      "chooser-source-help-button",
+    );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourceHelp).toBe("Help");
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourceHelpFrame).toBe(
       "4",

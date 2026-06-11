@@ -1600,6 +1600,7 @@ function renderChooserSourceControls(): string {
         data-source-control="helpButton"
         data-source-placement="nutchooser.swf helpButton root placement sprite id 0202 at depth 0168 matrix scale 1.350 x 556.50 y 165.30 ratio 5"
         data-source-state="sprite id 0202 buttonON places button id 0200 depth 0001 and shape id 0201 depth 0004; buttonOFF places shape id 0198 depth 0002 with alpha mul 0.4"
+        data-source-image="normal visible Help control uses buttonON shape id 0201; older shape id 0198 render is buttonOFF only"
         data-source-help="Help"
         data-source-help-frame="4"
         data-source-help-bounds="nutchooser.swf button id 0200 action pushes string Help, frame 4, and calls _root.helpme; rollout calls _root.nohelp"
