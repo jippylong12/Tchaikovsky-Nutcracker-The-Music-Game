@@ -67,7 +67,7 @@ find analysis/setup/app -type f | awk 'BEGIN{IGNORECASE=1} /\.swf$/{swf++} /\.mp
 
 | Path | Role |
 | --- | --- |
-| `analysis/setup/app/Nutcracker2.exe` | Windows Flash projector. `file` reports `PE32 executable (GUI) Intel 80386, for MS Windows`; use only as historical runtime context. |
+| `analysis/setup/app/Nutcracker2.exe` | Windows Flash projector containing the final valid embedded Flash 6 payload at byte `864256`; root frame 2378 label `playRoom` is the activity menu authority. |
 | `analysis/setup/app/flute_intro.swf` | Intro shell movie. Flash 6, 800x600, 15 fps, 1277 frames. |
 | `analysis/setup/app/games/nutcrackergame/nutchooser.swf` | Nutcracker song chooser. Flash 6, 640x480, 15 fps, 6 frames. Loads `games/data/nutdoors.txt` and routes to song SWFs. |
 

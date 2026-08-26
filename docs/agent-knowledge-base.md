@@ -31,6 +31,7 @@ npm run assets:nutcracker-actors
 npm run assets:nutcracker-jpeg3
 npm run assets:certificates
 npm run assets:source-atlas
+npm run assets:shell-reference
 ```
 
 The SWF pass writes ignored proof artifacts to `app/generated/nutcracker-source-extract/full-swf-pass/`:
@@ -42,6 +43,8 @@ The SWF pass writes ignored proof artifacts to `app/generated/nutcracker-source-
 - direct lossless PNG extraction records
 
 The JPEG3 pass writes ignored repaired image proof artifacts to `app/generated/nutcracker-source-extract/direct-image-tags/`.
+
+The shell/reference pass extracts the final valid `Nutcracker2.exe` payload, locks the `playRoom` frame and button evidence, captures projector/intro dumps under `app/generated/shell-reference-source-extract/`, and promotes correctly named intro, room, Listening Room frame, and gramophone assets under `app/src/assets/source-scenes/`.
 
 The certificate pass extracts the appended Flash payloads from `analysis/setup/app/fscommand/n_certificate.exe` and `nc_certificate.exe`, writes ignored projector/SWF/action/text/display-list proof under `app/generated/certificate-projectors/`, and promotes only the intact Nutcracker-specific sprite id `0018` certificate to `app/src/assets/nutcracker-source/nutcracker-club-certificate.png`.
 
@@ -108,6 +111,18 @@ The UI promotion pass currently copies source UI bitmap evidence such as `song1_
 - Be skeptical of old promoted asset names. `song-speaker.png` and `song-sound-icon.png` are direct bitmap evidence, but visual inspection showed they are not clean speaker/sound controls; `song-sound-icon.png` is curtain/scallop art, and the rendered song frame already contains the source side speaker panels. The current `courtain` overlay should compose `song-curtain-fill.png`, `song-curtain-curve-cxform.png`, and `song-curtain-stars.png`; `song-curtain-scallop.png` remains direct bitmap evidence for bitmap id `0039`, not the full panel fallback.
 - `courtain` cannot yet be rendered exactly with the local tools. `swfextract -i 63 -P` preserves the root placement, but `swfrender` only renders the first internal frame; `swfextract -f 15`/`-f 20` produced empty/invalid frame SWFs for the hint/alert states. Direct isolated render of base sprite id `0042` produced a blank 512 x 512 PNG, but its child shapes are usable: `0038` is the dark fill, `0040` is the curved/scalloped line layer and needs CXForm `mul 0 0 0 1` / `add 0 102 255 0`, and `0041` is the star layer. Compose those promoted child layers before accepting any CSS rectangle fallback for HINT/check/change-song surfaces; exact dynamic `_root.message` text and timeline motion still require a real SWF timeline renderer.
 - Be careful when mapping `instIMG#` help labels in `swfdump` output. `swfdump` can print symbol definitions after a root placement record, so a `helpme` constant pool printed after `PLACEOBJECT2 ... name "instIMG1"` may be defining a later symbol rather than the already placed root instance. Use the named root placement records plus ActionScript `_root.instIMG` + index references as the stable anchor.
+- The full `Nutcracker2.exe` action/placement/text dumps exceed Node's default `execFileSync` output buffer. The first shell extraction probe died with `spawnSync swfdump ENOBUFS` after roughly 1 MB; use an explicit 64 MB `maxBuffer` as `extract-shell-reference-assets.mjs` does.
+- Do not identify the first `FWS`-looking byte sequence in `Nutcracker2.exe` as the movie. Reuse `extractEmbeddedSwf`; the final structurally valid payload starts at byte `864256`, declares `6085533` bytes, and contains root frame 2378 label `playRoom`.
+- `swfextract -f 2378` cannot render the projector room with this local build because it reports `No JPEG library compiled in`. Extract source JPEG id `0518` and retain the exact source-coordinate hotspots instead of redrawing the room.
+- `flute_intro.swf` frame probes 1/300/900/1200/1277 produce blank 573-byte renders, while probes 100 and 600 crash with exit 139. Promote recoverable children such as JPEG id `0371`, retain the source `skip` behavior, and document that a still is not full timeline playback.
+- Story, biography, and ballet root renders crash with exit 139 after missing-JPEG/invalid-gradient diagnostics. Their `DEFINETEXT`, `FRAMELABEL`, image children, and exact `NEXT >` / `< PREV` / `EXIT` controls are still recoverable and must be composed before accepting a generic reader.
+- Reader spread text must be modeled by source page, not concatenated into one DOM column. Use the root x placements around `76`/`349` to assign left/right text objects. JPEG3 id `0005` is a color-plus-alpha book layer, not an alpha mask to recolor with CSS; composite it directly. Story, biography, and ballet carry byte-identical id-5 tags, but each scene still needs a correctly named source-local promotion. Add a deterministic source-path PNG comment after stripping volatile metadata so Vite does not deduplicate the three files to a misleading story-named runtime asset; `validate-reader-bundle-provenance.mjs` gates all three production URLs. Biography frame 3 requires both distinct JPEGs `0045` and `0046`, and biography frame 4 is `0052` on the left / `0051` on the right despite definition order.
+- Musictionary `NEXT` is a root `NextFrame`, so runtime order must follow root labels, not data-entry grouping: flute, oboe, clarnet, bassoon, sax, harp, piano, vibraphone, timpani, cymbals, kontrabas, cello, violin, viola, trumpet, trombon, horn, tuba. Restore focus after rerendering source NEXT/PREV controls.
+- Listening Room must not substitute theme 1 while displaying `CHOOSE A RECORD`; initial `discName` is empty and every record is unpressed until the user chooses one.
+- Direct gramophone JPEG extraction is broken in the installed SWFTools build: ids `0045`, `0078`, `0084`, `0088`, `0092`, and `0104` report `No JPEG support compiled in` plus `Zlib error -3`. Parse JPEG3 tag 35 directly, repair `FFD9FFD8`, inflate alpha, and strip PNG date/time metadata. Otherwise consecutive identical promotions can have different hashes.
+- Asset id `0108` in `gramophone.swf` is a 636 x 478 ornamental frame, not a gramophone. Promote it under the correct name `listening-room-frame.png`; the actual gramophone is JPEG3 id `0045`, promoted as `listening-room-gramophone.png`.
+- Gramophone record instances are not generic vinyl circles. Root instances `lp1`-`lp8` use sprites `0063`, `0070`, `0072`, `0066`, and `0059` with distinct matrices/coordinates. Isolated sprites warn that button-state child ids are unknown, but translated-wrapper renders retain the intact visible pause-state record shapes; promote each unique sprite and reuse it only for the source instances that reference that sprite.
+- Vitest 4 does not accept Jest's `--runInBand`; the failed probe reports `CACError: Unknown option --runInBand`. Use the repository's exact `npm test` command.
 
 ## Source-Backed Behaviors Already Implemented
 

@@ -39,7 +39,7 @@ The original app relies on Flash levels and shared global variables:
 
 ## Startup And Shell
 
-`flute_intro.swf` is Flash 6, 800x600, 15 fps, 1277 frames. It is mostly a timeline intro with streaming audio and animation. Focused `swfdump` search did not expose obvious route/data commands in the inspected trace, so treat it as an optional intro/branding sequence rather than the core navigation source.
+`flute_intro.swf` is Flash 6, 800x600, 15 fps, 1277 frames. It is mostly a timeline intro with streaming audio and animation and a source `skip` control. The final structurally valid Flash payload appended to `Nutcracker2.exe` begins at byte `864256`; its root frame 2378 is labeled `playRoom` and contains the main activity routing. See `docs/shell-reference-source-map.md` for the locked payload, placements, actions, and renderer boundaries.
 
 Remake action:
 
@@ -179,8 +179,8 @@ These do not block M02 scaffolding but should be handled in later milestone issu
 
 | Area | Unknown | Follow-up |
 | --- | --- | --- |
-| Full intro/menu routing | `flute_intro.swf` focused trace did not expose clear route commands in the inspected lines | Decompile or inspect more shell/menu SWFs once scaffold exists |
+| Full intro timeline playback | Representative intro frame renders are blank or crash; only child layers and the source skip control are recoverable locally | Documented fallback in JIP-818 and `docs/shell-reference-source-map.md` |
 | Song game rules | `song*/song.swf` and `track*.swf` need per-song rule recovery | M06 issues |
-| Activity page/animation content | Story, biography, ballet, musictionary content flows need separate page maps | M05 issues |
+| Reference activity animation | Story, biography, ballet, and Musictionary text/control maps are recovered; full root/display-list animation still cannot be flattened locally | Documented fallbacks in JIP-819/JIP-820 and `docs/shell-reference-source-map.md` |
 | Launcher helper destinations | `nc_*.exe`/`ncc_*.exe` names are clear, but exact old projector launch targets may require Windows/runtime tracing | Treat as route placeholders unless needed for release parity |
 | Asset extraction fidelity | SWF vector/timeline export quality is unproven | M03 asset extraction and import strategy |

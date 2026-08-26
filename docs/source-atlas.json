@@ -13,116 +13,282 @@
       "id": "overture",
       "title": "Overture / intro",
       "routeIds": ["overture"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["inferred behavior", "defect"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/Nutcracker2.exe",
         "analysis/setup/app/flute_intro.swf"
       ],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/behavior-map.md", "docs/source-inventory.md"],
+      "promotedAssets": ["app/src/assets/source-scenes/flute-intro-garden.jpg"],
+      "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-818"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/flute_intro.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frame 1-1277; JPEG id 0371",
+            "frameOrState": "root frame 1 through frame 1277 at 15 fps"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the intro timeline; representative frame probes are blank or crash."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes the promoted JPEG 0371 layer with the exact source skip control.",
+            "retainedGap": "Full interactive intro timeline playback remains outside the reconstructed runtime."
+          },
+          "evidenceDoc": "docs/shell-reference-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "The current stage-mark/title surface is generic remake UI; no recovered projector/intro display-list composition is represented."
+      "auditFinding": "The source intro representation, skip behavior, provenance, and exact renderer gap are implemented; Marcus visual approval remains open."
     },
     {
       "id": "main-menu",
       "title": "Main menu",
       "routeIds": ["main-menu"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["inferred behavior", "defect"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/Nutcracker2.exe",
         "analysis/setup/app/flute_intro.swf",
         "analysis/setup/app/fscommand"
       ],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/behavior-map.md", "docs/remake-architecture-spec.md"],
+      "promotedAssets": ["app/src/assets/source-scenes/main-playroom-background.jpg"],
+      "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-818"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/Nutcracker2.exe",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frame 2378 label playRoom; JPEG id 0518",
+            "frameOrState": "root frame 2378 with source hotspot ratio 2377"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the frame 2378 timeline because the installed renderer has no JPEG library."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes the promoted playRoom background layer with exact source-coordinate button hotspots.",
+            "retainedGap": "Full interactive projector timeline playback and two unregistered activity routes remain unavailable."
+          },
+          "evidenceDoc": "docs/shell-reference-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "The current grouped route cards are functional routing scaffolding, not recovered main-menu art, text, controls, or placement."
+      "auditFinding": "The exact playRoom background, activity placements/actions, and nine-key Nutcracker gate are implemented for review."
     },
     {
       "id": "story",
       "title": "Nutcracker story reader",
       "routeIds": ["story"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["original asset", "original source text", "inferred behavior", "defect"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/activities/story/story.swf",
         "app/src/data/referenceContent.ts"
       ],
-      "promotedAssets": ["app/public/local-media/visual/activities/story/5-alpha.png"],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/visual-asset-import-strategy.md"],
+      "promotedAssets": ["app/src/assets/source-scenes/story-reader-book.png"],
+      "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-819"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/activities/story/story.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frame labels 1-4; text ids 0016-0045; JPEG3 id 0005",
+            "frameOrState": "root labeled frames 1 through 4 and bye frame after 4"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the reader timeline; the full root render crashes with exit 139."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes the promoted book layer with exact source text, frame labels, and controls.",
+            "retainedGap": "Full interactive Flash reader timeline playback remains unavailable."
+          },
+          "evidenceDoc": "docs/shell-reference-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "Recovered art/audio/text are present, but the reader chrome, pagination, and scene composition are inferred rather than mapped to the SWF timeline."
+      "auditFinding": "All four source spreads, eight page numbers, exact prose, recovered book art, and source controls are implemented for review."
     },
     {
       "id": "composer-biography",
       "title": "Tchaikovsky biography reader",
       "routeIds": ["composer-biography"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["original asset", "original source text", "inferred behavior", "defect"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/activities/biography/biography.swf",
         "app/src/data/referenceContent.ts"
       ],
-      "promotedAssets": ["app/public/local-media/visual/activities/biography/18.jpg"],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/visual-asset-import-strategy.md"],
+      "promotedAssets": [
+        "app/src/assets/source-scenes/biography-reader-book.png",
+        "app/public/local-media/visual/activities/biography/18.jpg",
+        "app/public/local-media/visual/activities/biography/38.jpg",
+        "app/public/local-media/visual/activities/biography/45.jpg",
+        "app/public/local-media/visual/activities/biography/46.jpg",
+        "app/public/local-media/visual/activities/biography/53.jpg"
+      ],
+      "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-819"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/activities/biography/biography.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frame labels 1-4; text ids 0015-0052; image ids 0018, 0038, 0045, 0046, and 0053",
+            "frameOrState": "root labeled frames 1 through 4 and bye frame after 4"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the biography timeline; the full root render crashes with exit 139."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes promoted biography image layers, including both frame-3 JPEGs 0045/0046, with explicit left/right source text, frame labels, and controls.",
+            "retainedGap": "Full interactive Flash reader timeline playback remains unavailable."
+          },
+          "evidenceDoc": "docs/shell-reference-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "Recovered media is used, but current page layout/navigation is an inferred modern reader without source placement/state proof."
+      "auditFinding": "All four source spreads, exact biography prose, recovered images, and source controls are implemented for review."
     },
     {
       "id": "ballet-history",
       "title": "Ballet history reader",
       "routeIds": ["ballet-history"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["original asset", "original source text", "inferred behavior", "defect"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/activities/ballet/ballet.swf",
         "app/src/data/referenceContent.ts"
       ],
-      "promotedAssets": ["app/public/local-media/visual/activities/ballet/18.jpg"],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/visual-asset-import-strategy.md"],
+      "promotedAssets": [
+        "app/src/assets/source-scenes/ballet-reader-book.png",
+        "app/public/local-media/visual/activities/ballet/18.jpg",
+        "app/public/local-media/visual/activities/ballet/55.jpg"
+      ],
+      "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-819"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/activities/ballet/ballet.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frame labels 1-5; text ids 0015-0054; image id 0055",
+            "frameOrState": "root labeled frames 1 through 5 and bye frame after 5"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the ballet timeline; the full root render crashes with exit 139."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes promoted ballet image layers with explicit left/right source text, frame labels, and controls.",
+            "retainedGap": "Full interactive Flash reader timeline playback remains unavailable."
+          },
+          "evidenceDoc": "docs/shell-reference-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "Recovered media is used, but current page layout/navigation is an inferred modern reader without source placement/state proof."
+      "auditFinding": "All five source spreads, ten page numbers, exact ballet prose, recovered images, and controls are implemented for review."
     },
     {
       "id": "music-dictionary",
       "title": "Musictionary",
       "routeIds": ["music-dictionary"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["original source text", "inferred behavior", "defect"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/activities/musictionary/musictionary.swf",
         "app/src/data/referenceContent.ts",
         "app/public/local-media/audio/activities/musictionary"
       ],
       "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-820"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/activities/musictionary/musictionary.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "instPlayer sprite id 0149 through 0854; root frame 1",
+            "frameOrState": "root frame 1 with NEXT text id 0086 and EXIT ids 0073-0075"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the Musictionary timeline; the full movie render crashes locally."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes a DOM display layer with exact source text, audio mappings, NEXT, and EXIT behavior.",
+            "retainedGap": "Full character animation and interactive Flash timeline playback remain unavailable."
+          },
+          "evidenceDoc": "docs/shell-reference-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "Instrument names/audio are recovered, but the visible encyclopedia browser and controls are generic DOM UI with no mapped source art or display-list states."
+      "auditFinding": "Exact instrument prose, source audio-player ids, and source NEXT/EXIT progression are implemented; character animation remains documented."
     },
     {
       "id": "suite",
       "title": "Nutcracker Suite gramophone player",
       "routeIds": ["suite"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["original asset", "original source text", "inferred behavior", "defect"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/activities/originals/gramophone.swf",
         "app/src/data/referenceContent.ts",
         "app/public/local-media/audio/activities/originals"
       ],
-      "promotedAssets": ["app/public/local-media/visual/activities/originals/gramophone/108.png"],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "promotedAssets": [
+        "app/src/assets/source-scenes/listening-room-gramophone.png",
+        "app/src/assets/source-scenes/listening-room-frame.png",
+        "app/src/assets/source-scenes/listening-room-record-lp1.png",
+        "app/src/assets/source-scenes/listening-room-record-lp2.png",
+        "app/src/assets/source-scenes/listening-room-record-lp3.png",
+        "app/src/assets/source-scenes/listening-room-record-lp4.png",
+        "app/src/assets/source-scenes/listening-room-record-lp5.png"
+      ],
+      "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-820"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/activities/originals/gramophone.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "sprite id 0048 and 0111; playLP frame 2; pauseLP frame 1",
+            "frameOrState": "root player state playLP frame 2 and pauseLP frame 1"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the gramophone timeline; direct JPEG extraction reports missing support and Zlib error -3."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes promoted gramophone, ornamental-frame, and record layers with TypeScript audio state.",
+            "retainedGap": "Full interactive record and tonearm timeline playback remains unavailable."
+          },
+          "evidenceDoc": "docs/shell-reference-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "Recovered themes and gramophone art are present, but labels/control states/layout remain an inferred modern player."
+      "auditFinding": "Correctly named gramophone/frame/record art, exact theme paths, an unselected initial state, dynamic disc labels, and play/pause states are implemented for review."
     },
     {
       "id": "nutcracker-chooser",

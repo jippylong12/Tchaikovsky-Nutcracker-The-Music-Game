@@ -6,6 +6,7 @@ import { dictionaryInstruments, readingActivities } from "../data/referenceConte
 import {
   createProgressStore,
   progressStorageKey,
+  type GameKey,
   type ProgressPersistence,
   type ProgressStoreController,
 } from "../state/progressStore";
@@ -63,7 +64,9 @@ describe("desktop app shell", () => {
     createTestShell(mount);
 
     expect(mount.querySelector(".game-viewport")).not.toBeNull();
-    expect(mount.textContent).toContain("Tchaikovsky's Nutcracker");
+    expect(mount.querySelector<HTMLElement>(".source-intro-scene")?.dataset.sourceSwf).toContain("flute_intro.swf");
+    expect(mount.querySelector<HTMLImageElement>(".source-intro-garden")?.src).toContain("flute-intro-garden");
+    expect(mount.textContent).toContain("skip");
     expect(mount.textContent).toContain("Story");
     expect(mount.textContent).toContain("Tree Game");
     expect(mount.textContent).toContain("Local desktop package only");
@@ -77,19 +80,44 @@ describe("desktop app shell", () => {
       .querySelector<HTMLButtonElement>('[data-route="suite"]')
       ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(mount.textContent).toContain("Listening player");
+    expect(mount.textContent).toContain("The Listening Room");
+    expect(mount.querySelector<HTMLImageElement>(".source-listening-frame")?.src).toContain("listening-room-frame");
     expect(mount.querySelector(".game-viewport")).not.toBeNull();
   });
 
-  it("launches main menu cards inside the fixed shell", () => {
+  it("launches source-positioned main room hotspots inside the fixed shell", () => {
     const mount = document.createElement("main");
 
     createTestShell(mount);
     mount.querySelector<HTMLButtonElement>('[data-action="start"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(mount.querySelector<HTMLImageElement>(".source-playroom-background")?.src).toContain("main-playroom-background");
+    expect(mount.querySelector<HTMLElement>('[data-scene-route="trivia"]')?.dataset.sourcePlacement).toContain(
+      "button id 0636",
+    );
     mount.querySelector<HTMLButtonElement>('[data-scene-route="trivia"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     expect(mount.textContent).toContain("Trivia challenge");
     expect(mount.querySelector(".game-viewport")).not.toBeNull();
+  });
+
+  it("shows the source nutButton only after all nine game keys", () => {
+    const lockedMount = document.createElement("main");
+    createTestShell(lockedMount);
+    lockedMount.querySelector<HTMLButtonElement>('[data-action="start"]')?.click();
+    expect(lockedMount.querySelector(".source-playroom-nutcracker")).toBeNull();
+
+    const unlockedMount = document.createElement("main");
+    createTestShell(unlockedMount, (progress) => {
+      ([1, 2, 3, 4, 5, 6, 7, 8, 9] as const satisfies readonly GameKey[]).forEach((key) => progress.markGameKey(key));
+    });
+    unlockedMount.querySelector<HTMLButtonElement>('[data-action="start"]')?.click();
+
+    expect(unlockedMount.querySelector<HTMLElement>(".source-playroom-nutcracker")?.dataset.sourcePlacement).toContain(
+      "sprite id 0671",
+    );
+    expect(unlockedMount.querySelector<HTMLElement>(".source-playroom-nutcracker")?.dataset.sourceAction).toContain(
+      "collectedKeys equals 9",
+    );
   });
 
   it("updates progress and audio controls from the side panel", () => {
@@ -106,6 +134,7 @@ describe("desktop app shell", () => {
 
   it("renders original story spreads with recovered local artwork", () => {
     const mount = document.createElement("main");
+    document.body.append(mount);
 
     createTestShell(mount);
     mount.querySelector<HTMLButtonElement>('[data-route="story"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -113,24 +142,60 @@ describe("desktop app shell", () => {
 
     expect(mount.textContent).toContain("Pages 3-4");
     expect(mount.textContent).toContain("Clara's godfather gave her an awesome Nutcracker doll");
-    expect(mount.textContent).toContain("Source: activities/story/story.swf");
-    expect(mount.textContent).toContain("4 click-through spreads");
+    expect(mount.querySelector<HTMLElement>(".source-reader-scene")?.dataset.sourceSwf).toContain("activities/story/story.swf");
+    expect(mount.querySelector<HTMLElement>(".source-reader-scene")?.dataset.sourceTextIds).toBe("35,36");
+    expect(mount.textContent).toContain("8 pages");
+    expect(mount.textContent).toContain("< PREV");
+    expect(mount.textContent).toContain("NEXT >");
     expect(mount.textContent).not.toContain("Play original audio");
     expect(mount.querySelector<HTMLButtonElement>('[aria-label="Play original audio"]')).not.toBeNull();
-    expect(mount.querySelector<HTMLImageElement>(".reference-art img")?.src).toContain("/local-media/visual/activities/story/5-alpha.png");
+    expect(mount.querySelector<HTMLImageElement>(".source-reader-book-frame")?.src).toContain("story-reader-book");
+    expect(mount.querySelector<HTMLElement>('[data-source-side="left"]')?.dataset.sourceTextIds).toBe("35");
+    expect(mount.querySelector<HTMLElement>('[data-source-side="right"]')?.dataset.sourceTextIds).toBe("36");
+    expect(document.activeElement).toBe(mount.querySelector('[data-reading-direction="next"]'));
+    mount.remove();
   });
 
   it("selects music dictionary instruments and plays their recovered clips", () => {
     const mount = document.createElement("main");
+    document.body.append(mount);
 
     createTestShell(mount);
     mount.querySelector<HTMLButtonElement>('[data-route="music-dictionary"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    mount.querySelector<HTMLButtonElement>('[data-dictionary-entry="timpani"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    for (let index = 0; index < 8; index += 1) {
+      mount.querySelector<HTMLButtonElement>("[data-dictionary-next]")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    }
+    expect(document.activeElement).toBe(mount.querySelector("[data-dictionary-next]"));
     mount.querySelector<HTMLButtonElement>("[data-dictionary-audio]")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(mount.textContent).toContain("Instrument encyclopedia");
-    expect(mount.textContent).toContain("Large tuned drums");
-    expect(mount.textContent).toContain("Musictionary source asset 527");
+    expect(mount.textContent).toContain("Timpani");
+    expect(mount.textContent).toContain("pitched percussion instruments");
+    expect(mount.querySelector<HTMLElement>(".source-musictionary-scene")?.dataset.sourcePlayer).toContain("527");
+    expect(mount.querySelector<HTMLElement>(".source-musictionary-scene")?.dataset.sourceTextId).toBe("528");
+    mount.remove();
+  });
+
+  it("renders both recovered biography frame-three images on the source right page", () => {
+    const mount = document.createElement("main");
+
+    createTestShell(mount);
+    mount
+      .querySelector<HTMLButtonElement>('[data-route="composer-biography"]')
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>('[data-reading-page="1"]')
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    mount
+      .querySelector<HTMLButtonElement>('[data-reading-page="2"]')
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    const rightPage = mount.querySelector<HTMLElement>('[data-source-side="right"]');
+    const images = Array.from(rightPage?.querySelectorAll<HTMLImageElement>(".source-reader-images img") ?? []);
+    expect(rightPage?.dataset.sourceImageIds).toBe("45,46");
+    expect(images.map((image) => image.src)).toEqual([
+      expect.stringContaining("/local-media/visual/activities/biography/45.jpg"),
+      expect.stringContaining("/local-media/visual/activities/biography/46.jpg"),
+    ]);
   });
 
   it("plays and stops Nutcracker Suite gramophone tracks", () => {
@@ -138,21 +203,27 @@ describe("desktop app shell", () => {
 
     createTestShell(mount);
     mount.querySelector<HTMLButtonElement>('[data-route="suite"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(Array.from(mount.querySelectorAll<HTMLButtonElement>("[data-suite-track]")).every((record) => record.getAttribute("aria-pressed") === "false")).toBe(true);
     mount.querySelector<HTMLButtonElement>('[data-suite-track="theme-4"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     expect(mount.textContent).toContain("Trepak");
-    expect(mount.textContent).toContain("Now playing");
+    expect(mount.textContent).toContain("PLAYING");
+    expect(mount.querySelector<HTMLElement>('[data-suite-track="theme-4"]')?.dataset.sourcePlacement).toContain(
+      "lp4 sprite id 0066",
+    );
     expect(mount.querySelector<HTMLButtonElement>(".suite-stop-button")?.getAttribute("aria-label")).toBe("Stop track");
 
     mount.querySelector<HTMLButtonElement>('[data-action="suite-stop"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(mount.textContent).toContain("Paused: Trepak");
+    expect(mount.textContent).toContain("PAUSED");
+    expect(mount.textContent).toContain("Trepak");
     expect(mount.querySelector<HTMLButtonElement>('[data-suite-track="theme-4"]')?.getAttribute("aria-pressed")).toBe("true");
     expect(mount.querySelector<HTMLButtonElement>(".suite-play-button")?.getAttribute("aria-label")).toBe("Play selected track");
 
     mount.querySelector<HTMLButtonElement>('[data-action="suite-play"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(mount.textContent).toContain("Now playing: Trepak");
+    expect(mount.textContent).toContain("PLAYING");
+    expect(mount.textContent).toContain("Trepak");
     expect(mount.querySelector<HTMLButtonElement>('[data-suite-track="theme-4"]')?.getAttribute("aria-pressed")).toBe("true");
   });
 
@@ -709,10 +780,12 @@ describe("desktop app shell", () => {
   });
 
   it("uses real local image assets for reading activities", () => {
-    const pages = readingActivities.flatMap((activity) => activity.pages);
+    const imagePaths = readingActivities.flatMap((activity) =>
+      activity.pages.flatMap((page) => page.columns.flatMap((column) => column.imagePaths ?? [])),
+    );
 
-    pages.forEach((page) => {
-      expect(publicAssetSize(page.imagePath)).toBeGreaterThan(1000);
+    imagePaths.forEach((imagePath) => {
+      expect(publicAssetSize(imagePath)).toBeGreaterThan(1000);
     });
   });
 

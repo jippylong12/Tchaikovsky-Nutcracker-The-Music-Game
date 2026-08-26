@@ -59,7 +59,7 @@ describe("project-wide source atlas", () => {
     expect(() => validateAtlas(customVocabulary, routeIds)).toThrow(/fixed schema/);
 
     const invalidLifecycle = currentAtlas();
-    invalidLifecycle.entries.find((entry) => entry.id === "overture").classifications = ["inferred behavior"];
+    invalidLifecycle.entries.find((entry) => entry.id === "trivia").classifications = ["inferred behavior"];
     expect(() => validateAtlas(invalidLifecycle, routeIds)).toThrow(/implemented-defect/);
 
     const vagueFallback = currentAtlas();

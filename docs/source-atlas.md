@@ -10,13 +10,13 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 
 | App route | Current audit state | Primary source | Required follow-up |
 | --- | --- | --- | --- |
-| `overture` | Defect: generic stage-mark/title surface | `Nutcracker2.exe`, `flute_intro.swf` | JIP-818 |
-| `main-menu` | Defect: generic route-card menu | projector/intro/helper launchers | JIP-818 |
-| `story` | Original media/text in inferred reader; source scene not proven | `activities/story/story.swf` | JIP-819 |
-| `composer-biography` | Original media/text in inferred reader; source scene not proven | `activities/biography/biography.swf` | JIP-819 |
-| `ballet-history` | Original media/text in inferred reader; source scene not proven | `activities/ballet/ballet.swf` | JIP-819 |
-| `music-dictionary` | Source labels/audio in generic browser | `activities/musictionary/musictionary.swf` | JIP-820 |
-| `suite` | Original themes/gramophone sample in inferred player | `activities/originals/gramophone.swf` | JIP-820 |
+| `overture` | Source-backed intro still/skip behavior, documented timeline fallback, manual review open | `Nutcracker2.exe`, `flute_intro.swf` | JIP-818 |
+| `main-menu` | Exact `playRoom` art/hotspots/key gate, documented flattening fallback, manual review open | projector embedded SWF frame 2378 | JIP-818 |
+| `story` | Exact four-spread text/control map and recovered book art, manual review open | `activities/story/story.swf` | JIP-819 |
+| `composer-biography` | Exact four-spread text/image/control map, manual review open | `activities/biography/biography.swf` | JIP-819 |
+| `ballet-history` | Exact five-spread text/image/control map, manual review open | `activities/ballet/ballet.swf` | JIP-819 |
+| `music-dictionary` | Exact source prose/audio ids and NEXT/EXIT sequence, character-timeline fallback, manual review open | `activities/musictionary/musictionary.swf` | JIP-820 |
+| `suite` | Promoted gramophone/frame children, exact theme/state actions, timeline fallback, manual review open | `activities/originals/gramophone.swf` | JIP-820 |
 | `nutcracker-chooser` | Source-backed, documented playback fallbacks, manual review open | `games/nutcrackergame/nutchooser.swf` | JIP-334, JIP-347, JIP-349, JIP-357, JIP-359 |
 | `song-1` … `song-8` | Source-backed, actor/timeline fallback and manual review open | `games/nutcrackergame/song*/` | JIP-335, JIP-347, JIP-349, JIP-357, JIP-358, JIP-359 |
 | `childrens-album` | Defect: generic placeholder | `games/childrensalbum/`, door/data files | JIP-836 → JIP-840 |
@@ -38,7 +38,7 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 
 ## Audit conclusions
 
-- The completed shell/reference surfaces are not source-approved merely because they use recovered media or route correctly. JIP-818 through JIP-820 retain those retrofit defects.
+- The shell/reference retrofits now carry durable source classifications and explicit playback/display-list fallbacks. JIP-818 through JIP-820 remain open for Marcus's visual approval, not as generic-UI defects.
 - M06 chooser/song work has durable source classifications and approval evidence, but exact timeline/manual gates remain open.
 - M07/M08 placeholders are defects, not implementation baselines. Their broad parents now point to five ordered source-reconstruction slices: audit, promotion, behavior, renderer, and approval.
 - JIP-345 release QA remains blocked by JIP-360 and must use this matrix/contact sheet rather than rediscover route coverage at packaging time.

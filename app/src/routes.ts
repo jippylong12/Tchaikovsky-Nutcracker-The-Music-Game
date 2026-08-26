@@ -16,7 +16,7 @@ export const routes = [
     title: "Overture",
     heading: "Tchaikovsky's Nutcracker: The Music Game",
     summary:
-      "A desktop-first remake shell for restoring the original Flash activities, music games, progress keys, and local asset playback.",
+      "Recovered projector-intro representation with the source skip behavior and a promoted flute_intro.swf garden layer.",
     group: "menu",
     levelTarget: "_level0",
     mainMenu: false,
@@ -26,7 +26,7 @@ export const routes = [
     title: "Main Menu",
     heading: "Choose an activity",
     summary:
-      "The original projector loaded movies into Flash levels. This remake keeps the desktop frame stable and swaps typed scene routes inside the 640 x 480 viewport.",
+      "The recovered projector playRoom frame with its original 640 x 480 room art, source-coordinate activity hotspots, and nine-key Nutcracker gate.",
     group: "menu",
     levelTarget: "_level0",
     mainMenu: false,
@@ -36,7 +36,7 @@ export const routes = [
     title: "Story",
     heading: "The Nutcracker story",
     summary:
-      "Placeholder for the narrated story pages and scene artwork recovered from the activity SWFs.",
+      "Four source-labeled spreads with the original eight-page story text, recovered book art, and exact NEXT, PREV, and EXIT controls.",
     group: "reference",
     levelTarget: "_level1",
     mainMenu: true,
@@ -46,7 +46,7 @@ export const routes = [
     title: "Composer",
     heading: "Tchaikovsky biography",
     summary:
-      "Placeholder for the composer biography reader with local text, images, and voice/audio cues.",
+      "Four source-labeled spreads with exact SWF biography prose, recovered images, and exact NEXT, PREV, and EXIT controls.",
     group: "reference",
     levelTarget: "_level1",
     mainMenu: true,
@@ -56,7 +56,7 @@ export const routes = [
     title: "Ballet",
     heading: "Ballet history",
     summary:
-      "Placeholder for the educational ballet-history activity and page-level navigation.",
+      "Five source-labeled spreads preserving the original ten-page ballet history and its recovered reader controls and imagery.",
     group: "reference",
     levelTarget: "_level1",
     mainMenu: true,
@@ -66,7 +66,7 @@ export const routes = [
     title: "Music Dictionary",
     heading: "Instrument encyclopedia",
     summary:
-      "Placeholder for the dictionary browser and local instrument audio examples.",
+      "Source-sequenced Musictionary entries with exact instrument prose, recovered audio players, and the original NEXT and EXIT progression.",
     group: "reference",
     levelTarget: "_level1",
     mainMenu: true,
@@ -76,7 +76,7 @@ export const routes = [
     title: "Nutcracker Suite",
     heading: "Listening player",
     summary:
-      "Placeholder for the gramophone-style listening player backed by bundled MP3/WAV assets.",
+      "The recovered Listening Room gramophone and frame layers with source theme paths, disc labels, and play/pause state behavior.",
     group: "suite",
     levelTarget: "_level1",
     mainMenu: true,

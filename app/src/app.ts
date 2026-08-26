@@ -46,18 +46,26 @@ import songWarningYesBodyUrl from "./assets/nutcracker-source/song-warning-yes-b
 import songWarningYesLabelUrl from "./assets/nutcracker-source/song-warning-yes-label.png";
 import songWarningframeTalkerUrl from "./assets/nutcracker-source/song-warningframe-talker.png";
 import songYesLabelUrl from "./assets/nutcracker-source/song-yes-label.png";
+import fluteIntroGardenUrl from "./assets/source-scenes/flute-intro-garden.jpg";
+import listeningRoomFrameUrl from "./assets/source-scenes/listening-room-frame.png";
+import listeningRoomGramophoneUrl from "./assets/source-scenes/listening-room-gramophone.png";
+import listeningRoomRecordLp1Url from "./assets/source-scenes/listening-room-record-lp1.png";
+import listeningRoomRecordLp2Url from "./assets/source-scenes/listening-room-record-lp2.png";
+import listeningRoomRecordLp3Url from "./assets/source-scenes/listening-room-record-lp3.png";
+import listeningRoomRecordLp4Url from "./assets/source-scenes/listening-room-record-lp4.png";
+import listeningRoomRecordLp5Url from "./assets/source-scenes/listening-room-record-lp5.png";
+import mainPlayRoomBackgroundUrl from "./assets/source-scenes/main-playroom-background.jpg";
 import stageMarkUrl from "./assets/stage-mark.svg";
 import { createAudioService, type AudioService } from "./audio/audioService";
 import {
-  dictionaryFamilies,
   dictionaryInstruments,
   getDictionaryInstrument,
   getReadingActivity,
   getSuiteTrack,
   isReadingRouteId,
-  readingActivities,
   suiteTracks,
   type DictionaryInstrument,
+  type ReadingPageColumn,
   type ReadingRouteId,
   type SuiteTrack,
 } from "./data/referenceContent";
@@ -74,7 +82,7 @@ import {
   type NutcrackerTrack,
   type NutcrackerTrackNumber,
 } from "./data/nutcrackerSongGames";
-import { getRouteById, isRouteId, mainMenuRoutes, routeGroups, routes, type RouteDefinition, type RouteId } from "./routes";
+import { getRouteById, isRouteId, routes, type RouteDefinition, type RouteId } from "./routes";
 import { createProgressStore, type DoorKey, type GameKey, type ProgressStoreController } from "./state/progressStore";
 
 type ShellState = {
@@ -91,6 +99,54 @@ type ShellState = {
   nutcrackerSelections: Record<NutcrackerSongId, NutcrackerTrackNumber[]>;
   nutcrackerFeedback: Record<NutcrackerSongId, string | null>;
 };
+
+type MainRoomHotspot = {
+  readonly sourceButtonId: number;
+  readonly depth: number;
+  readonly x: number;
+  readonly y: number;
+  readonly label: string;
+  readonly sourcePath: string;
+  readonly routeId?: RouteId;
+};
+
+type SuiteRecordPlacement = {
+  readonly trackNumber: number;
+  readonly sourceSpriteId: number;
+  readonly sourceInstance: string;
+  readonly depth: number;
+  readonly x: number;
+  readonly y: number;
+  readonly matrix: readonly [number, number, number, number];
+  readonly imageUrl: string;
+};
+
+const mainRoomHotspots: readonly MainRoomHotspot[] = [
+  { sourceButtonId: 625, depth: 5, x: 604.6, y: 131.8, label: "The NutHouse", sourcePath: "games/nuthouse/room11.swf", routeId: "puzzles" },
+  { sourceButtonId: 631, depth: 7, x: 214.55, y: 293.15, label: "Children's Album Game", sourcePath: "games/childrensalbum/childrensalbum.swf", routeId: "childrens-album" },
+  { sourceButtonId: 632, depth: 12, x: 332.85, y: 377.05, label: "MusiCards", sourcePath: "games/memorygame/memory.swf", routeId: "memory" },
+  { sourceButtonId: 634, depth: 19, x: 357.9, y: 429.25, label: "Flying Instruments", sourcePath: "games/flyinginstruments/flyinginstruments.swf" },
+  { sourceButtonId: 635, depth: 23, x: 203.55, y: 427.85, label: "Musical Encyclopedia", sourcePath: "activities/musictionary/musictionary.swf", routeId: "music-dictionary" },
+  { sourceButtonId: 636, depth: 29, x: 446.55, y: 347.8, label: "Music Trivia", sourcePath: "games/trivia/trivia.swf", routeId: "trivia" },
+  { sourceButtonId: 638, depth: 35, x: 562.5, y: 361.55, label: "The Funky Monkey Game", sourcePath: "games/melody/melody.swf", routeId: "melody" },
+  { sourceButtonId: 639, depth: 39, x: 59.85, y: 435.45, label: "The Listening Room", sourcePath: "activities/originals/gramophone.swf", routeId: "suite" },
+  { sourceButtonId: 640, depth: 50, x: 99.25, y: 143.85, label: "The Nutcracker Story", sourcePath: "activities/story/story.swf", routeId: "story" },
+  { sourceButtonId: 642, depth: 58, x: 493.45, y: 169.45, label: "Find Me On The Tree", sourcePath: "games/tree/tree.swf", routeId: "tree-game" },
+  { sourceButtonId: 643, depth: 65, x: 441.3, y: 246.65, label: "The Orchestra Game", sourcePath: "games/orchestragame/orchestra.swf" },
+  { sourceButtonId: 644, depth: 87, x: 187.5, y: 130.25, label: "The Nutcracker Ballet", sourcePath: "activities/ballet/ballet.swf", routeId: "ballet-history" },
+  { sourceButtonId: 646, depth: 93, x: 474.95, y: 105.7, label: "Tchaikovsky's Biography", sourcePath: "activities/biography/biography.swf", routeId: "composer-biography" },
+];
+
+const suiteRecordPlacements: readonly SuiteRecordPlacement[] = [
+  { trackNumber: 1, sourceSpriteId: 63, sourceInstance: "lp1", depth: 43, x: 450.55, y: 384.2, matrix: [1.243, 0, 0, 0.562], imageUrl: listeningRoomRecordLp1Url },
+  { trackNumber: 2, sourceSpriteId: 70, sourceInstance: "lp2", depth: 61, x: 559.65, y: 439.85, matrix: [1.243, 0.012, 0, 0.562], imageUrl: listeningRoomRecordLp2Url },
+  { trackNumber: 3, sourceSpriteId: 72, sourceInstance: "lp3", depth: 79, x: 548.9, y: 393.1, matrix: [1.347, 0, 0, 0.272], imageUrl: listeningRoomRecordLp3Url },
+  { trackNumber: 4, sourceSpriteId: 66, sourceInstance: "lp4", depth: 52, x: 327.75, y: 445.45, matrix: [1.134, 0, 0, 0.5], imageUrl: listeningRoomRecordLp4Url },
+  { trackNumber: 5, sourceSpriteId: 59, sourceInstance: "lp5", depth: 32, x: 548.9, y: 333.25, matrix: [1.254, 0, 0, 0.575], imageUrl: listeningRoomRecordLp5Url },
+  { trackNumber: 6, sourceSpriteId: 70, sourceInstance: "lp6", depth: 88, x: 349.3, y: 389.25, matrix: [1.005, 0, 0, 0.478], imageUrl: listeningRoomRecordLp2Url },
+  { trackNumber: 7, sourceSpriteId: 72, sourceInstance: "lp7", depth: 70, x: 444.95, y: 449.9, matrix: [1.41, 0, 0, 0.262], imageUrl: listeningRoomRecordLp3Url },
+  { trackNumber: 8, sourceSpriteId: 70, sourceInstance: "lp8", depth: 97, x: 453.65, y: 335.85, matrix: [1.005, 0, 0, 0.478], imageUrl: listeningRoomRecordLp2Url },
+];
 
 export type AppShellOptions = {
   progress?: ProgressStoreController;
@@ -125,12 +181,11 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     nutcrackerFeedback: createNutcrackerFeedbackState(),
   };
 
-  const render = () => {
+  const render = (focusSelector?: string, fallbackFocusSelector?: string) => {
     const route = getRouteById(shellState.routeId);
     const progressSnapshot = progress.getSnapshot();
     const audioState = audio.getState();
-    const sourceFrameRoute = isNutcrackerSourceFrameRoute(route.id);
-    const sourceSceneActions = sourceFrameRoute ? renderSourceSceneActions(route) : "";
+    const sourceFrameRoute = isSourceFrameRoute(route.id);
     mount.innerHTML = `
       <section class="app-shell" aria-label="Desktop app shell">
         <div class="desktop-frame">
@@ -149,9 +204,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
             ${renderScene(route, progressSnapshot, shellState)}
             ${
               sourceFrameRoute
-                ? sourceSceneActions
-                  ? `<div class="source-scene-actions" aria-label="Scene controls">${sourceSceneActions}</div>`
-                  : ""
+                ? ""
                 : `<footer class="scene-footer">
                   <div class="scene-actions">
                     ${renderPrimaryActions(route)}
@@ -281,7 +334,10 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         if (routeId && isRouteId(routeId) && isReadingRouteId(routeId) && Number.isInteger(pageIndex)) {
           const activity = getReadingActivity(routeId);
           shellState.readingPages[routeId] = Math.min(Math.max(pageIndex, 0), activity.pages.length - 1);
-          render();
+          render(
+            `[data-reading-direction="${button.dataset.readingDirection ?? "next"}"]`,
+            "[data-source-reader-heading]",
+          );
         }
       });
     });
@@ -294,6 +350,13 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
           render();
         }
       });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-dictionary-next]")?.addEventListener("click", () => {
+      const activeIndex = dictionaryInstruments.findIndex((instrument) => instrument.id === shellState.activeDictionaryInstrumentId);
+      const nextIndex = (Math.max(activeIndex, 0) + 1) % dictionaryInstruments.length;
+      shellState.activeDictionaryInstrumentId = dictionaryInstruments[nextIndex].id;
+      render("[data-dictionary-next]", "[data-source-musictionary-heading]");
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-dictionary-audio]").forEach((button) => {
@@ -437,6 +500,16 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         }
       });
     });
+
+    if (focusSelector) {
+      const requestedTarget = mount.querySelector<HTMLElement>(focusSelector);
+      const usableTarget =
+        requestedTarget instanceof HTMLButtonElement && requestedTarget.disabled ? null : requestedTarget;
+      const fallbackTarget = fallbackFocusSelector
+        ? mount.querySelector<HTMLElement>(fallbackFocusSelector)
+        : null;
+      (usableTarget ?? fallbackTarget)?.focus();
+    }
   };
 
   const showSourceFlyingHelp = (sourceHelpElement: HTMLElement, event?: PointerEvent) => {
@@ -703,26 +776,12 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
 }
 
 function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreController["getSnapshot"]>, shellState: ShellState): string {
+  if (route.id === "overture") {
+    return renderSourceOverture();
+  }
+
   if (route.id === "main-menu") {
-    return `
-      <div class="scene-body menu-scene">
-        ${routeGroups
-          .map(
-            (group) => `
-              <section class="menu-group" aria-label="${group.title}">
-                <h1>${group.title}</h1>
-                <div class="menu-grid">
-                  ${mainMenuRoutes
-                    .filter((item) => item.group === group.id)
-                    .map(renderMenuCard)
-                    .join("")}
-                </div>
-              </section>
-            `,
-          )
-          .join("")}
-      </div>
-    `;
+    return renderMainPlayRoom(progress);
   }
 
   if (isReadingRouteId(route.id)) {
@@ -767,6 +826,73 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
   `;
 }
 
+function renderSourceOverture(): string {
+  return `
+    <div
+      class="scene-body source-intro-scene"
+      data-source-swf="analysis/setup/app/flute_intro.swf"
+      data-source-frame="root frame 1 through 1277 at 15 fps"
+      data-source-image="DEFINEBITSJPEG id 0371 promoted as the recovered garden layer"
+      data-source-control="source text skip at the lower-right edge"
+      data-source-fallback="full root probes at frames 1, 300, 900, 1200, and 1277 rendered blank; frames 100 and 600 crashed the local SWF renderer, so the runtime holds one promoted source layer instead of claiming full timeline playback"
+    >
+      <img class="source-intro-garden" src="${fluteIntroGardenUrl}" alt="" aria-hidden="true" />
+      <h1 class="sr-only">Recovered projector introduction</h1>
+      <button class="source-intro-skip" type="button" data-action="start">skip</button>
+    </div>
+  `;
+}
+
+function renderMainPlayRoom(progress: ReturnType<ProgressStoreController["getSnapshot"]>): string {
+  const nutcrackerUnlocked = progress.completedGameCount === 9;
+  return `
+    <div
+      class="scene-body source-playroom-scene"
+      data-source-projector="analysis/setup/app/Nutcracker2.exe embedded FWS at byte 864256"
+      data-source-frame="root frame 2378 label playRoom"
+      data-source-background="DEFINEBITSJPEG id 0518; shape id 0519 at depth 0003 centered x 320 y 240"
+      data-source-fallback="swfextract -f 2378 could not flatten the root scene because the installed SWFTools build has no JPEG library; the runtime uses the promoted source background with source-coordinate hotspots"
+    >
+      <img class="source-playroom-background" src="${mainPlayRoomBackgroundUrl}" alt="" aria-hidden="true" />
+      <div class="source-playroom-hotspots" role="group" aria-label="Music room activities">
+        ${mainRoomHotspots.map(renderMainRoomHotspot).join("")}
+        ${
+          nutcrackerUnlocked
+            ? `<button
+                class="source-playroom-hotspot source-playroom-nutcracker"
+                type="button"
+                data-scene-route="nutcracker-chooser"
+                style="left: 300.95px; top: 192.4px"
+                title="The Nutcracker Game"
+                aria-label="The Nutcracker Game"
+                data-source-placement="button sprite id 0671 nutButton at depth 0187 x 300.95 y 192.40 ratio 2377"
+                data-source-action="button id 0670 loads games/nutcrackergame/nutchooser.swf; on-load gate shows nutButton only when collectedKeys equals 9"
+              ><span class="sr-only">The Nutcracker Game</span></button>`
+            : ""
+        }
+      </div>
+    </div>
+  `;
+}
+
+function renderMainRoomHotspot(hotspot: MainRoomHotspot): string {
+  const routeAttribute = hotspot.routeId ? `data-scene-route="${hotspot.routeId}"` : "disabled";
+  const gapDescription = hotspot.routeId ? "" : " (source route not yet reconstructed)";
+  return `
+    <button
+      class="source-playroom-hotspot"
+      type="button"
+      ${routeAttribute}
+      style="left: ${hotspot.x}px; top: ${hotspot.y}px"
+      title="${escapeHtml(hotspot.label)}${gapDescription}"
+      aria-label="${escapeHtml(hotspot.label)}${gapDescription}"
+      data-source-placement="button id ${String(hotspot.sourceButtonId).padStart(4, "0")} at depth ${String(hotspot.depth).padStart(4, "0")} x ${hotspot.x.toFixed(2)} y ${hotspot.y.toFixed(2)} ratio 2377"
+      data-source-action="loadGame ${escapeHtml(hotspot.sourcePath)}"
+      ${hotspot.routeId ? "" : "data-source-route-gap=true"}
+    ><span class="sr-only">${escapeHtml(hotspot.label)}</span></button>
+  `;
+}
+
 function renderReadingActivity(routeId: ReadingRouteId, pageIndex: number): string {
   const activity = getReadingActivity(routeId);
   const safePageIndex = Math.min(Math.max(pageIndex, 0), activity.pages.length - 1);
@@ -774,168 +900,153 @@ function renderReadingActivity(routeId: ReadingRouteId, pageIndex: number): stri
   const previousPage = Math.max(safePageIndex - 1, 0);
   const nextPage = Math.min(safePageIndex + 1, activity.pages.length - 1);
 
+  const leftPageNumber = safePageIndex * 2 + 1;
+  const sourceTextIds = page.columns.flatMap((column) => column.sourceTextIds);
+  const sourceImageIds = [activity.sourceBookImageId, ...page.columns.flatMap((column) => column.sourceImageIds)];
   return `
-    <div class="scene-body reference-reader">
-      <section class="reference-art" aria-label="Recovered activity artwork">
-        <img src="${page.imagePath}" alt="" aria-hidden="true" />
-        <p>${escapeHtml(activity.pageCountLabel)}</p>
-      </section>
-      <section class="reference-copy" aria-label="${escapeHtml(activity.title)}">
-        <div class="activity-tabs" aria-label="Reference activities">
-          ${readingActivities
-            .map(
-              (item) => `
-                <button
-                  class="tab-button"
-                  type="button"
-                  data-scene-route="${item.routeId}"
-                  aria-pressed="${item.routeId === routeId}"
-                >
-                  ${escapeHtml(item.title.replace("The Nutcracker ", "").replace("Nutcracker ", ""))}
-                </button>
-              `,
-            )
-            .join("")}
+    <div
+      class="scene-body source-reader-scene"
+      data-source-swf="analysis/setup/app/${escapeHtml(activity.sourceSwfPath)}"
+      data-source-frame-label="${page.sourceFrameLabel}"
+      data-source-text-ids="${sourceTextIds.join(",") || "none"}"
+      data-source-image-ids="${sourceImageIds.join(",")}"
+      data-source-controls="NEXT >, < PREV, EXIT"
+      data-source-fallback="the full root render crashes in the local SWF renderer with missing JPEG support and invalid-gradient output; recovered source text, images, frame labels, and controls are composed in DOM"
+    >
+      <article class="source-reader-book" aria-label="${escapeHtml(activity.title)}">
+        <img
+          class="source-reader-book-frame"
+          src="${activity.bookImagePath}"
+          alt=""
+          aria-hidden="true"
+          data-source-image="DEFINEBITSJPEG3 id ${String(activity.sourceBookImageId).padStart(4, "0")}"
+        />
+        <h1 class="sr-only" tabindex="-1" data-source-reader-heading>${escapeHtml(activity.title)} · ${escapeHtml(page.title)}</h1>
+        <p class="sr-only" role="status" aria-live="polite">${escapeHtml(page.title)} of ${escapeHtml(activity.pageCountLabel)}</p>
+        <div class="source-reader-spread">
+          ${renderReadingColumn(page.columns[0], "left", leftPageNumber)}
+          ${renderReadingColumn(page.columns[1], "right", leftPageNumber + 1)}
         </div>
-        <p class="level-label">Reference ${safePageIndex + 1}/${activity.pages.length}</p>
-        <h1>${escapeHtml(page.title)}</h1>
-        <p class="reading-text">${formatMultilineText(page.body)}</p>
-        <div class="page-controls" aria-label="Page controls">
-          <button
-            class="page-button"
-            type="button"
-            data-reading-route="${routeId}"
-            data-reading-page="${previousPage}"
-            ${safePageIndex === 0 ? "disabled" : ""}
-          >
-            Prev
-          </button>
-          ${activity.pages
-            .map(
-              (_page, index) => `
-                <button
-                  class="page-button number"
-                  type="button"
-                  data-reading-route="${routeId}"
-                  data-reading-page="${index}"
-                  aria-current="${index === safePageIndex ? "page" : "false"}"
-                >
-                  ${index + 1}
-                </button>
-              `,
-            )
-            .join("")}
-          <button
-            class="page-button"
-            type="button"
-            data-reading-route="${routeId}"
-            data-reading-page="${nextPage}"
-            ${safePageIndex === activity.pages.length - 1 ? "disabled" : ""}
-          >
-            Next
-          </button>
+        <footer class="source-reader-controls" aria-label="Page controls">
+          <button type="button" data-action="exit">EXIT</button>
+          <button type="button" data-reading-route="${routeId}" data-reading-page="${previousPage}" data-reading-direction="previous" ${safePageIndex === 0 ? "disabled" : ""}>&lt; PREV</button>
           ${
             activity.audioPath
-              ? `<button class="media-button icon-media-button" type="button" data-reading-audio="${activity.audioPath}" aria-label="Play original audio" title="Play original audio"></button>`
+              ? `<button class="source-reader-audio" type="button" data-reading-audio="${activity.audioPath}" aria-label="Play original audio" title="Play original audio">♪</button>`
               : ""
           }
-        </div>
-        <p class="asset-note">Source: ${escapeHtml(activity.sourceSwfPath)}. ${activity.frameCount} recovered frames.</p>
-      </section>
+          <span>${escapeHtml(page.title)} · ${escapeHtml(activity.pageCountLabel)}</span>
+          <button type="button" data-reading-route="${routeId}" data-reading-page="${nextPage}" data-reading-direction="next" ${safePageIndex === activity.pages.length - 1 ? "disabled" : ""}>NEXT &gt;</button>
+        </footer>
+      </article>
     </div>
+  `;
+}
+
+function renderReadingColumn(column: ReadingPageColumn, side: "left" | "right", pageNumber: number): string {
+  return `
+    <section
+      class="source-reader-page source-reader-page-${side}"
+      data-source-side="${side}"
+      data-source-text-ids="${column.sourceTextIds.join(",") || "none"}"
+      data-source-image-ids="${column.sourceImageIds.join(",") || "none"}"
+    >
+      ${column.heading ? `<h2>${escapeHtml(column.heading)}</h2>` : ""}
+      ${column.subheading ? `<p class="source-reader-subheading">${escapeHtml(column.subheading)}</p>` : ""}
+      ${
+        column.imagePaths?.length
+          ? `<div class="source-reader-images source-reader-images-${column.imagePaths.length}">${column.imagePaths
+              .map((imagePath) => `<img src="${imagePath}" alt="" aria-hidden="true" />`)
+              .join("")}</div>`
+          : ""
+      }
+      ${column.body ? `<p class="source-reader-copy">${formatMultilineText(column.body)}</p>` : ""}
+      <span class="source-page-number">${pageNumber}</span>
+    </section>
   `;
 }
 
 function renderMusicDictionary(activeInstrument: DictionaryInstrument): string {
   return `
-    <div class="scene-body dictionary-scene">
-      <section class="dictionary-browser" aria-label="Instrument list">
-        <h1>Instrument encyclopedia</h1>
-        <div class="dictionary-list">
-          ${dictionaryFamilies
-            .map((family) => {
-              const familyEntries = dictionaryInstruments.filter((instrument) => instrument.family === family);
-              return `
-                <div class="instrument-family">
-                  <p>${family}</p>
-                  ${familyEntries.map((instrument) => renderDictionaryButton(instrument, activeInstrument.id)).join("")}
-                </div>
-              `;
-            })
-            .join("")}
-        </div>
-      </section>
-      <section class="dictionary-detail" aria-label="${escapeHtml(activeInstrument.name)} details">
-        <img src="/local-media/visual/activities/originals/gramophone/108.png" alt="" aria-hidden="true" />
-        <p class="level-label">${escapeHtml(activeInstrument.family)}</p>
-        <h2>${escapeHtml(activeInstrument.name)}</h2>
-        <p>${escapeHtml(activeInstrument.summary)}</p>
-        <button class="media-button" type="button" data-dictionary-audio="${activeInstrument.audioPath}">
-          Play instrument
-        </button>
-        <p class="asset-note">Musictionary source asset ${activeInstrument.sourceAssetId} from activities/musictionary/musictionary.swf.</p>
-      </section>
-    </div>
-  `;
-}
-
-function renderDictionaryButton(instrument: DictionaryInstrument, activeInstrumentId: string): string {
-  return `
-    <button
-      class="dictionary-entry"
-      type="button"
-      data-dictionary-entry="${instrument.id}"
-      aria-pressed="${instrument.id === activeInstrumentId}"
+    <div
+      class="scene-body source-musictionary-scene"
+      data-source-swf="analysis/setup/app/activities/musictionary/musictionary.swf"
+      data-source-player="instPlayer sprite id ${activeInstrument.sourceAssetId}"
+      data-source-text-id="${activeInstrument.sourceTextId}"
+      data-source-controls="EXIT text ids 0073-0075; NEXT text id 0086"
+      data-source-fallback="the full SWF render crashes locally; the runtime retains exact source prose, instrument audio, NEXT/EXIT behavior, and explicit display-list provenance in a DOM composition"
     >
-      ${escapeHtml(instrument.name)}
-    </button>
+      <section class="source-musictionary-card" aria-label="${escapeHtml(activeInstrument.name)}">
+        <p class="source-musictionary-family">${escapeHtml(activeInstrument.family)}</p>
+        <h1>${escapeHtml(activeInstrument.name)}</h1>
+        <p class="source-musictionary-copy">${escapeHtml(activeInstrument.summary)}</p>
+        <button class="source-musictionary-play" type="button" data-dictionary-audio="${activeInstrument.audioPath}" aria-label="Play ${escapeHtml(activeInstrument.name)} audio">▶</button>
+      </section>
+      <div class="source-musictionary-controls">
+        <button type="button" data-action="exit">EXIT</button>
+        <button type="button" data-dictionary-next>NEXT</button>
+      </div>
+    </div>
   `;
 }
 
 function renderSuitePlayer(activeTrackId: string | null, isPlaying: boolean): string {
-  const activeTrack = activeTrackId ? getSuiteTrack(activeTrackId) : suiteTracks[0];
-  const playbackLabel = activeTrackId ? (isPlaying ? "Now playing" : "Paused") : "Select a recovered gramophone track";
+  const activeTrack = activeTrackId ? getSuiteTrack(activeTrackId) : null;
+  const playbackLabel = activeTrackId ? (isPlaying ? "PLAYING" : "PAUSED") : "CHOOSE A RECORD";
 
   return `
-    <div class="scene-body suite-scene">
-      <section class="gramophone-panel" aria-label="Nutcracker Suite Listening player">
-        <img src="/local-media/visual/activities/originals/gramophone/108.png" alt="" aria-hidden="true" />
-        <div class="suite-copy">
-          <p class="level-label">Listening player</p>
-          <h1>Nutcracker Suite Listening</h1>
-          <div class="suite-now-playing">
-            <p>${playbackLabel}: ${escapeHtml(activeTrack.title)}</p>
-            ${
-              activeTrackId
-                ? `<button
-                    class="media-button ${isPlaying ? "suite-stop-button" : "suite-play-button"}"
-                    type="button"
-                    data-action="${isPlaying ? "suite-stop" : "suite-play"}"
-                    aria-label="${isPlaying ? "Stop track" : "Play selected track"}"
-                    title="${isPlaying ? "Stop track" : "Play selected track"}"
-                  ></button>`
-                : ""
-            }
-          </div>
-        </div>
+    <div
+      class="scene-body source-listening-room"
+      data-source-swf="analysis/setup/app/activities/originals/gramophone.swf"
+      data-source-frame="lossless frame border id 0108; gramophone JPEG3 id 0045"
+      data-source-action="record actions load activities/originals/theme{iam}.mp3; player states are pauseLP and playLP; dynamic labels are discTitle and discName"
+      data-source-fallback="root rendering fails because the local swfextract build has no JPEG support and reports Zlib error -3; the runtime composes recovered JPEG3/lossless children with TypeScript audio state"
+    >
+      <img class="source-listening-frame" src="${listeningRoomFrameUrl}" alt="" aria-hidden="true" />
+      <section class="source-listening-gramophone" aria-label="The Listening Room">
+        <img src="${listeningRoomGramophoneUrl}" alt="" aria-hidden="true" />
+        <h1>The Listening Room</h1>
+        <p class="source-disc-title">${playbackLabel}</p>
+        <p class="source-disc-name">${activeTrack ? escapeHtml(activeTrack.title) : ""}</p>
+        ${
+          activeTrackId
+            ? `<button
+                class="source-listening-playback ${isPlaying ? "suite-stop-button" : "suite-play-button"}"
+                type="button"
+                data-action="${isPlaying ? "suite-stop" : "suite-play"}"
+                aria-label="${isPlaying ? "Stop track" : "Play selected track"}"
+                title="${isPlaying ? "Stop track" : "Play selected track"}"
+              >${isPlaying ? "■" : "▶"}</button>`
+            : ""
+        }
       </section>
-      <section class="suite-track-list" aria-label="Suite tracks">
-        ${suiteTracks.map((track) => renderSuiteTrackButton(track, activeTrack.id)).join("")}
+      <section class="source-record-shelf" aria-label="Suite records">
+        ${suiteTracks.map((track) => renderSuiteTrackButton(track, activeTrack?.id ?? null)).join("")}
       </section>
+      <button class="source-listening-exit" type="button" data-action="exit">EXIT</button>
     </div>
   `;
 }
 
-function renderSuiteTrackButton(track: SuiteTrack, activeTrackId: string): string {
+function renderSuiteTrackButton(track: SuiteTrack, activeTrackId: string | null): string {
+  const placement = suiteRecordPlacements.find((candidate) => candidate.trackNumber === track.number);
+  if (!placement) {
+    throw new Error(`Missing source placement for suite track ${track.number}`);
+  }
+  const [scaleX, skewY, skewX, scaleY] = placement.matrix;
   return `
     <button
-      class="suite-track-button"
+      class="source-record"
       type="button"
       data-suite-track="${track.id}"
       aria-pressed="${track.id === activeTrackId}"
+      aria-label="${track.number}. ${escapeHtml(track.title)}"
+      style="left: ${placement.x}px; top: ${placement.y}px; --source-a: ${scaleX}; --source-b: ${skewY}; --source-c: ${skewX}; --source-d: ${scaleY}"
+      data-source-placement="${placement.sourceInstance} sprite id ${String(placement.sourceSpriteId).padStart(4, "0")} at depth ${String(placement.depth).padStart(4, "0")} matrix ${scaleX} ${skewX} ${skewY} ${scaleY} x ${placement.x.toFixed(2)} y ${placement.y.toFixed(2)}"
+      data-source-action="loads activities/originals/theme${track.number}.mp3 and updates discTitle/discName"
     >
-      <span>${track.number}. ${escapeHtml(track.title)}</span>
-      <small>${formatDuration(track.durationSeconds)}</small>
+      <img src="${placement.imageUrl}" alt="" aria-hidden="true" />
+      <span class="sr-only">${track.number}. ${escapeHtml(track.title)} · ${formatDuration(track.durationSeconds)}</span>
     </button>
   `;
 }
@@ -1594,8 +1705,16 @@ function isNutcrackerDoorUnlocked(
   return progress.nutDoors[(songId - 1) as DoorKey];
 }
 
-function isNutcrackerSourceFrameRoute(routeId: RouteId): boolean {
-  return routeId === "nutcracker-chooser" || getNutcrackerSongGameByRoute(routeId) !== undefined;
+function isSourceFrameRoute(routeId: RouteId): boolean {
+  return (
+    routeId === "overture" ||
+    routeId === "main-menu" ||
+    isReadingRouteId(routeId) ||
+    routeId === "music-dictionary" ||
+    routeId === "suite" ||
+    routeId === "nutcracker-chooser" ||
+    getNutcrackerSongGameByRoute(routeId) !== undefined
+  );
 }
 
 function toggleNutcrackerTrack(
@@ -1681,15 +1800,6 @@ function showNutcrackerHint(
   submitNutcrackerSong(song, shellState, progress);
 }
 
-function renderMenuCard(route: RouteDefinition): string {
-  return `
-    <button class="menu-card" type="button" data-scene-route="${route.id}">
-      <span>${route.title}</span>
-      <small>${route.levelTarget}</small>
-    </button>
-  `;
-}
-
 function renderNutcrackerCertificatePrintSurface(): string {
   return `
     <section
@@ -1718,18 +1828,6 @@ function renderPrimaryActions(route: RouteDefinition): string {
     <button class="scene-button primary" type="button" data-action="help">Help</button>
     <button class="scene-button" type="button" data-action="exit">Menu</button>
   `;
-}
-
-function renderSourceSceneActions(route: RouteDefinition): string {
-  if (route.id === "nutcracker-chooser") {
-    return "";
-  }
-
-  if (getNutcrackerSongGameByRoute(route.id)) {
-    return "";
-  }
-
-  return renderPrimaryActions(route);
 }
 
 function renderChooserSourceControls(): string {
