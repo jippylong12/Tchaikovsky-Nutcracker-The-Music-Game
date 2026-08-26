@@ -47,6 +47,51 @@ const visualSamples = [
   },
 ];
 
+const embeddedAudioBundles = [
+  {
+    sourcePath: "activities/story/story.swf",
+    sourceSha256: "e9445db9802becdd4ac04dfbd917ec1aec1c53432de23ba1d3fbde448c2a017f",
+    outputPath: "activities/story",
+    soundIds: [31],
+    extractorFlag: "-s",
+  },
+  {
+    sourcePath: "activities/biography/biography.swf",
+    sourceSha256: "476e70ba2027bfd80524373c926821f2f430e468b45209e7e7a98e09294b6063",
+    outputPath: "activities/biography",
+    soundIds: [32],
+    extractorFlag: "-s",
+  },
+  {
+    sourcePath: "activities/ballet/ballet.swf",
+    sourceSha256: "b0f95b56cbaebfb3a75ce295e413095a561dc16d36c44fd0d779f5fecbb6cf65",
+    outputPath: "activities/ballet",
+    soundIds: [33],
+    extractorFlag: "-s",
+  },
+  {
+    sourcePath: "activities/musictionary/musictionary.swf",
+    sourceSha256: "c8ce65d2ee006afb6254e59e49b2867ad22cd4a5a6d5da004be53c28c632f7cd",
+    outputPath: "activities/musictionary",
+    soundIds: [149, 267, 305, 342, 390, 422, 454, 490, 527, 551, 601, 631, 677, 705, 741, 781, 813, 854],
+    extractorFlag: "-M",
+  },
+];
+
+const nutcrackerTrackStreamBundle = {
+  expectedManifestSha256: "394f2c02bf6e59b1fe733b0f5183c245d5bb0fda0417a76038a9bae1ca65908c",
+  sources: Array.from({ length: 8 }, (_song, songIndex) =>
+    Array.from({ length: 8 }, (_track, trackIndex) => {
+      const song = songIndex + 1;
+      const track = trackIndex + 1;
+      return {
+        sourcePath: `games/nutcrackergame/song${song}/track${track}.swf`,
+        outputPath: `games/nutcrackergame/song${song}/track${track}.mp3`,
+      };
+    }),
+  ).flat(),
+};
+
 const extractableKinds = {
   Shapes: { kind: "shape", extension: "swf", folder: "shapes" },
   MovieClips: { kind: "movieClip", extension: "swf", folder: "movie-clips" },
@@ -77,6 +122,7 @@ const audioFiles = allFiles.filter((file) => /\.(mp3|wav)$/i.test(file));
 const textFiles = allFiles.filter((file) => file.toLowerCase().endsWith(".txt"));
 
 const swfCatalog = swfFiles.map((relativePath) => inspectSwf(relativePath));
+validateEmbeddedAudioSources();
 const mediaCatalog = buildMediaCatalog(audioFiles, textFiles);
 const sampleImports = extractVisualSamples(swfCatalog);
 
@@ -173,12 +219,64 @@ function buildMediaCatalog(audioRelativePaths, textRelativePaths) {
     };
   });
 
+  extractEmbeddedAudioBundles();
+
   return {
     sourceRoot: "analysis/setup/app",
     generatedPublicRoot: "app/public/local-media",
     audio: audio.sort((a, b) => comparePath(a.originalPath, b.originalPath)),
     text: text.sort((a, b) => comparePath(a.originalPath, b.originalPath)),
   };
+}
+
+function validateEmbeddedAudioSources() {
+  for (const bundle of embeddedAudioBundles) {
+    const sourcePath = path.join(sourceRoot, bundle.sourcePath);
+    if (!existsSync(sourcePath)) throw new Error(`Missing embedded-audio source ${bundle.sourcePath}`);
+    const actualSha256 = sha256(sourcePath);
+    if (actualSha256 !== bundle.sourceSha256) {
+      throw new Error(`Embedded-audio source drifted: ${bundle.sourcePath} expected ${bundle.sourceSha256}, received ${actualSha256}`);
+    }
+  }
+
+  const nutcrackerManifest = nutcrackerTrackStreamBundle.sources
+    .map(({ sourcePath }) => {
+      const absolutePath = path.join(sourceRoot, sourcePath);
+      if (!existsSync(absolutePath)) throw new Error(`Missing Nutcracker track-stream source ${sourcePath}`);
+      return `${sourcePath}:${sha256(absolutePath)}`;
+    })
+    .join("\n");
+  const actualManifestSha256 = sha256Text(nutcrackerManifest);
+  if (actualManifestSha256 !== nutcrackerTrackStreamBundle.expectedManifestSha256) {
+    throw new Error(
+      `Nutcracker track-stream sources drifted: expected manifest ${nutcrackerTrackStreamBundle.expectedManifestSha256}, received ${actualManifestSha256}`,
+    );
+  }
+}
+
+function extractEmbeddedAudioBundles() {
+  for (const bundle of embeddedAudioBundles) {
+    const sourcePath = path.join(sourceRoot, bundle.sourcePath);
+    const outputRoot = path.join(publicMediaRoot, "audio", bundle.outputPath);
+    mkdirSync(outputRoot, { recursive: true });
+    for (const soundId of bundle.soundIds) {
+      const outputPath = path.join(outputRoot, `${soundId}.mp3`);
+      execFileSync("swfextract", [bundle.extractorFlag, String(soundId), "-o", outputPath, sourcePath], { stdio: "pipe" });
+      if (!existsSync(outputPath) || statSync(outputPath).size < 1000) {
+        throw new Error(`Embedded audio ${bundle.sourcePath} sound ${soundId} was not extracted`);
+      }
+    }
+  }
+
+  for (const track of nutcrackerTrackStreamBundle.sources) {
+    const sourcePath = path.join(sourceRoot, track.sourcePath);
+    const outputPath = path.join(publicMediaRoot, "audio", track.outputPath);
+    mkdirSync(path.dirname(outputPath), { recursive: true });
+    execFileSync("swfextract", ["-m", "-o", outputPath, sourcePath], { stdio: "pipe" });
+    if (!existsSync(outputPath) || statSync(outputPath).size < 1000) {
+      throw new Error(`Nutcracker track stream ${track.sourcePath} was not extracted`);
+    }
+  }
 }
 
 function extractVisualSamples(catalog) {
@@ -454,6 +552,10 @@ function outputExtension(kind) {
 
 function sha256(absolutePath) {
   return createHash("sha256").update(readFileSync(absolutePath)).digest("hex");
+}
+
+function sha256Text(value) {
+  return createHash("sha256").update(value).digest("hex");
 }
 
 function runTool(command, args) {

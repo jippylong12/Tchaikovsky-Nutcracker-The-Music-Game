@@ -251,6 +251,7 @@ export type AppShellOptions = {
   previewAudioPath?: string;
   printCertificate?: () => void;
   random?: () => number;
+  showDeveloperPanel?: boolean;
 };
 
 const defaultPreviewAudioPath = suiteTracks[0].audioPath;
@@ -261,6 +262,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   const previewAudioPath = options.previewAudioPath ?? defaultPreviewAudioPath;
   const printCertificate = options.printCertificate ?? (() => window.print());
   const random = options.random ?? Math.random;
+  const showDeveloperPanel = options.showDeveloperPanel ?? import.meta.env.DEV;
   const shellState: ShellState = {
     routeId: "overture",
     routeStack: [],
@@ -334,7 +336,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     const audioState = audio.getState();
     const sourceFrameRoute = isSourceFrameRoute(route.id);
     mount.innerHTML = `
-      <section class="app-shell" aria-label="Desktop app shell">
+      <section class="app-shell${showDeveloperPanel ? "" : " release-shell"}" aria-label="Desktop app shell">
         <div class="desktop-frame">
           <section class="game-viewport${sourceFrameRoute ? " source-frame-viewport" : ""}" aria-label="Fixed 640 by 480 game viewport">
             ${
@@ -362,7 +364,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
             ${shellState.helpOpen ? renderHelp(route) : ""}
             ${shellState.nutcrackerChooserWarningOpen && route.id === "nutcracker-chooser" ? renderChooserWarningFrame() : ""}
           </section>
-          <nav class="route-panel" aria-label="Recovered game routes">
+          ${
+            showDeveloperPanel
+              ? `<nav class="route-panel" aria-label="Recovered game routes">
             <h2>Route Map</h2>
             <ol class="route-list">
               ${routes
@@ -422,7 +426,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
               <p class="diagnostic">${audioState.diagnostics.slice(-1)[0]?.message ?? "Audio diagnostics will appear here."}</p>
             </section>
             <p class="build-note">Local desktop package only. Recovered media stays bundled locally under the app shell.</p>
-          </nav>
+          </nav>`
+              : ""
+          }
         </div>
         ${progressSnapshot.gameKeys[1] ? renderNutcrackerCertificatePrintSurface() : ""}
       </section>

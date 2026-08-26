@@ -261,6 +261,8 @@ The old generic song-page HINT/EXIT wrapper is no longer rendered over song scen
 
 The extracted `track*.mp3` streams are full-length synchronized song tracks. They often contain leading silence before the selected instrument enters. `trackinfo.txt` has `firstFrame#` values, but those frame values are not reliable as audio-preview seek points across all songs: for example, song 8 track 2 has `firstFrame2=559` while the extracted audio is already audible near the start.
 
+All 64 runtime MP3s are root `MP3 Soundstream` records in `song1` through `song8` `track1.swf` through `track8.swf`; they are not standalone files in the recovered tree. Because `npm run assets:pipeline` owns and clears `app/public/local-media/audio`, it now preflights the ordered source-path/SHA-256 manifest (`394f2c02bf6e59b1fe733b0f5183c245d5bb0fda0417a76038a9bae1ca65908c`) and runs `swfextract -m` for every track after copying external audio. The runtime data test stats every mapped output, so a destructive pipeline rebuild cannot leave the source atlas green while silently removing the song audio.
+
 The modern preview interaction therefore keeps `firstFrame` as recovered metadata, but uses `ffmpeg silencedetect` against the extracted MP3s for the audible preview seek point. This directly addresses the slow-feeling song 1 track 5 and track 8 previews:
 
 * `song1/track5.mp3`: first audible sample detected around `10.9s`.

@@ -49,4 +49,8 @@ Build an unsigned local macOS app bundle and DMG through Tauri:
 npm run package:mac
 ```
 
-This command uses `tauri build --bundles app,dmg --no-sign`. It is intended for private local validation. Signing and notarization are separate release concerns, and Windows/Linux packaging remains optional until the macOS path is proven.
+This command validates release metadata and source-atlas readiness, runs the full frontend production build through Tauri, creates an app bundle and DMG with `--no-sign`, verifies the DMG, mounts it read-only, checks its app metadata and architecture, confirms bundled media counts, and writes an ignored `release-candidate-manifest.json` beside the artifacts.
+
+Artifacts are created under `src-tauri/target/release/bundle/`. They are private local preservation builds: the generated app contains original/derived media that is not licensed for public redistribution. Signing and notarization are separate release concerns.
+
+See `../docs/release-notes-0.1.0-rc1.md` for private install steps and caveats, `../docs/release-candidate-qa.md` for the resettable QA/approval checklist, and `../docs/cross-platform-packaging.md` for Windows/Linux feasibility.

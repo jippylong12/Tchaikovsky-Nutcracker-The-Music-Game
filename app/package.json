@@ -20,11 +20,13 @@
     "lint": "eslint .",
     "test": "vitest run",
     "build": "npm run typecheck && vite build && npm run validate:reader-bundle",
+    "verify:release": "node scripts/validate-release-candidate.mjs",
+    "verify:package:mac": "node scripts/verify-macos-package.mjs",
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "package:mac": "tauri build --bundles app,dmg --no-sign"
+    "package:mac": "npm run verify:release && tauri build --bundles app,dmg --no-sign && npm run verify:package:mac"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

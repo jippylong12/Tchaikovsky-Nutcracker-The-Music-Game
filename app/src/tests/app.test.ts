@@ -64,6 +64,7 @@ function createTestShell(
     }),
     previewAudioPath: "/local-media/audio/activities/originals/theme1.mp3",
     random: () => 0,
+    showDeveloperPanel: true,
   });
   return progress;
 }
@@ -86,6 +87,25 @@ describe("desktop app shell", () => {
     expect(mount.textContent).toContain("Story");
     expect(mount.textContent).toContain("Tree Game");
     expect(mount.textContent).toContain("Local desktop package only");
+  });
+
+  it("removes development navigation and cheat controls from the release shell", () => {
+    const mount = document.createElement("main");
+
+    createAppShell(mount, {
+      progress: createProgressStore(createMemoryPersistence()),
+      audio: createAudioService({
+        createAudioElement: () => new FakeAudioElement(),
+      }),
+      showDeveloperPanel: false,
+    });
+
+    expect(mount.querySelector(".release-shell")).not.toBeNull();
+    expect(mount.querySelector(".game-viewport")).not.toBeNull();
+    expect(mount.querySelector(".route-panel")).toBeNull();
+    expect(mount.querySelector("[data-progress]")).toBeNull();
+    expect(mount.textContent).not.toContain("Progress debug controls");
+    expect(mount.textContent).not.toContain("Audio diagnostics will appear here.");
   });
 
   it("switches route content without leaving the shell", () => {
@@ -1072,6 +1092,21 @@ describe("desktop app shell", () => {
     });
   });
 
+  it("uses extracted local narration for every reading activity", () => {
+    const expectedAudioIds = new Map([
+      ["story", 31],
+      ["composer-biography", 32],
+      ["ballet-history", 33],
+    ]);
+
+    readingActivities.forEach((activity) => {
+      const sourceDirectory = activity.sourceSwfPath.split("/")[1];
+      expect(activity.audioPath).toBe(`/local-media/audio/activities/${sourceDirectory}/${expectedAudioIds.get(activity.routeId)}.mp3`);
+      if (!activity.audioPath) throw new Error(`${activity.routeId} is missing its source narration path`);
+      expect(publicAssetSize(activity.audioPath)).toBeGreaterThan(1000);
+    });
+  });
+
   it("uses the SWF frame-derived Musictionary sound mapping", () => {
     const expectedSourceAssetIds = new Map([
       ["flute", 149],
@@ -1098,6 +1133,7 @@ describe("desktop app shell", () => {
       const expectedAssetId = expectedSourceAssetIds.get(instrument.id);
       expect(instrument.sourceAssetId).toBe(expectedAssetId);
       expect(instrument.audioPath).toBe(`/local-media/audio/activities/musictionary/${expectedAssetId}.mp3`);
+      expect(publicAssetSize(instrument.audioPath)).toBeGreaterThan(1000);
     });
   });
 });
