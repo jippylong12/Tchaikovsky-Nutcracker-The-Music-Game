@@ -1163,6 +1163,7 @@ function renderNutcrackerHintCurtain(message: string): string {
     <aside
       class="source-alert source-hint-alert"
       aria-label="Song hint"
+      data-source-classification="swf-derived recreation"
       data-source-frame="song1/song.swf courtain giveHint"
       data-source-placement="courtain root id 0063 depth 0082 x 319.85 y 4.90; _root.message edit id 0058 depth 0007 matrix scale 0.953/0.843 x 132.90 y 96.80 ratio 14"
     >
@@ -1177,6 +1178,7 @@ function renderNutcrackerChangeSongPrompt(songId: NutcrackerSongId): string {
     <aside
       class="source-alert source-change-alert"
       aria-label="Change song confirmation"
+      data-source-classification="swf-derived recreation"
       data-source-frame="song1/song.swf courtain alert"
       data-source-placement="courtain root id 0063 depth 0082 x 319.85 y 4.90; _root.message edit id 0054 depth 0012 matrix x 155.90 y 97.10 ratio 4"
     >
@@ -1199,6 +1201,7 @@ function renderNutcrackerSongExitWarning(songId: NutcrackerSongId): string {
     <aside
       class="source-song-warning-modal"
       aria-label="Exit song confirmation"
+      data-source-classification="swf-derived recreation"
       data-source-frame="song1/song.swf warningFrame"
       data-source-placement="warningFrame places sprite id 0340 depth 0001 matrix scale 1.051 x -15.45 y 52.40 ratio 29; noAction id 0341 depth 0003 matrix scale 12.497 x -319.25 y -234.35 ratio 29; YES button id 0346 depth 0005 x -66.15 y -43.55; NO button id 0351 depth 0008 x 27.30 y -43.55; close sprite id 0352 depth 0011 x 96.30 y -143.70"
     >
@@ -1246,6 +1249,7 @@ function renderNutcrackerCurtainArt(): string {
       src="${songCurtainFillUrl}"
       alt=""
       aria-hidden="true"
+      data-source-classification="swf-derived recreation"
       data-source-image="song1/song.swf courtain base sprite id 0042 child shape id 0038 depth 0001"
     />
     <img
@@ -1253,6 +1257,7 @@ function renderNutcrackerCurtainArt(): string {
       src="${songCurtainCurveCxformUrl}"
       alt=""
       aria-hidden="true"
+      data-source-classification="swf-derived recreation"
       data-source-image="song1/song.swf courtain base sprite id 0042 child shape id 0040 depth 0002 matrix x 2.80 y -56.45 with CXForm add 0 102 255 0"
     />
     <img
@@ -1260,6 +1265,7 @@ function renderNutcrackerCurtainArt(): string {
       src="${songCurtainStarsUrl}"
       alt=""
       aria-hidden="true"
+      data-source-classification="swf-derived recreation"
       data-source-image="song1/song.swf courtain base sprite id 0042 child shape id 0041 depth 0003"
     />
   `;
@@ -1296,9 +1302,10 @@ function renderSelectedNutcrackerActors(
       return `
         <img
           class="source-selected-actor source-selected-actor-song-${song.id} source-selected-actor-${track.number}${correctnessClass}"
-          data-source-animation="games/nutcrackergame/song${song.id}/characters/anim${track.number}.swf"
+          data-source-animation="${track.actorSourcePath}"
           data-source-classification="documented fallback"
-          data-source-fallback="local swfrender has no frame selector; representative full anim SWFs render transparent at frame 1 and extracted later frames can crash, so exact timeline playback remains M06B"
+          data-source-playback="${track.actorPlayback}"
+          data-source-fallback="${track.actorFallbackReason}"
           src="${track.imagePath}"
           alt=""
           aria-hidden="true"
@@ -1360,6 +1367,8 @@ function renderNutcrackerFlyingHelp(source: "song" | "chooser" = "song"): string
     <aside
       class="source-flying-help"
       aria-hidden="true"
+      data-source-classification="documented fallback"
+      data-source-fallback="dynamic edit text and frame-specific fading cannot be flattened by the local SWF renderer; the DOM recreates recovered edit-text layers and source frame bounds"
       data-source-control="${source === "song" ? "flyinghelp" : "chooser-helpme-fallback"}"
       data-source-placement="${sourcePlacement}"
       data-source-layer-model="${sourceLayerModel}"
@@ -1730,6 +1739,7 @@ function renderChooserWarningFrame(): string {
     <aside
       class="help-modal source-help-modal source-chooser-warning-modal"
       aria-label="Quit warning"
+      data-source-classification="swf-derived recreation"
       data-source-frame="nutchooser.swf warningFrame"
       data-source-placement="warningFrame places sprite id 0177 depth 0001 matrix scale 1.051 x -10.05 y 18.50 ratio 24; noAction id 0178 depth 0003 matrix scale 12.497 x -319.25 y -234.35 ratio 24; YES button id 0183 depth 0005 x -58.15 y -76.55; NO button id 0188 depth 0008 x 35.30 y -76.55; close sprite id 0189 depth 0011 x 96.30 y -143.70"
     >
@@ -1776,6 +1786,7 @@ function renderHelp(route: RouteDefinition): string {
       <aside
         class="help-modal source-help-modal source-chooser-help-modal"
         aria-label="Scene help"
+        data-source-classification="swf-derived recreation"
         data-source-frame="nutchooser.swf helpframe"
         data-source-placement="helpframe places sprite id 0170 depth 0001 matrix scale 1.051 x -0.90 y 39.65 ratio 22; noAction id 0171 depth 0003 matrix scale 12.497 x -319.25 y -234.35 ratio 22"
       >
@@ -1797,6 +1808,7 @@ function renderHelp(route: RouteDefinition): string {
       <aside
         class="help-modal source-help-modal source-song-help-modal"
         aria-label="Scene help"
+        data-source-classification="swf-derived recreation"
         data-source-frame="song1/song.swf helpframe"
         data-source-placement="helpframe places sprite id 0333 depth 0001 matrix scale 1.051 x -5.00 y 74.95 ratio 27; noAction id 0334 depth 0003 matrix scale 12.497 x -319.25 y -234.35 ratio 27"
         data-source-action="helpButton release sets _root.theNextFrame to helpFrame; drives _root.usmus to helpFrame/showUp; stops previews and disables quiter/focus"

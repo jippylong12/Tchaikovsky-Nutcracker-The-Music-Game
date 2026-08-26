@@ -435,6 +435,7 @@ describe("desktop app shell", () => {
     const songWarning = mount.querySelector<HTMLElement>(".source-song-warning-modal");
     expect(songWarning).not.toBeNull();
     expect(songWarning?.dataset.sourceFrame).toBe("song1/song.swf warningFrame");
+    expect(songWarning?.dataset.sourceClassification).toBe("swf-derived recreation");
     expect(songWarning?.dataset.sourcePlacement).toContain("sprite id 0340");
     expect(songWarning?.dataset.sourcePlacement).toContain("YES button id 0346");
     expect(songWarning?.dataset.sourcePlacement).toContain("NO button id 0351");
@@ -472,6 +473,12 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceLayerModel).toContain(
       "edit ids 0237/0238",
     );
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceClassification).toBe(
+      "documented fallback",
+    );
+    expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourceFallback).toContain(
+      "dynamic edit text",
+    );
     refreshedHintButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(mount.textContent).toContain("All songs are played by 4 instruments!");
     expect(mount.querySelector<HTMLElement>(".source-hint-alert")?.dataset.sourceFrame).toBe(
@@ -479,6 +486,9 @@ describe("desktop app shell", () => {
     );
     expect(mount.querySelector<HTMLElement>(".source-hint-alert")?.dataset.sourcePlacement).toContain(
       "_root.message edit id 0058",
+    );
+    expect(mount.querySelector<HTMLElement>(".source-hint-alert")?.dataset.sourceClassification).toBe(
+      "swf-derived recreation",
     );
     mount.querySelector<HTMLButtonElement>('[data-source-control="listenSong"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     mount.querySelector<HTMLButtonElement>(".source-song-warning-yes")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -592,7 +602,10 @@ describe("desktop app shell", () => {
     );
     expect(
       mount.querySelector<HTMLImageElement>(".source-selected-actor-song-5.source-selected-actor-7")?.dataset.sourceFallback,
-    ).toContain("exact timeline playback remains M06B");
+    ).toContain("per-song source bitmap");
+    expect(
+      mount.querySelector<HTMLImageElement>(".source-selected-actor-song-5.source-selected-actor-7")?.dataset.sourcePlayback,
+    ).toBe("documented source-derived fallback");
   });
 
   it("checks each Nutcracker song game and unlocks the first progress key after all doors", () => {

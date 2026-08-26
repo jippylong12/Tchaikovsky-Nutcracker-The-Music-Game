@@ -62,4 +62,16 @@ describe("Nutcracker song game data", () => {
     expect(violin?.firstFrame).toBe(559);
     expect(violin ? getNutcrackerTrackStartSeconds(violin) : null).toBeCloseTo(0.6, 1);
   });
+
+  it("keeps every selected actor tied to its per-song SWF and documented playback limit", () => {
+    nutcrackerSongGames.forEach((song) => {
+      song.tracks.forEach((track) => {
+        expect(track.actorSourcePath).toBe(`games/nutcrackergame/song${song.id}/characters/anim${track.number}.swf`);
+        expect(track.actorPlayback).toBe("documented source-derived fallback");
+        expect(track.actorFallbackReason).toContain("no frame selector");
+        expect(track.actorFallbackReason).toContain("extracted later frames can crash");
+        expect(track.imagePath).toContain(`song${song.id}-track${track.number}-actor`);
+      });
+    });
+  });
 });

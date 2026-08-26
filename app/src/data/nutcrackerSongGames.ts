@@ -19,6 +19,9 @@ export type NutcrackerTrack = {
   readonly character?: string;
   readonly audioPath: string;
   readonly imagePath: string;
+  readonly actorSourcePath: string;
+  readonly actorPlayback: "documented source-derived fallback";
+  readonly actorFallbackReason: string;
 };
 
 export type NutcrackerSongGame = {
@@ -32,6 +35,8 @@ export type NutcrackerSongGame = {
 
 const trackNumbers = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 const flashControlCharacter = String.fromCharCode(16);
+const actorFallbackReason =
+  "Local swfrender has no frame selector; representative full animation SWFs render transparent at frame 1 and extracted later frames can crash, so the runtime uses the per-song source bitmap with restrained source-derived motion.";
 const trackImagePaths = [
   nutcrackerUrl,
   mouseUrl,
@@ -165,6 +170,9 @@ function buildSongGame(
       character: track[3],
       audioPath: getNutcrackerTrackAudioPath(id, (index + 1) as NutcrackerTrackNumber),
       imagePath: getNutcrackerTrackActorImagePath(id, (index + 1) as NutcrackerTrackNumber),
+      actorSourcePath: getNutcrackerTrackActorSourcePath(id, (index + 1) as NutcrackerTrackNumber),
+      actorPlayback: "documented source-derived fallback",
+      actorFallbackReason,
     })),
   };
 }
@@ -222,12 +230,19 @@ export function parseTrackInfoText(content: string, songId: NutcrackerSongId): r
       character: row?.character,
       audioPath: getNutcrackerTrackAudioPath(songId, trackNumber),
       imagePath: getNutcrackerTrackActorImagePath(songId, trackNumber),
+      actorSourcePath: getNutcrackerTrackActorSourcePath(songId, trackNumber),
+      actorPlayback: "documented source-derived fallback",
+      actorFallbackReason,
     };
   });
 }
 
 function getNutcrackerTrackActorImagePath(songId: NutcrackerSongId, trackNumber: NutcrackerTrackNumber): string {
   return songActorImagePaths[`../assets/nutcracker-source/song${songId}-track${trackNumber}-actor.png`] ?? trackImagePaths[trackNumber - 1];
+}
+
+function getNutcrackerTrackActorSourcePath(songId: NutcrackerSongId, trackNumber: NutcrackerTrackNumber): string {
+  return `games/nutcrackergame/song${songId}/characters/anim${trackNumber}.swf`;
 }
 
 function parseNumberVariables(content: string, variableName: "track" | "firstFrame"): Map<NutcrackerTrackNumber, number> {
