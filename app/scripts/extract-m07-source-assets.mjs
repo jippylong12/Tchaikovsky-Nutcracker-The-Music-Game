@@ -301,6 +301,34 @@ function renderCroppedSymbol(sourcePath, id, generatedPath, promotedPath, crop, 
   return { id, crop, operations, output: relative(appRoot, promotedPath), sha256: sha256(readFileSync(promotedPath)) };
 }
 
+function renderWrappedTrimmedSymbol(sourcePath, id, generatedPath, promotedPath) {
+  const symbolPath = `${generatedPath}.swf`;
+  const wrappedPath = `${generatedPath}.wrapped.swf`;
+  const renderPath = `${generatedPath}.wrapped.png`;
+  execFileSync("swfextract", ["-i", String(id), "-o", symbolPath, sourcePath], { stdio: "pipe" });
+  execFileSync("swfcombine", [
+    "--stack1",
+    "-X", "2048",
+    "-Y", "2048",
+    "-x", "1024",
+    "-y", "1024",
+    "-o", wrappedPath,
+    symbolPath,
+  ], { stdio: "pipe" });
+  execFileSync("swfrender", ["-o", renderPath, wrappedPath], { stdio: "pipe" });
+  mkdirSync(dirname(promotedPath), { recursive: true });
+  execFileSync("magick", [
+    renderPath,
+    "-trim", "+repage",
+    "-depth", "8",
+    "-define", "png:color-type=6",
+    "-define", "png:exclude-chunks=date,time",
+    "-strip",
+    promotedPath,
+  ]);
+  return { id, output: relative(appRoot, promotedPath), sha256: sha256(readFileSync(promotedPath)) };
+}
+
 function promoteCompanionFiles() {
   const mappings = [
     ["analysis/setup/app/games/trivia/questions", "data/trivia"],
@@ -392,6 +420,17 @@ const treeShapeEvidence = [...treeShapePromotions].map(([id, name]) => renderTri
   join(generatedRoot, `tree/layer-${id}`),
   join(promotedRoot, name),
 ));
+const treeSpriteEvidence = [
+  [23, "tree-nutcracker.png"],
+  [33, "tree-mouse-king.png"],
+  [44, "tree-ballerina.png"],
+  [178, "tree-magic-key.png"],
+].map(([id, name]) => renderWrappedTrimmedSymbol(
+  treeSourcePath,
+  id,
+  join(generatedRoot, `tree/sprite-${id}`),
+  join(promotedRoot, name),
+));
 
 const flyingSourcePath = join(projectRoot, "analysis/setup/app/games/flyinginstruments/flyinginstruments.swf");
 const flyingShapeEvidence = [
@@ -446,6 +485,7 @@ writeFileSync(manifestPath, `${JSON.stringify({
     sourceImages: sourceImagePromotions,
     memoryShapeEvidence,
     treeShapeEvidence,
+    treeSpriteEvidence,
     flyingShapeEvidence,
     melodySpriteEvidence,
     triviaEmbeddedSounds: { 100: "intro", 135: "correct", 150: "wrong" },

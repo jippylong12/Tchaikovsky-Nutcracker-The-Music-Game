@@ -3,7 +3,7 @@ import { createAppShell } from "../app";
 import { createAudioService, type AudioElementLike } from "../audio/audioService";
 import { getCorrectNutcrackerTrackNumbers, nutcrackerSongGames } from "../data/nutcrackerSongGames";
 import { dictionaryInstruments, readingActivities } from "../data/referenceContent";
-import { createMemoryDeck, getMelodySequences } from "../data/m07Games";
+import { createMemoryDeck, createTreeRounds, getMelodySequences } from "../data/m07Games";
 import {
   createProgressStore,
   progressStorageKey,
@@ -1035,17 +1035,90 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLElement>(".m07-memory-status")?.textContent).toContain("errors left :7");
   });
 
-  it("keeps tree hotspots at recovered coordinates and advances the correct source option", () => {
+  it("keeps tree choices hidden until the recovered start and prompt phases finish", () => {
+    vi.useFakeTimers();
     const mount = document.createElement("main");
-    createTestShell(mount);
+    try {
+      createTestShell(mount);
 
-    mount.querySelector<HTMLButtonElement>('[data-route="tree-game"]')?.click();
-    const firstHotspot = mount.querySelector<HTMLElement>('[data-tree-round="0"][data-tree-option="1"]');
-    expect(firstHotspot?.dataset.sourcePlacement).toContain("pl_1 x 97.75 y 188.45");
-    mount.querySelector<HTMLButtonElement>('[data-tree-round="0"][data-tree-option="2"]')?.click();
+      mount.querySelector<HTMLButtonElement>('[data-route="tree-game"]')?.click();
+      const firstHotspot = mount.querySelector<HTMLElement>('[data-tree-round="0"][data-tree-option="1"]');
+      expect(firstHotspot?.dataset.sourcePlacement).toContain("pl_1 x 97.75 y 188.45");
+      expect(mount.querySelectorAll("[data-tree-variant]")).toHaveLength(0);
+      expect(mount.querySelector<HTMLButtonElement>('[data-tree-round="0"][data-tree-option="2"]')?.disabled).toBe(true);
+      expect(mount.querySelector<HTMLImageElement>('[data-source-sprite="id 0033 per_1"]')?.src).toContain(
+        "tree-mouse-king",
+      );
+      expect(mount.querySelector<HTMLElement>('[data-tree-round="0"][data-tree-option="1"]')?.dataset.sourceActor)
+        .toBe("per_1 sprite id 33");
 
-    expect(mount.textContent).toContain("CORRECT");
-    expect(mount.querySelector<HTMLButtonElement>('[data-tree-round="1"][data-tree-option="1"]')?.disabled).toBe(false);
+      mount.querySelector<HTMLButtonElement>("[data-tree-prompt]")?.click();
+      expect(lastPlayedSource()).toContain("Snd_1/c_1.mp3");
+      expect(mount.querySelector("[data-tree-prompt]")).toBeNull();
+      expect(mount.querySelector<HTMLButtonElement>('[data-tree-round="0"][data-tree-option="2"]')?.disabled).toBe(true);
+
+      vi.advanceTimersByTime(createTreeRounds(1)[0].promptDurationMs);
+      expect(mount.querySelector<HTMLButtonElement>('[data-tree-round="0"][data-tree-option="2"]')?.disabled).toBe(false);
+      mount.querySelector<HTMLButtonElement>('[data-tree-round="0"][data-tree-option="2"]')?.click();
+      expect(mount.querySelector<HTMLButtonElement>('[data-tree-round="0"][data-tree-option="2"]')?.disabled).toBe(true);
+
+      vi.advanceTimersByTime(createTreeRounds(1)[0].optionDurationMs[1]);
+      expect(lastPlayedSource()).toContain("Snd_1/c_2.mp3");
+      vi.advanceTimersByTime(createTreeRounds(1)[1].promptDurationMs);
+      expect(mount.querySelector<HTMLButtonElement>('[data-tree-round="1"][data-tree-option="1"]')?.disabled).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("cancels Tree prompt timers when the shared Stop control is used", () => {
+    vi.useFakeTimers();
+    const mount = document.createElement("main");
+    try {
+      createTestShell(mount);
+
+      mount.querySelector<HTMLButtonElement>('[data-route="tree-game"]')?.click();
+      mount.querySelector<HTMLButtonElement>("[data-tree-prompt]")?.click();
+      mount.querySelector<HTMLButtonElement>('[data-action="audio-stop"]')?.click();
+      vi.runAllTimers();
+
+      expect(mount.querySelector<HTMLButtonElement>("[data-tree-prompt]")?.textContent).toBe("START");
+      expect(mount.querySelector<HTMLButtonElement>('[data-tree-round="0"][data-tree-option="2"]')?.disabled).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("awards Tree key 8 only after all three recovered sound sets and NEXT LEVEL gates", () => {
+    vi.useFakeTimers();
+    const mount = document.createElement("main");
+    try {
+      const progress = createTestShell(mount);
+      mount.querySelector<HTMLButtonElement>('[data-route="tree-game"]')?.click();
+
+      ([1, 2, 3] as const).forEach((variant) => {
+        const rounds = createTreeRounds(variant);
+        mount.querySelector<HTMLButtonElement>("[data-tree-prompt]")?.click();
+        rounds.forEach((round, roundIndex) => {
+          vi.advanceTimersByTime(round.promptDurationMs);
+          mount
+            .querySelector<HTMLButtonElement>(
+              `[data-tree-round="${roundIndex}"][data-tree-option="${round.correctOption}"]`,
+            )
+            ?.click();
+          vi.advanceTimersByTime(round.optionDurationMs[round.correctOption - 1]);
+        });
+
+        expect(mount.querySelector<HTMLButtonElement>("[data-tree-next-level]")?.textContent).toBe("NEXT LEVEL");
+        if (variant < 3) expect(progress.getSnapshot().gameKeys[8]).toBe(false);
+        mount.querySelector<HTMLButtonElement>("[data-tree-next-level]")?.click();
+      });
+
+      expect(progress.getSnapshot().gameKeys[8]).toBe(true);
+      expect(mount.querySelector<HTMLImageElement>(".m07-tree-magic-key")?.src).toContain("tree-magic-key");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("opens the recovered Flying Instruments route with source images and sounds", () => {

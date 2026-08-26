@@ -46,12 +46,14 @@ describe("M07 recovered mini-game data", () => {
     const rounds = createTreeRounds(2);
     expect(rounds.map((round) => round.correctOption)).toEqual([2, 4, 1]);
     expect(rounds[0].promptAudioUrl).toContain("c_1.mp3");
+    expect(rounds.map((round) => round.promptDurationMs)).toEqual([4833, 5042, 13924]);
     expect(rounds[2].optionAudioUrls).toEqual([
       expect.stringContaining("c_3.mp3"),
       expect.stringContaining("i_3_1.mp3"),
       expect.stringContaining("i_3_2.mp3"),
       expect.stringContaining("i_3_3.mp3"),
     ]);
+    expect(rounds[2].optionDurationMs).toEqual([13924, 13819, 6975, 13924]);
   });
 
   it("maps all 17 source flying instruments and deterministic source-defined level sets", () => {

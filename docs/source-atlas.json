@@ -435,7 +435,11 @@
       ],
       "promotedAssets": [
         "app/src/assets/m07-source/tree-hallway-line-art.png",
-        "app/src/assets/m07-source/tree-branch.png"
+        "app/src/assets/m07-source/tree-branch.png",
+        "app/src/assets/m07-source/tree-nutcracker.png",
+        "app/src/assets/m07-source/tree-mouse-king.png",
+        "app/src/assets/m07-source/tree-ballerina.png",
+        "app/src/assets/m07-source/tree-magic-key.png"
       ],
       "evidenceDocs": ["docs/m07-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-339", "JIP-831", "JIP-832", "JIP-833", "JIP-834", "JIP-835"],
@@ -444,7 +448,7 @@
           "source": "analysis/setup/app/games/tree/tree.swf",
           "sourceLocator": {
             "kind": "sprite-timeline",
-            "identifier": "root frames 1-46; JPEG3 id 0004; source shapes id 0001, 0002, 0003, and 0007",
+            "identifier": "root frames 1-46; JPEG3 id 0004; source shapes id 0001, 0002, 0003, and 0007; actor sprites 0023, 0033, 0044; start sprite 0047; magicKey 0178",
             "frameOrState": "root labels ini frame 1, beg frame 2, win frame 18, go_out frame 39, and goOut frame 46"
           },
           "toolLimitation": {
@@ -454,14 +458,14 @@
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes promoted source hallway, sky, door, and branch layers with all twelve exact source-coordinate hotspots.",
-            "retainedGap": "Full interactive timeline playback and the original random permutation remain unavailable."
+            "details": "The runtime composes promoted source hallway, sky, door, branch, actor, and key layers with all twelve exact source-coordinate choices, exact prompt-duration locking, three sequential sound levels, and the final key gate. Answer-duration locking is the documented fallback for unavailable nested feedback animations.",
+            "retainedGap": "Full interactive timeline playback remains unavailable, including nested actor animation, the original random permutation, and start sprite button child 0046."
           },
           "evidenceDoc": "docs/m07-mini-games-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "The three source sound sets, exact twelve hotspot placements, recovered scene layers, three-correct key gate, and renderer limitation are implemented; Marcus visual approval remains open."
+      "auditFinding": "The three sequential source sound sets, exact twelve placements, corrected per_1/per_2 actor provenance and trim offsets, recovered scene/actor/key layers, MP3-timed prompt gates, NEXT LEVEL transitions, final key 8 gate, and renderer limitation are implemented; Marcus visual approval remains open."
     },
     {
       "id": "trivia",

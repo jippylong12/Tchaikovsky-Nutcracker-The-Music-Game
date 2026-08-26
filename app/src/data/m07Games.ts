@@ -23,7 +23,9 @@ export type TreeRound = {
   readonly round: 1 | 2 | 3;
   readonly correctOption: 1 | 2 | 3 | 4;
   readonly promptAudioUrl: string;
+  readonly promptDurationMs: number;
   readonly optionAudioUrls: readonly [string, string, string, string];
+  readonly optionDurationMs: readonly [number, number, number, number];
 };
 
 export type FlyingFamily = "woodwinds" | "strings" | "brass" | "percussion";
@@ -93,6 +95,16 @@ export function memoryErrorsForPairs(pairCount: number): number {
 
 export function createTreeRounds(variant: 1 | 2 | 3): readonly TreeRound[] {
   const correctOptions = [2, 4, 1] as const;
+  const promptDurationMs = {
+    1: [4023, 4833, 6844],
+    2: [4833, 5042, 13924],
+    3: [6009, 8255, 5382],
+  } as const;
+  const incorrectDurationMs = {
+    1: [[4023, 2116, 3893], [3971, 3893, 9640], [6714, 6792, 6740]],
+    2: [[4833, 4285, 4859], [5042, 5382, 4990], [13819, 6975, 13924]],
+    3: [[5904, 6035, 4833], [8020, 7707, 8490], [5251, 5303, 5329]],
+  } as const;
   return correctOptions.map((correctOption, index) => {
     const round = (index + 1) as 1 | 2 | 3;
     const promptAudioUrl = getM07Asset(`/audio/tree/Snd_${variant}/c_${round}.mp3`);
@@ -106,11 +118,20 @@ export function createTreeRounds(variant: 1 | 2 | 3): readonly TreeRound[] {
       incorrectIndex += 1;
       return audioUrl;
     }) as [string, string, string, string];
+    incorrectIndex = 0;
+    const optionDurationMs = [1, 2, 3, 4].map((option) => {
+      if (option === correctOption) return promptDurationMs[variant][index];
+      const duration = incorrectDurationMs[variant][index][incorrectIndex];
+      incorrectIndex += 1;
+      return duration;
+    }) as [number, number, number, number];
     return {
       round,
       correctOption,
       promptAudioUrl,
+      promptDurationMs: promptDurationMs[variant][index],
       optionAudioUrls,
+      optionDurationMs,
     };
   });
 }

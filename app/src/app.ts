@@ -158,6 +158,8 @@ type ShellState = {
   treeVariant: 1 | 2 | 3;
   treeRoundIndex: number;
   treeCorrectCount: number;
+  treePhase: "ready" | "prompting" | "choosing" | "answering" | "level-complete" | "complete";
+  treeSelectedOption: number | null;
   treeFeedback: "correct" | "wrong" | "win" | null;
   flyingLevel: 1 | 2 | 3;
   flyingInstrumentIndex: number;
@@ -308,6 +310,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     treeVariant: 1,
     treeRoundIndex: 0,
     treeCorrectCount: 0,
+    treePhase: "ready",
+    treeSelectedOption: null,
     treeFeedback: null,
     flyingLevel: 1,
     flyingInstrumentIndex: 0,
@@ -334,6 +338,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     nutHouseFeedback: null,
   };
   const melodyTimerIds = new Set<number>();
+  const treeTimerIds = new Set<number>();
   const toyTimerIds = new Set<number>();
   let suppressNextNutHouseFocusPreview = false;
 
@@ -341,6 +346,11 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     melodyTimerIds.forEach((timerId) => window.clearTimeout(timerId));
     melodyTimerIds.clear();
     shellState.melodyDemoPlaying = false;
+  };
+
+  const stopTreePlayback = () => {
+    treeTimerIds.forEach((timerId) => window.clearTimeout(timerId));
+    treeTimerIds.clear();
   };
 
   const stopToyMarchPlayback = () => {
@@ -826,21 +836,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       render("[data-memory-card]", "[data-source-memory-board]");
     });
 
-    mount.querySelectorAll<HTMLButtonElement>("[data-tree-variant]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const variant = Number(button.dataset.treeVariant);
-        if (variant !== 1 && variant !== 2 && variant !== 3) return;
-        shellState.treeVariant = variant;
-        shellState.treeRoundIndex = 0;
-        shellState.treeCorrectCount = 0;
-        shellState.treeFeedback = null;
-        render("[data-tree-prompt]", "[data-source-tree-scene]");
-      });
-    });
-
     mount.querySelector<HTMLButtonElement>("[data-tree-prompt]")?.addEventListener("click", () => {
-      const round = createTreeRounds(shellState.treeVariant)[shellState.treeRoundIndex];
-      if (round) playSceneAudio(round.promptAudioUrl, false);
+      if (shellState.treePhase !== "ready") return;
+      startTreePrompt();
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-tree-option]").forEach((button) => {
@@ -848,18 +846,72 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         const option = Number(button.dataset.treeOption);
         const roundIndex = Number(button.dataset.treeRound);
         const round = createTreeRounds(shellState.treeVariant)[shellState.treeRoundIndex];
-        if (!round || roundIndex !== shellState.treeRoundIndex || option < 1 || option > 4) return;
-        audio.playOneShot(round.optionAudioUrls[option - 1]);
-        if (option === round.correctOption) {
+        if (
+          shellState.treePhase !== "choosing" ||
+          !round ||
+          roundIndex !== shellState.treeRoundIndex ||
+          option < 1 ||
+          option > 4
+        ) return;
+        stopTreePlayback();
+        audio.stopSceneAudio();
+        shellState.activeAudioId = audio.playOneShot(round.optionAudioUrls[option - 1]).id;
+        shellState.treePhase = "answering";
+        shellState.treeSelectedOption = option;
+        const correct = option === round.correctOption;
+        if (correct) {
           shellState.treeCorrectCount += 1;
           shellState.treeRoundIndex += 1;
-          shellState.treeFeedback = shellState.treeCorrectCount >= 3 ? "win" : "correct";
-          if (shellState.treeCorrectCount >= 3) progress.markGameKey(8);
+          shellState.treeFeedback = shellState.treeRoundIndex >= 3 ? "win" : "correct";
         } else {
           shellState.treeFeedback = "wrong";
         }
         render("[data-tree-prompt]", "[data-source-tree-scene]");
+        const timerId = window.setTimeout(() => {
+          treeTimerIds.delete(timerId);
+          if (shellState.routeId !== "tree-game" || shellState.treePhase !== "answering") return;
+          shellState.activeAudioId = null;
+          shellState.treeSelectedOption = null;
+          if (!correct) {
+            shellState.treePhase = "choosing";
+            shellState.treeFeedback = null;
+            render(
+              `[data-tree-round="${shellState.treeRoundIndex}"][data-tree-option="${option}"]`,
+              "[data-source-tree-scene]",
+            );
+            return;
+          }
+          if (shellState.treeRoundIndex >= 3) {
+            shellState.treePhase = "level-complete";
+            render("[data-tree-next-level]", "[data-source-tree-scene]");
+            return;
+          }
+          startTreePrompt();
+        }, round.optionDurationMs[option - 1]);
+        treeTimerIds.add(timerId);
       });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-tree-next-level]")?.addEventListener("click", () => {
+      if (shellState.treePhase !== "level-complete") return;
+      stopTreePlayback();
+      audio.stopSceneAudio();
+      shellState.activeAudioId = null;
+      if (shellState.treeVariant < 3) {
+        shellState.treeVariant = (shellState.treeVariant + 1) as 1 | 2 | 3;
+        shellState.treeRoundIndex = 0;
+        shellState.treeCorrectCount = 0;
+        shellState.treePhase = "ready";
+        shellState.treeSelectedOption = null;
+        shellState.treeFeedback = null;
+        render("[data-tree-prompt]", "[data-source-tree-scene]");
+        return;
+      }
+      progress.markGameKey(8);
+      shellState.treePhase = "complete";
+      shellState.treeSelectedOption = null;
+      shellState.treeFeedback = "win";
+      render("[data-source-tree-scene]", "[data-source-tree-scene]");
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-flying-level]").forEach((button) => {
@@ -1264,12 +1316,21 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.melodyFeedback = null;
       shellState.melodyInputMistake = false;
     }
+    if (routeChanged && routeId === "tree-game") {
+      shellState.treeVariant = 1;
+      shellState.treeRoundIndex = 0;
+      shellState.treeCorrectCount = 0;
+      shellState.treePhase = "ready";
+      shellState.treeSelectedOption = null;
+      shellState.treeFeedback = null;
+    }
     shellState.routeId = routeId;
     shellState.helpOpen = false;
     shellState.nutcrackerChooserWarningOpen = false;
     shellState.pendingNutcrackerSongChange = null;
     shellState.pendingNutcrackerSongExit = null;
     stopMelodyPlayback();
+    stopTreePlayback();
     stopToyMarchPlayback();
     audio.stopSceneAudio();
     shellState.activeAudioId = null;
@@ -1282,6 +1343,12 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
 
   const stopSceneAudio = () => {
     stopMelodyPlayback();
+    stopTreePlayback();
+    if (shellState.routeId === "tree-game" && (shellState.treePhase === "prompting" || shellState.treePhase === "answering")) {
+      shellState.treePhase = "ready";
+      shellState.treeSelectedOption = null;
+      shellState.treeFeedback = null;
+    }
     stopToyMarchPlayback();
     audio.stopSceneAudio();
     shellState.activeAudioId = null;
@@ -1301,6 +1368,29 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     render();
   };
 
+  const startTreePrompt = () => {
+    const round = createTreeRounds(shellState.treeVariant)[shellState.treeRoundIndex];
+    if (!round || shellState.routeId !== "tree-game") return;
+    stopTreePlayback();
+    audio.stopSceneAudio();
+    shellState.activeAudioId = audio.playOneShot(round.promptAudioUrl).id;
+    shellState.treePhase = "prompting";
+    shellState.treeSelectedOption = null;
+    shellState.treeFeedback = null;
+    render("[data-source-tree-scene]", "[data-source-tree-scene]");
+    const timerId = window.setTimeout(() => {
+      treeTimerIds.delete(timerId);
+      if (shellState.routeId !== "tree-game" || shellState.treePhase !== "prompting") return;
+      shellState.activeAudioId = null;
+      shellState.treePhase = "choosing";
+      render(
+        `[data-tree-round="${shellState.treeRoundIndex}"][data-tree-option="1"]`,
+        "[data-source-tree-scene]",
+      );
+    }, round.promptDurationMs);
+    treeTimerIds.add(timerId);
+  };
+
   const handleAction = (action: string | undefined) => {
     if (action === "start") {
       navigate("main-menu");
@@ -1314,6 +1404,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.pendingNutcrackerSongChange = null;
       shellState.pendingNutcrackerSongExit = null;
       stopMelodyPlayback();
+      stopTreePlayback();
       stopToyMarchPlayback();
       audio.stopSceneAudio();
       shellState.activeAudioId = null;
@@ -1361,6 +1452,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
 
     if (action === "reset-progress") {
       stopMelodyPlayback();
+      stopTreePlayback();
       stopToyMarchPlayback();
       audio.stopSceneAudio();
       shellState.activeAudioId = null;
@@ -1380,6 +1472,12 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.toyFeedback = null;
       shellState.toyMarchIndex = null;
       shellState.toyPlaybackKind = null;
+      shellState.treeVariant = 1;
+      shellState.treeRoundIndex = 0;
+      shellState.treeCorrectCount = 0;
+      shellState.treePhase = "ready";
+      shellState.treeSelectedOption = null;
+      shellState.treeFeedback = null;
       shellState.alicePuzzle = 1;
       shellState.aliceDialValues = [0, 0, 0];
       shellState.aliceFeedback = null;
@@ -2189,6 +2287,31 @@ function renderTreeGame(state: ShellState, unlocked: boolean): string {
     [159.8, 438.35], [208.2, 419.3], [260.2, 388.05], [309.2, 397.35],
   ] as const;
   const currentRound = Math.min(state.treeRoundIndex, 2);
+  const actorAssets = [
+    getM07Asset("/tree-mouse-king.png"),
+    getM07Asset("/tree-nutcracker.png"),
+    getM07Asset("/tree-ballerina.png"),
+  ] as const;
+  const actorNames = ["Mouse King", "Nutcracker", "Ballerina"] as const;
+  const actorSpriteIds = [33, 23, 44] as const;
+  const actorTrimBounds = [
+    { x: -37, y: -127, width: 73, height: 136 },
+    { x: -49, y: -115, width: 82, height: 123 },
+    { x: -45, y: -139, width: 63, height: 148 },
+  ] as const;
+  const optionRotations = [-7, 5, -3, 8] as const;
+  const showChoices = state.treePhase === "choosing" || (state.treePhase === "answering" && state.treeFeedback === "wrong");
+  const announcement = state.treePhase === "prompting"
+    ? `Listen for ${actorNames[currentRound]}.`
+    : state.treeFeedback === "wrong"
+      ? "That was not the matching sound. Try the same round again."
+      : state.treePhase === "level-complete"
+        ? `Sound set ${state.treeVariant} complete. Next level.`
+        : state.treePhase === "complete"
+          ? "Game key 8 earned."
+          : state.treePhase === "choosing"
+            ? `Find ${actorNames[currentRound]} on the tree.`
+            : "Start the recovered sound sequence.";
 
   return `
     <div class="scene-body m07-scene m07-tree-scene" data-source-swf="analysis/setup/app/games/tree/tree.swf"
@@ -2200,25 +2323,34 @@ function renderTreeGame(state: ShellState, unlocked: boolean): string {
         <img class="m07-tree-hall-line" src="${getM07Asset("/tree-hallway-line-art.png")}" alt="" aria-hidden="true" data-source-classification="original asset" data-source-image="repaired DefineBitsJPEG3 id 0004 with alpha" />
         <img class="m07-tree-door" src="${getM07Asset("/tree-door-blue.png")}" alt="" aria-hidden="true" data-source-classification="swf-derived recreation" data-source-image="source shape id 0002" />
         <img class="m07-tree-branch" src="${getM07Asset("/tree-branch.png")}" alt="" aria-hidden="true" data-source-classification="swf-derived recreation" data-source-image="source shape id 0007" />
+        <div class="m07-tree-cast" aria-hidden="true" data-source-placement="per_1 sprite 0033 x477.10 y431.25; per_2 sprite 0023 x560.15 y433.25; per_3 sprite 0044 x398.65 y436.30">
+          <img class="m07-tree-cast-mouse" src="${actorAssets[0]}" alt="" data-source-sprite="id 0033 per_1" />
+          <img class="m07-tree-cast-nutcracker" src="${actorAssets[1]}" alt="" data-source-sprite="id 0023 per_2" />
+          <img class="m07-tree-cast-ballerina" src="${actorAssets[2]}" alt="" data-source-sprite="id 0044 per_3" />
+        </div>
         ${placements
           .map(([x, y], index) => {
             const round = Math.floor(index / 4);
             const option = (index % 4) + 1;
-            const active = state.treeRoundIndex < 3 && round === currentRound;
+            const active = showChoices && state.treeRoundIndex < 3 && round === currentRound;
+            const selected = active && state.treeSelectedOption === option;
+            const trim = actorTrimBounds[round];
             return `<button class="m07-tree-option" type="button" data-tree-option="${option}" data-tree-round="${round}"
-              style="left:${x}px;top:${y}px" aria-label="Sound choice ${option}, round ${round + 1}"
-              data-source-placement="pl_${index + 1} x ${x} y ${y}" ${active ? "" : "disabled"}><span aria-hidden="true">${option}</span></button>`;
+              style="left:${x}px;top:${y}px;--tree-option-x:${trim.x * 0.8}px;--tree-option-y:${trim.y * 0.8}px;--tree-option-origin-x:${trim.x * -0.8}px;--tree-option-origin-y:${trim.y * -0.8}px;--tree-option-width:${trim.width * 0.8}px;--tree-option-height:${trim.height * 0.8}px" aria-label="Sound choice ${option}, round ${round + 1}"
+              data-source-placement="pl_${index + 1} x ${x} y ${y}; source clone scale 80 and random rotation -10..10"
+              data-source-actor="per_${round + 1} sprite id ${actorSpriteIds[round]}" data-source-trim-bounds="${trim.width}x${trim.height} x${trim.x} y${trim.y}"
+              data-visible="${active}" data-selected="${selected}"
+              ${active && state.treePhase === "choosing" ? "" : "disabled"}>
+                <img src="${actorAssets[round]}" alt="" aria-hidden="true" style="--tree-option-rotation:${optionRotations[option - 1]}deg" />
+              </button>`;
           })
           .join("")}
+        ${state.treePhase === "complete" ? `<img class="m07-tree-magic-key" src="${getM07Asset("/tree-magic-key.png")}" alt="" aria-hidden="true" data-source-sprite="magicKey id 0178 root x322.35 y229.20 scale1.806" />` : ""}
       </div>
-      <div class="m07-tree-variants" aria-label="Sound set">
-        ${([1, 2, 3] as const).map((variant) => `<button type="button" data-tree-variant="${variant}" aria-pressed="${state.treeVariant === variant}">${variant}</button>`).join("")}
-      </div>
-      <button class="m07-source-button m07-tree-prompt" type="button" data-tree-prompt>START</button>
-      <p class="m07-feedback m07-tree-feedback" aria-live="polite">${
-        state.treeFeedback === "correct" ? "CORRECT" : state.treeFeedback === "wrong" ? "TRY AGAIN" : state.treeFeedback === "win" ? "CONGRATULATIONS!" : ""
-      }</p>
-      ${unlocked ? '<p class="m07-source-reward" data-source-key="gameKey8">CONGRATULATIONS!</p>' : ""}
+      ${state.treePhase === "ready" ? '<button class="m07-source-button m07-tree-prompt" type="button" data-tree-prompt data-source-control="strt_btn sprite id 0047 root x330.90 y123.45; button child id 0046 does not flatten locally">START</button>' : ""}
+      ${state.treePhase === "level-complete" ? '<button class="m07-source-button m07-tree-next-level" type="button" data-tree-next-level data-source-text="ids 0180-0182">NEXT LEVEL</button>' : ""}
+      <p class="sr-only" aria-live="polite">${announcement}</p>
+      ${unlocked ? '<span class="sr-only" data-source-key="gameKey8">Game key 8 is saved.</span>' : ""}
     </div>
   `;
 }
