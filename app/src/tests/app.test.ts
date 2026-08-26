@@ -938,6 +938,91 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>(".m07-flying-instrument")?.src).toContain("flying-grand-piano-blue");
   });
 
+  it("completes a Children's Album door from the recovered binary pattern", () => {
+    const mount = document.createElement("main");
+    const progress = createTestShell(mount);
+
+    mount.querySelector<HTMLButtonElement>('[data-route="childrens-album"]')?.click();
+    expect(mount.querySelector<HTMLElement>("[data-source-childrens-board]")?.dataset.sourceAction).toContain("gameKey6");
+    expect(mount.querySelector<HTMLImageElement>(".m08-frame-bottom")?.src).toContain("childrens-album-frame-bottom");
+    [1, 3, 6, 7].forEach((instrument) => {
+      mount.querySelector<HTMLButtonElement>(`[data-childrens-instrument="${instrument}"]`)?.click();
+    });
+    mount.querySelector<HTMLButtonElement>("[data-childrens-check]")?.click();
+
+    expect(progress.getSnapshot().childrensDoors[1]).toBe(true);
+    expect(mount.textContent).toContain("CORRECT — THIS DOOR IS SAVED");
+  });
+
+  it("mixes the exact Loopy Tunes track set and advances to tune two", () => {
+    const mount = document.createElement("main");
+    const progress = createTestShell(mount);
+
+    mount.querySelector<HTMLButtonElement>('[data-route="loopy-tunes"]')?.click();
+    expect(mount.querySelector<HTMLElement>("[data-source-loopy-board]")?.dataset.sourceAction).toContain("1,3,5,7");
+    [1, 3, 5, 7].forEach((track) => {
+      mount.querySelector<HTMLButtonElement>(`[data-loopy-track="${track}"]`)?.click();
+    });
+    mount.querySelector<HTMLButtonElement>("[data-loopy-check]")?.click();
+    expect(mount.textContent).toContain("THAT LOOP IS RIGHT");
+    mount.querySelector<HTMLButtonElement>("[data-loopy-next]")?.click();
+
+    expect(mount.textContent).toContain("LOOPY TUNE 2");
+    expect(mount.querySelector<HTMLImageElement>(".m08-full-stage")?.src).toContain("loopy-2-stage");
+    expect(progress.getSnapshot().gameKeys[3]).toBe(false);
+
+    for (let tune = 2; tune <= 8; tune += 1) {
+      [1, 3, 5, 7].forEach((track) => {
+        mount.querySelector<HTMLButtonElement>(`[data-loopy-track="${track}"]`)?.click();
+      });
+      mount.querySelector<HTMLButtonElement>("[data-loopy-check]")?.click();
+      if (tune < 8) mount.querySelector<HTMLButtonElement>("[data-loopy-next]")?.click();
+    }
+
+    expect(progress.getSnapshot().gameKeys[3]).toBe(true);
+    expect(mount.textContent).toContain("ALL EIGHT TUNES COMPLETE");
+  });
+
+  it("uses the exact Orchestra prompt order and NutHouse room sequence", () => {
+    const mount = document.createElement("main");
+    const progress = createTestShell(mount);
+
+    mount.querySelector<HTMLButtonElement>('[data-route="orchestra"]')?.click();
+    expect(mount.querySelectorAll("[data-orchestra-instrument]")).toHaveLength(18);
+    mount.querySelector<HTMLButtonElement>('[data-orchestra-instrument="1"]')?.click();
+    expect(mount.textContent).toContain("LISTEN 2 / 18");
+
+    mount.querySelector<HTMLButtonElement>('[data-route="nut-house"]')?.click();
+    expect(mount.querySelector<HTMLElement>("[data-source-nut-house-board]")?.dataset.sourceAction).toContain(
+      "8,3,1,7,6,4,5,2",
+    );
+    mount.querySelector<HTMLButtonElement>('[data-nut-house-mirror="8"]')?.click();
+    expect(progress.getSnapshot().nutHouse.openDoor).toBe(1);
+    expect(mount.textContent).toContain("ROOM 12");
+    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-art")?.src).toContain("room-12-scene");
+  });
+
+  it("keeps Toy Soldiers, Waltz, and Alice faithful to their recovered source boundaries", () => {
+    const mount = document.createElement("main");
+    createTestShell(mount);
+
+    mount.querySelector<HTMLButtonElement>('[data-route="toy-soldiers"]')?.click();
+    expect(mount.querySelectorAll("[data-toy-soldier]")).toHaveLength(8);
+    expect(mount.querySelector<HTMLElement>("[data-source-toy-board]")?.dataset.sourceFallback).toContain("button id 30");
+
+    mount.querySelector<HTMLButtonElement>('[data-route="waltz"]')?.click();
+    expect(mount.querySelector<HTMLElement>(".m08-waltz-scene")?.dataset.sourceFrame).toContain("785 frames");
+    expect(mount.querySelector<HTMLElement>(".m08-waltz-scene")?.dataset.sourceAction).toContain("no recovered gameplay");
+    mount.querySelector<HTMLButtonElement>("[data-waltz-play]")?.click();
+    expect(mount.textContent).toContain("PLAYING THE BUNDLED SOURCE MUSIC");
+
+    mount.querySelector<HTMLButtonElement>('[data-route="alice-puzzles"]')?.click();
+    [0, 1, 2].forEach((dial) => mount.querySelector<HTMLButtonElement>(`[data-alice-dial="${dial}"]`)?.click());
+    mount.querySelector<HTMLButtonElement>("[data-alice-check]")?.click();
+    expect(mount.textContent).toContain("THE CLOCKWORK COMBINATION IS CORRECT");
+    expect(mount.querySelector<HTMLImageElement>(".m08-alice-art")?.src).toContain("alice-puzzle-01-primary");
+  });
+
   it("uses real local image assets for reading activities", () => {
     const imagePaths = readingActivities.flatMap((activity) =>
       activity.pages.flatMap((page) => page.columns.flatMap((column) => column.imagePaths ?? [])),

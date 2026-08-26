@@ -168,8 +168,48 @@ export const routes = [
     title: "Children's Album",
     heading: "Children's Album doors",
     summary:
-      "Placeholder for the second eight-door music activity, including saved door visits and album pattern data.",
+      "Source-backed eight-song instrumentation game with exact recovered patterns, bundled previews, saved doors, and game key 6 completion.",
     group: "suite",
+    levelTarget: "_level1",
+    mainMenu: true,
+  },
+  {
+    id: "loopy-tunes",
+    title: "Loopy Tunes",
+    heading: "Loopy Tunes",
+    summary:
+      "Source-backed eight-tune loop mixer with exact four-track answers, recovered boards and embedded loop audio.",
+    group: "mini-game",
+    levelTarget: "_level1",
+    mainMenu: true,
+  },
+  {
+    id: "orchestra",
+    title: "Orchestra",
+    heading: "The Orchestra Game",
+    summary:
+      "Source-backed 18-instrument listening game with recovered stage layers, exact labels, embedded prompts, and game key 4 completion.",
+    group: "mini-game",
+    levelTarget: "_level1",
+    mainMenu: true,
+  },
+  {
+    id: "toy-soldiers",
+    title: "Toy Soldiers",
+    heading: "Toy Soldiers",
+    summary:
+      "Source-derived eight-soldier pitch-order activity using the recovered note sounds and documented staff-control fallback.",
+    group: "mini-game",
+    levelTarget: "_level1",
+    mainMenu: true,
+  },
+  {
+    id: "waltz",
+    title: "Waltz",
+    heading: "Waltz timeline",
+    summary:
+      "Faithful audio-first recreation of the source 785-frame Waltz timeline, with the bundled Wedding music and no invented gameplay.",
+    group: "mini-game",
     levelTarget: "_level1",
     mainMenu: true,
   },
@@ -224,11 +264,21 @@ export const routes = [
     mainMenu: true,
   },
   {
-    id: "puzzles",
-    title: "Puzzles",
-    heading: "Puzzle games",
+    id: "alice-puzzles",
+    title: "Alice Puzzles",
+    heading: "Alice puzzle chooser",
     summary:
-      "Placeholder for puzzle-style mini-games that can later mount Canvas scenes inside the fixed viewport.",
+      "Source-backed 12-puzzle clock selector with recovered puzzle art and the exact three-dial solution behavior.",
+    group: "mini-game",
+    levelTarget: "_level1",
+    mainMenu: true,
+  },
+  {
+    id: "nut-house",
+    title: "The NutHouse",
+    heading: "The NutHouse",
+    summary:
+      "Source-backed eight-room mirror sequence with recovered room art, persistent room progress, and game key 7 completion.",
     group: "mini-game",
     levelTarget: "_level1",
     mainMenu: true,

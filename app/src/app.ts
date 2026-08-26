@@ -100,6 +100,18 @@ import {
   type MelodyDifficulty,
   type MemoryCard,
 } from "./data/m07Games";
+import {
+  alicePuzzleIds,
+  alicePuzzleIsCorrect,
+  childrensAlbumInstrumentLabels,
+  childrensAlbumSongs,
+  isChildrensAlbumSelectionCorrect,
+  isLoopySelectionCorrect,
+  loopyTunes,
+  nutHouseCorrectMirror,
+  orchestraInstruments,
+  toySoldiersAreCorrect,
+} from "./data/m08Games";
 import { getRouteById, isRouteId, routes, type RouteDefinition, type RouteId } from "./routes";
 import { createProgressStore, type DoorKey, type GameKey, type ProgressStoreController } from "./state/progressStore";
 
@@ -139,6 +151,23 @@ type ShellState = {
   flyingInstrumentIndex: number;
   flyingCorrectCount: number;
   flyingFeedback: "correct" | "wrong" | "win" | null;
+  childrensAlbumSong: DoorKey;
+  childrensAlbumSelections: number[];
+  childrensAlbumFeedback: "correct" | "wrong" | "win" | null;
+  loopyTune: DoorKey;
+  loopySelections: number[];
+  loopyCompleted: number[];
+  loopyFeedback: "correct" | "wrong" | "win" | null;
+  orchestraPromptIndex: number;
+  orchestraCorrectIds: number[];
+  orchestraFeedback: "correct" | "wrong" | "win" | null;
+  toySoldierNotes: number[];
+  toyFeedback: "correct" | "wrong" | null;
+  alicePuzzle: number;
+  aliceDialValues: [number, number, number];
+  aliceFeedback: "correct" | "wrong" | null;
+  nutHouseRoom: number;
+  nutHouseFeedback: "correct" | "wrong" | "win" | null;
 };
 
 type MainRoomHotspot = {
@@ -163,7 +192,7 @@ type SuiteRecordPlacement = {
 };
 
 const mainRoomHotspots: readonly MainRoomHotspot[] = [
-  { sourceButtonId: 625, depth: 5, x: 604.6, y: 131.8, label: "The NutHouse", sourcePath: "games/nuthouse/room11.swf", routeId: "puzzles" },
+  { sourceButtonId: 625, depth: 5, x: 604.6, y: 131.8, label: "The NutHouse", sourcePath: "games/nuthouse/room11.swf", routeId: "nut-house" },
   { sourceButtonId: 631, depth: 7, x: 214.55, y: 293.15, label: "Children's Album Game", sourcePath: "games/childrensalbum/childrensalbum.swf", routeId: "childrens-album" },
   { sourceButtonId: 632, depth: 12, x: 332.85, y: 377.05, label: "MusiCards", sourcePath: "games/memorygame/memory.swf", routeId: "memory" },
   { sourceButtonId: 634, depth: 19, x: 357.9, y: 429.25, label: "Flying Instruments", sourcePath: "games/flyinginstruments/flyinginstruments.swf", routeId: "flying-instruments" },
@@ -173,7 +202,7 @@ const mainRoomHotspots: readonly MainRoomHotspot[] = [
   { sourceButtonId: 639, depth: 39, x: 59.85, y: 435.45, label: "The Listening Room", sourcePath: "activities/originals/gramophone.swf", routeId: "suite" },
   { sourceButtonId: 640, depth: 50, x: 99.25, y: 143.85, label: "The Nutcracker Story", sourcePath: "activities/story/story.swf", routeId: "story" },
   { sourceButtonId: 642, depth: 58, x: 493.45, y: 169.45, label: "Find Me On The Tree", sourcePath: "games/tree/tree.swf", routeId: "tree-game" },
-  { sourceButtonId: 643, depth: 65, x: 441.3, y: 246.65, label: "The Orchestra Game", sourcePath: "games/orchestragame/orchestra.swf" },
+  { sourceButtonId: 643, depth: 65, x: 441.3, y: 246.65, label: "The Orchestra Game", sourcePath: "games/orchestragame/orchestra.swf", routeId: "orchestra" },
   { sourceButtonId: 644, depth: 87, x: 187.5, y: 130.25, label: "The Nutcracker Ballet", sourcePath: "activities/ballet/ballet.swf", routeId: "ballet-history" },
   { sourceButtonId: 646, depth: 93, x: 474.95, y: 105.7, label: "Tchaikovsky's Biography", sourcePath: "activities/biography/biography.swf", routeId: "composer-biography" },
 ];
@@ -188,6 +217,20 @@ const suiteRecordPlacements: readonly SuiteRecordPlacement[] = [
   { trackNumber: 7, sourceSpriteId: 72, sourceInstance: "lp7", depth: 70, x: 444.95, y: 449.9, matrix: [1.41, 0, 0, 0.262], imageUrl: listeningRoomRecordLp3Url },
   { trackNumber: 8, sourceSpriteId: 70, sourceInstance: "lp8", depth: 97, x: 453.65, y: 335.85, matrix: [1.005, 0, 0, 0.478], imageUrl: listeningRoomRecordLp2Url },
 ];
+
+const m08Assets = {
+  ...import.meta.glob<string>("./assets/m08-source/**/*.png", { eager: true, query: "?url", import: "default" }),
+  ...import.meta.glob<string>("./assets/m08-source/**/*.mp3", { eager: true, query: "?url", import: "default" }),
+  ...import.meta.glob<string>("./assets/m08-source/audio/waltz/MP3Wedding3.wav", {
+    eager: true,
+    query: "?url",
+    import: "default",
+  }),
+};
+
+function getM08Asset(path: string): string {
+  return m08Assets[`./assets/m08-source${path}`] ?? "";
+}
 
 export type AppShellOptions = {
   progress?: ProgressStoreController;
@@ -243,6 +286,23 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     flyingInstrumentIndex: 0,
     flyingCorrectCount: 0,
     flyingFeedback: null,
+    childrensAlbumSong: 1,
+    childrensAlbumSelections: [],
+    childrensAlbumFeedback: null,
+    loopyTune: 1,
+    loopySelections: [],
+    loopyCompleted: [],
+    loopyFeedback: null,
+    orchestraPromptIndex: 0,
+    orchestraCorrectIds: [],
+    orchestraFeedback: null,
+    toySoldierNotes: [8, 7, 6, 5, 4, 3, 2, 1],
+    toyFeedback: null,
+    alicePuzzle: 1,
+    aliceDialValues: [0, 0, 0],
+    aliceFeedback: null,
+    nutHouseRoom: 11 + Math.min(progress.getSnapshot().nutHouse.openDoor, 7),
+    nutHouseFeedback: null,
   };
   const melodyTimerIds = new Set<number>();
 
@@ -801,6 +861,205 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       });
     });
 
+    mount.querySelectorAll<HTMLButtonElement>("[data-childrens-song]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const song = Number(button.dataset.childrensSong);
+        if (song < 1 || song > 8) return;
+        shellState.childrensAlbumSong = song as DoorKey;
+        shellState.childrensAlbumSelections = [];
+        shellState.childrensAlbumFeedback = null;
+        render("[data-childrens-instrument]", "[data-source-childrens-board]");
+      });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-childrens-preview]")?.addEventListener("click", () => {
+      playSceneAudio(getM08Asset(`/audio/childrens-album/preview/preview${shellState.childrensAlbumSong}.mp3`), false);
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-childrens-instrument]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const instrument = Number(button.dataset.childrensInstrument);
+        if (instrument < 1 || instrument > 8 || shellState.childrensAlbumFeedback === "win") return;
+        const selected = new Set(shellState.childrensAlbumSelections);
+        if (selected.has(instrument)) selected.delete(instrument);
+        else selected.add(instrument);
+        shellState.childrensAlbumSelections = [...selected].sort((left, right) => left - right);
+        shellState.childrensAlbumFeedback = null;
+        audio.playOneShot(
+          getM08Asset(`/audio/childrens-album/song${shellState.childrensAlbumSong}/instsound${instrument}.mp3`),
+        );
+        render("[data-childrens-instrument]", "[data-source-childrens-board]");
+      });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-childrens-check]")?.addEventListener("click", () => {
+      const song = childrensAlbumSongs[shellState.childrensAlbumSong - 1];
+      if (!song) return;
+      if (isChildrensAlbumSelectionCorrect(song, shellState.childrensAlbumSelections)) {
+        const snapshot = progress.markChildrensDoor(song.id);
+        if (snapshot.openedChildrensDoorCount === childrensAlbumSongs.length) {
+          progress.markGameKey(6);
+          shellState.childrensAlbumFeedback = "win";
+        } else {
+          shellState.childrensAlbumFeedback = "correct";
+        }
+      } else {
+        shellState.childrensAlbumFeedback = "wrong";
+      }
+      render("[data-childrens-check]", "[data-source-childrens-board]");
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-loopy-tune]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const tune = Number(button.dataset.loopyTune);
+        if (tune < 1 || tune > 8) return;
+        shellState.loopyTune = tune as DoorKey;
+        shellState.loopySelections = [];
+        shellState.loopyFeedback = null;
+        render("[data-loopy-track]", "[data-source-loopy-board]");
+      });
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-loopy-track]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const track = Number(button.dataset.loopyTrack);
+        if (track < 1 || track > 8 || shellState.loopyFeedback === "win") return;
+        const selected = new Set(shellState.loopySelections);
+        if (selected.has(track)) selected.delete(track);
+        else selected.add(track);
+        shellState.loopySelections = [...selected].sort((left, right) => left - right);
+        shellState.loopyFeedback = null;
+        audio.playOneShot(getM08Asset(`/audio/embedded/loopy-${shellState.loopyTune}/sound-${track}.mp3`));
+        render("[data-loopy-track]", "[data-source-loopy-board]");
+      });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-loopy-check]")?.addEventListener("click", () => {
+      const tune = loopyTunes[shellState.loopyTune - 1];
+      if (!tune) return;
+      if (isLoopySelectionCorrect(tune, shellState.loopySelections)) {
+        shellState.loopyCompleted = [...new Set([...shellState.loopyCompleted, tune.id])].sort((left, right) => left - right);
+        if (shellState.loopyCompleted.length === loopyTunes.length) {
+          progress.markGameKey(3);
+          shellState.loopyFeedback = "win";
+        } else {
+          shellState.loopyFeedback = "correct";
+        }
+      } else {
+        shellState.loopyFeedback = "wrong";
+      }
+      render("[data-loopy-check]", "[data-source-loopy-board]");
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-loopy-next]")?.addEventListener("click", () => {
+      if (shellState.loopyFeedback !== "correct" || shellState.loopyTune >= 8) return;
+      shellState.loopyTune = (shellState.loopyTune + 1) as DoorKey;
+      shellState.loopySelections = [];
+      shellState.loopyFeedback = null;
+      render("[data-loopy-track]", "[data-source-loopy-board]");
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-orchestra-listen]")?.addEventListener("click", () => {
+      const prompt = shellState.orchestraPromptIndex + 1;
+      if (prompt <= orchestraInstruments.length) {
+        playSceneAudio(getM08Asset(`/audio/embedded/orchestra/sound-${prompt}.mp3`), false);
+      }
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-orchestra-instrument]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const instrument = Number(button.dataset.orchestraInstrument);
+        const prompt = shellState.orchestraPromptIndex + 1;
+        if (instrument < 1 || instrument > orchestraInstruments.length || shellState.orchestraFeedback === "win") return;
+        if (instrument === prompt && !shellState.orchestraCorrectIds.includes(instrument)) {
+          shellState.orchestraCorrectIds.push(instrument);
+          shellState.orchestraPromptIndex += 1;
+          if (shellState.orchestraCorrectIds.length === orchestraInstruments.length) {
+            progress.markGameKey(4);
+            shellState.orchestraFeedback = "win";
+            audio.playOneShot(getM08Asset("/audio/embedded/orchestra/sound-838.mp3"));
+          } else {
+            shellState.orchestraFeedback = "correct";
+            audio.playOneShot(getM08Asset(`/audio/embedded/orchestra/sound-${instrument}.mp3`));
+          }
+        } else {
+          shellState.orchestraFeedback = "wrong";
+          audio.playOneShot(getM08Asset("/audio/embedded/orchestra/sound-19.mp3"));
+        }
+        render("[data-orchestra-instrument]", "[data-source-orchestra-board]");
+      });
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-toy-soldier]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const soldier = Number(button.dataset.toySoldier);
+        if (soldier < 0 || soldier > 7) return;
+        const nextNote = (shellState.toySoldierNotes[soldier] % 8) + 1;
+        shellState.toySoldierNotes[soldier] = nextNote;
+        shellState.toyFeedback = null;
+        audio.playOneShot(getM08Asset(`/audio/embedded/toy-soldiers/sound-${nextNote * 2 - 1}.mp3`));
+        render("[data-toy-soldier]", "[data-source-toy-board]");
+      });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-toy-check]")?.addEventListener("click", () => {
+      shellState.toyFeedback = toySoldiersAreCorrect(shellState.toySoldierNotes) ? "correct" : "wrong";
+      render("[data-toy-check]", "[data-source-toy-board]");
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-waltz-play]")?.addEventListener("click", () => {
+      if (shellState.activeAudioId) stopSceneAudio();
+      else playSceneAudio(getM08Asset("/audio/waltz/MP3Wedding3.wav"), true);
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-alice-puzzle]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const puzzle = Number(button.dataset.alicePuzzle);
+        if (!alicePuzzleIds.includes(puzzle)) return;
+        shellState.alicePuzzle = puzzle;
+        shellState.aliceDialValues = [0, 0, 0];
+        shellState.aliceFeedback = null;
+        render("[data-alice-dial]", "[data-source-alice-board]");
+      });
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-alice-dial]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const dial = Number(button.dataset.aliceDial);
+        if (dial < 0 || dial > 2) return;
+        shellState.aliceDialValues[dial] = (shellState.aliceDialValues[dial] + 1) % 4;
+        shellState.aliceFeedback = null;
+        render("[data-alice-dial]", "[data-source-alice-board]");
+      });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-alice-check]")?.addEventListener("click", () => {
+      shellState.aliceFeedback = alicePuzzleIsCorrect(shellState.aliceDialValues) ? "correct" : "wrong";
+      render("[data-alice-check]", "[data-source-alice-board]");
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-nut-house-mirror]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const mirror = Number(button.dataset.nutHouseMirror);
+        if (mirror < 1 || mirror > 8 || shellState.nutHouseFeedback === "win") return;
+        audio.playOneShot(getM08Asset(`/audio/embedded/nut-house-${shellState.nutHouseRoom}/sound-${mirror}.mp3`));
+        if (mirror === nutHouseCorrectMirror(shellState.nutHouseRoom)) {
+          const roomProgress = shellState.nutHouseRoom - 10;
+          progress.setNutHouseOpenDoor(roomProgress);
+          if (shellState.nutHouseRoom === 18) {
+            progress.markGameKey(7);
+            shellState.nutHouseFeedback = "win";
+          } else {
+            shellState.nutHouseRoom += 1;
+            shellState.nutHouseFeedback = "correct";
+          }
+        } else {
+          shellState.nutHouseFeedback = "wrong";
+        }
+        render("[data-nut-house-mirror]", "[data-source-nut-house-board]");
+      });
+    });
+
     if (focusSelector) {
       const requestedTarget = mount.querySelector<HTMLElement>(focusSelector);
       const usableTarget =
@@ -1120,6 +1379,34 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
 
   if (route.id === "flying-instruments") {
     return renderFlyingInstruments(shellState, progress.gameKeys[3]);
+  }
+
+  if (route.id === "childrens-album") {
+    return renderChildrensAlbum(shellState, progress);
+  }
+
+  if (route.id === "loopy-tunes") {
+    return renderLoopyTunes(shellState, progress.gameKeys[3]);
+  }
+
+  if (route.id === "orchestra") {
+    return renderOrchestra(shellState, progress.gameKeys[4]);
+  }
+
+  if (route.id === "toy-soldiers") {
+    return renderToySoldiers(shellState);
+  }
+
+  if (route.id === "waltz") {
+    return renderWaltz(shellState.activeAudioId !== null);
+  }
+
+  if (route.id === "alice-puzzles") {
+    return renderAlicePuzzles(shellState);
+  }
+
+  if (route.id === "nut-house") {
+    return renderNutHouse(shellState, progress.gameKeys[7]);
   }
 
   const song = getNutcrackerSongGameByRoute(route.id);
@@ -1735,6 +2022,218 @@ function renderFlyingInstruments(state: ShellState, unlocked: boolean): string {
   `;
 }
 
+function renderM08Frame(prefix: "childrens-album" | "orchestra", sourceSwf: string): string {
+  return `
+    <img class="m08-stage" src="${getM08Asset(`/${prefix}-stage.png`)}" alt="" aria-hidden="true"
+      data-source-classification="original asset" data-source-swf="${sourceSwf}" />
+    <img class="m08-curtain" src="${getM08Asset(`/${prefix}-curtain.png`)}" alt="" aria-hidden="true"
+      data-source-classification="original asset" data-source-swf="${sourceSwf}" />
+    <img class="m08-frame-top" src="${getM08Asset(`/${prefix}-frame-top.png`)}" alt="" aria-hidden="true" />
+    <img class="m08-frame-medallion" src="${getM08Asset(`/${prefix}-frame-medallion.png`)}" alt="" aria-hidden="true" />
+    <img class="m08-frame-bottom" src="${getM08Asset(`/${prefix}-frame-bottom.png`)}" alt="" aria-hidden="true" />
+  `;
+}
+
+function renderChildrensAlbum(
+  state: ShellState,
+  progress: ReturnType<ProgressStoreController["getSnapshot"]>,
+): string {
+  const song = childrensAlbumSongs[state.childrensAlbumSong - 1];
+  const feedback = state.childrensAlbumFeedback === "win"
+    ? "YOU FOUND GAME KEY 6"
+    : state.childrensAlbumFeedback === "correct"
+      ? "CORRECT — THIS DOOR IS SAVED"
+      : state.childrensAlbumFeedback === "wrong"
+        ? "TRY AGAIN"
+        : "CHOOSE THE FOUR INSTRUMENTS YOU HEAR";
+  return `
+    <div class="scene-body m08-scene m08-childrens-scene"
+      data-source-childrens-board tabindex="-1"
+      data-source-swf="analysis/setup/app/games/childrensalbum/childrensalbum.swf"
+      data-source-frame="640 x 480, 7 frames at 15 fps"
+      data-source-action="select/drop instrument; preview; check; saveCADoor1..8; all eight doors grant gameKey6"
+      data-source-fallback="installed swfrender crashes on the root display list; recovered child images, exact SWF text/actions, and bundled song audio are composed with DOM controls">
+      ${renderM08Frame("childrens-album", "analysis/setup/app/games/childrensalbum/childrensalbum.swf")}
+      <img class="m08-source-scene" src="${getM08Asset("/childrens-album-scene.png")}" alt="" aria-hidden="true"
+        data-source-classification="original asset" data-source-image="DefineBitsJPEG3 id 0279" />
+      <nav class="m08-door-strip" aria-label="Children's Album songs">
+        ${childrensAlbumSongs.map((item) => `<button type="button" data-childrens-song="${item.id}"
+          aria-pressed="${item.id === song.id}" data-door-open="${progress.childrensDoors[item.id]}">${item.id}</button>`).join("")}
+      </nav>
+      <h1 class="m08-title">${song.title}</h1>
+      <button class="m08-source-button m08-listen" type="button" data-childrens-preview>LISTEN</button>
+      <div class="m08-choice-grid m08-childrens-instruments" role="group" aria-label="Instruments"
+        data-source-classification="documented fallback" data-source-provenance="eight instsound files per source song; exact binary patterns from games/data/childrensalbum.txt">
+        ${childrensAlbumInstrumentLabels.map((label, index) => `<button type="button" data-childrens-instrument="${index + 1}"
+          aria-pressed="${state.childrensAlbumSelections.includes(index + 1)}">${label}</button>`).join("")}
+      </div>
+      <button class="m08-source-button m08-check" type="button" data-childrens-check>CHECK</button>
+      <p class="m08-feedback" aria-live="polite">${feedback}</p>
+    </div>
+  `;
+}
+
+function renderLoopyTunes(state: ShellState, unlocked: boolean): string {
+  const tune = loopyTunes[state.loopyTune - 1];
+  const feedback = state.loopyFeedback === "win"
+    ? "ALL EIGHT TUNES COMPLETE — GAME KEY 3"
+    : state.loopyFeedback === "correct"
+      ? "THAT LOOP IS RIGHT"
+      : state.loopyFeedback === "wrong"
+        ? "TRY A DIFFERENT MIX"
+        : "TURN ON THE FOUR PARTS THAT BELONG";
+  return `
+    <div class="scene-body m08-scene m08-loopy-scene" data-source-loopy-board tabindex="-1"
+      data-source-swf="analysis/setup/app/games/loopytunes/loop${tune.id}.swf"
+      data-source-action="totalLoops=8; goodLoops=4; tracks 1,3,5,7 are correct in all eight source loops; final loop grants gameKey3"
+      data-source-fallback="all eight root renders terminate without a usable full board; source-local lossless/JPEG3 layers and embedded sounds are retained">
+      <img class="m08-full-stage" src="${getM08Asset(`/loopy-${tune.id}-stage.png`)}" alt="" aria-hidden="true"
+        data-source-classification="original asset" />
+      <img class="m08-frame-medallion" src="${getM08Asset(`/loopy-${tune.id}-frame-medallion.png`)}" alt="" aria-hidden="true"
+        data-source-classification="original asset" />
+      <nav class="m08-door-strip" aria-label="Loopy Tunes">
+        ${loopyTunes.map((item) => `<button type="button" data-loopy-tune="${item.id}" aria-pressed="${item.id === tune.id}"
+          data-tune-complete="${state.loopyCompleted.includes(item.id)}">${item.id}</button>`).join("")}
+      </nav>
+      <h1 class="m08-title">LOOPY TUNE ${tune.id}</h1>
+      <div class="m08-loop-grid" role="group" aria-label="Loop tracks"
+        data-source-classification="documented fallback" data-source-provenance="myTrack1..8 ActionScript values recovered from every loop SWF">
+        ${Array.from({ length: 8 }, (_item, index) => `<button type="button" data-loopy-track="${index + 1}"
+          aria-pressed="${state.loopySelections.includes(index + 1)}"><span>TRACK</span>${index + 1}</button>`).join("")}
+      </div>
+      <button class="m08-source-button m08-check" type="button" data-loopy-check>CHECK</button>
+      ${state.loopyFeedback === "correct" ? '<button class="m08-source-button m08-next" type="button" data-loopy-next>NEXT TUNE</button>' : ""}
+      <p class="m08-feedback" aria-live="polite">${feedback}${unlocked ? " · KEY SAVED" : ""}</p>
+    </div>
+  `;
+}
+
+function renderOrchestra(state: ShellState, unlocked: boolean): string {
+  const prompt = state.orchestraPromptIndex + 1;
+  const feedback = state.orchestraFeedback === "win"
+    ? "THE WHOLE ORCHESTRA — GAME KEY 4"
+    : state.orchestraFeedback === "correct"
+      ? "CORRECT — LISTEN FOR THE NEXT INSTRUMENT"
+      : state.orchestraFeedback === "wrong"
+        ? "THAT IS NOT THE SOUND"
+        : "LISTEN, THEN CHOOSE THE INSTRUMENT";
+  return `
+    <div class="scene-body m08-scene m08-orchestra-scene" data-source-orchestra-board tabindex="-1"
+      data-source-swf="analysis/setup/app/games/orchestragame/orchestra.swf"
+      data-source-frame="640 x 480, 2095 frames at 15 fps"
+      data-source-action="maxInst=18; one prompt at a time; each correct instrument counts once; goodInst==18 grants gameKey4"
+      data-source-fallback="root render crashes after unresolved JPEG children; recoverable stage/frame layers, all 18 source labels, and DefineSound prompts are composed here">
+      ${renderM08Frame("orchestra", "analysis/setup/app/games/orchestragame/orchestra.swf")}
+      <h1 class="m08-title">THE ORCHESTRA GAME</h1>
+      <button class="m08-source-button m08-listen" type="button" data-orchestra-listen ${prompt > 18 ? "disabled" : ""}>LISTEN ${Math.min(prompt, 18)} / 18</button>
+      <div class="m08-choice-grid m08-orchestra-grid" role="group" aria-label="Orchestra instruments"
+        data-source-classification="source text">
+        ${orchestraInstruments.map((label, index) => `<button type="button" data-orchestra-instrument="${index + 1}"
+          ${state.orchestraCorrectIds.includes(index + 1) ? "disabled" : ""}>${label}</button>`).join("")}
+      </div>
+      <p class="m08-feedback" aria-live="polite">${feedback}${unlocked ? " · KEY SAVED" : ""}</p>
+    </div>
+  `;
+}
+
+function renderToySoldiers(state: ShellState): string {
+  const feedback = state.toyFeedback === "correct"
+    ? "THE SOLDIERS ARE IN ASCENDING PITCH ORDER"
+    : state.toyFeedback === "wrong"
+      ? "THE MARCH IS NOT IN ORDER YET"
+      : "SET EACH SOLDIER'S NOTE FROM LOW TO HIGH";
+  return `
+    <div class="scene-body m08-scene m08-toy-scene" data-source-toy-board tabindex="-1"
+      data-source-swf="analysis/setup/app/games/toysoldiersgame/toysoldiersgame.swf"
+      data-source-frame="640 x 480, one frame at 12 fps"
+      data-source-action="soldier_0..7 drag between y=85 and y=300 on 11 snap positions; correct_note=[1,2,3,4,5,6,7,8]; check then march"
+      data-source-fallback="button id 30 contains an unresolved child and renders incomplete; staff and keyboard-accessible soldier controls reproduce the recovered snap/check behavior">
+      <h1 class="m08-title">TOY SOLDIERS</h1>
+      <div class="m08-staff" aria-hidden="true">${Array.from({ length: 5 }, () => "<i></i>").join("")}</div>
+      <div class="m08-soldiers" role="group" aria-label="Soldier pitch positions" data-source-classification="documented fallback">
+        ${state.toySoldierNotes.map((note, index) => `<button type="button" data-toy-soldier="${index}" style="--note:${note}"
+          aria-label="Soldier ${index + 1}, note ${note}"><span>♞</span><strong>${note}</strong></button>`).join("")}
+      </div>
+      <button class="m08-source-button m08-check" type="button" data-toy-check>CHECK MARCH</button>
+      <p class="m08-feedback" aria-live="polite">${feedback}</p>
+    </div>
+  `;
+}
+
+function renderWaltz(isPlaying: boolean): string {
+  return `
+    <div class="scene-body m08-scene m08-waltz-scene"
+      data-source-swf="analysis/setup/app/games/wedding/waltz.swf"
+      data-source-frame="785 frames at 12 fps; approximately 65.4 seconds"
+      data-source-action="timeline and bundled MP3Wedding3.wav only; no recovered gameplay or game-key action"
+      data-source-fallback="the root renderer yields only the source gray gradient while timeline display objects remain unresolved; no invented visual sequence is claimed">
+      <div class="m08-waltz-gradient" data-source-classification="swf-derived recreation"></div>
+      <p class="m08-waltz-overline">785-FRAME SOURCE TIMELINE</p>
+      <h1>WALTZ</h1>
+      <p>12 frames per second · 01:05</p>
+      <button class="m08-source-button m08-waltz-play" type="button" data-waltz-play>${isPlaying ? "STOP" : "PLAY WALTZ"}</button>
+      <p class="m08-feedback">${isPlaying ? "PLAYING THE BUNDLED SOURCE MUSIC" : "READY"}</p>
+    </div>
+  `;
+}
+
+function renderAlicePuzzles(state: ShellState): string {
+  const feedback = state.aliceFeedback === "correct"
+    ? "THE CLOCKWORK COMBINATION IS CORRECT"
+    : state.aliceFeedback === "wrong"
+      ? "THE GEARS DO NOT ALIGN"
+      : "SET THE THREE DIALS";
+  return `
+    <div class="scene-body m08-scene m08-alice-scene" data-source-alice-board tabindex="-1"
+      data-source-swf="analysis/setup/app/games/aliceSWF/alice.swf + game_${String(state.alicePuzzle).padStart(2, "0")}.swf"
+      data-source-frame="chooser 800 x 600, 641 frames at 15 fps; puzzle boards 800 x 600, one frame"
+      data-source-action="chooser loads game_01..12; three toy dial values call checkSolution; all 12 gameCombination arrays are [1,1,1]"
+      data-source-fallback="root puzzle renders crash on missing JPEG children; recovered source art is scaled from 800 x 600 and the source dial logic is keyboard-accessible DOM">
+      <img class="m08-alice-art" src="${getM08Asset(`/alice-puzzle-${String(state.alicePuzzle).padStart(2, "0")}-primary.png`)}" alt="" aria-hidden="true"
+        data-source-classification="original asset" />
+      <nav class="m08-alice-picker" aria-label="Alice puzzles">
+        ${alicePuzzleIds.map((puzzle) => `<button type="button" data-alice-puzzle="${puzzle}" aria-pressed="${puzzle === state.alicePuzzle}">${puzzle}</button>`).join("")}
+      </nav>
+      <h1 class="m08-title">ALICE PUZZLE ${String(state.alicePuzzle).padStart(2, "0")}</h1>
+      <div class="m08-alice-dials" role="group" aria-label="Clockwork dials" data-source-classification="documented fallback">
+        ${state.aliceDialValues.map((value, index) => `<button type="button" data-alice-dial="${index}" aria-label="Dial ${index + 1}, value ${value}"><span>${value}</span></button>`).join("")}
+      </div>
+      <button class="m08-source-button m08-check" type="button" data-alice-check>CHECK SOLUTION</button>
+      <p class="m08-feedback" aria-live="polite">${feedback}</p>
+    </div>
+  `;
+}
+
+function renderNutHouse(state: ShellState, unlocked: boolean): string {
+  const room = Math.min(Math.max(state.nutHouseRoom, 11), 18);
+  const feedback = state.nutHouseFeedback === "win"
+    ? "THE FINAL MIRROR OPENS — GAME KEY 7"
+    : state.nutHouseFeedback === "correct"
+      ? `ROOM ${room - 1} OPENED`
+      : state.nutHouseFeedback === "wrong"
+        ? "THAT MIRROR STAYS CLOSED"
+        : "FIND THE MIRROR THAT OPENS THIS ROOM";
+  return `
+    <div class="scene-body m08-scene m08-nut-house-scene" data-source-nut-house-board tabindex="-1"
+      data-source-swf="analysis/setup/app/games/nuthouse/room${room}.swf"
+      data-source-frame="room${room}.swf, 640 x 480 at 15 fps"
+      data-source-action="maxMir=8; exact room11..18 mirror sequence 8,3,1,7,6,4,5,2; room18 grants gameKey7; openDoor persists"
+      data-source-fallback="room root render crashes or produces no usable scene; source-local JPEG3/lossless child layers and embedded mirror sounds are composed here">
+      <img class="m08-full-stage" src="${getM08Asset(`/nut-house-room-${room}-stage.png`)}" alt="" aria-hidden="true"
+        data-source-classification="original asset" />
+      <img class="m08-nut-house-art" src="${getM08Asset(`/nut-house-room-${room}-scene.png`)}" alt="" aria-hidden="true"
+        data-source-classification="original asset" />
+      <img class="m08-frame-medallion" src="${getM08Asset(`/nut-house-room-${room}-frame-medallion.png`)}" alt="" aria-hidden="true"
+        data-source-classification="original asset" />
+      <h1 class="m08-title">THE NUTHOUSE · ROOM ${room}</h1>
+      <div class="m08-mirror-grid" role="group" aria-label="Room mirrors" data-source-classification="documented fallback">
+        ${Array.from({ length: 8 }, (_item, index) => `<button type="button" data-nut-house-mirror="${index + 1}"><span>${index + 1}</span></button>`).join("")}
+      </div>
+      <p class="m08-feedback" aria-live="polite">${feedback}${unlocked ? " · KEY SAVED" : ""}</p>
+    </div>
+  `;
+}
+
 function renderNutcrackerSongGame(
   song: NutcrackerSongGame,
   completed: boolean,
@@ -2273,6 +2772,13 @@ function isSourceFrameRoute(routeId: RouteId): boolean {
     routeId === "memory" ||
     routeId === "tree-game" ||
     routeId === "flying-instruments" ||
+    routeId === "childrens-album" ||
+    routeId === "loopy-tunes" ||
+    routeId === "orchestra" ||
+    routeId === "toy-soldiers" ||
+    routeId === "waltz" ||
+    routeId === "alice-puzzles" ||
+    routeId === "nut-house" ||
     getNutcrackerSongGameByRoute(routeId) !== undefined
   );
 }

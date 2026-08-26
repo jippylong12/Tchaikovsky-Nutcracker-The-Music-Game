@@ -383,18 +383,43 @@
       "id": "childrens-album",
       "title": "Children's Album",
       "routeIds": ["childrens-album"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["inferred behavior", "defect"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "inferred behavior", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/games/childrensalbum",
         "analysis/setup/app/games/data/childrensalbum.txt",
         "analysis/setup/app/games/data/childrensdoors.txt"
       ],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "promotedAssets": [
+        "app/src/assets/m08-source/childrens-album-scene.png",
+        "app/src/assets/m08-source/childrens-album-stage.png",
+        "app/src/assets/m08-source/childrens-album-frame-bottom.png"
+      ],
+      "evidenceDocs": ["docs/m08-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-340", "JIP-836", "JIP-837", "JIP-838", "JIP-839", "JIP-840"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/childrensalbum/childrensalbum.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frames 1-7; JPEG3 ids 0279, 0284, 0298, 0306, and 0311",
+            "frameOrState": "root frames 1 through 7 at 15 fps"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the interactive Children's Album timeline; the root probe terminates with SIGSEGV."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes promoted source-local image layers, exact source text/data, and the bundled preview and instrument audio.",
+            "retainedGap": "Full interactive Flash timeline playback and exact nested color transforms remain unavailable."
+          },
+          "evidenceDoc": "docs/m08-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "The route is a visible generic placeholder; source audit and all source-reconstruction slices are open."
+      "auditFinding": "All eight exact source patterns, titles, bundled sounds, saved-door behavior, game key 6 gate, promoted child layers, and renderer limitation are implemented; Marcus visual approval remains open."
     },
     {
       "id": "tree-game",
@@ -548,23 +573,6 @@
       "auditFinding": "The source card art and sounds, five-through-eighteen pair progression, error budget, matching behavior, key gate, and renderer limitation are implemented; Marcus visual approval remains open."
     },
     {
-      "id": "puzzles",
-      "title": "Alice puzzles / Nut House rooms",
-      "routeIds": ["puzzles"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["inferred behavior", "defect"],
-      "sourceInputs": [
-        "analysis/setup/app/games/aliceSWF",
-        "analysis/setup/app/games/nuthouse",
-        "analysis/setup/app/games/data/nuthouserooms.txt"
-      ],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
-      "followUpIssues": ["JIP-342", "JIP-846", "JIP-847", "JIP-848", "JIP-849", "JIP-850"],
-      "manualApproval": "required",
-      "auditFinding": "The shared puzzles route is a generic placeholder and does not represent either recovered source family."
-    },
-    {
       "id": "flying-instruments",
       "title": "Flying Instruments",
       "routeIds": ["flying-instruments"],
@@ -605,83 +613,225 @@
     {
       "id": "loopy-tunes",
       "title": "Loopy Tunes",
-      "routeIds": [],
-      "lifecycle": "planned",
-      "classifications": ["defect"],
+      "routeIds": ["loopy-tunes"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "inferred behavior", "documented fallback"],
       "sourceInputs": ["analysis/setup/app/games/loopytunes"],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md"],
+      "promotedAssets": [
+        "app/src/assets/m08-source/loopy-1-stage.png",
+        "app/src/assets/m08-source/loopy-1-frame-medallion.png",
+        "app/src/assets/m08-source/loopy-8-stage.png"
+      ],
+      "evidenceDocs": ["docs/m08-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-340", "JIP-836", "JIP-837", "JIP-838", "JIP-839", "JIP-840"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/loopytunes/loop1.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frames 1-3; JPEG3 id 0084 and lossless id 0088",
+            "frameOrState": "root frames 1 through 3 at 15 fps"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the interactive Loopy Tunes boards; each of the eight root probes terminates with SIGSEGV."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes source-local promoted board layers, all eight embedded track sounds, and exact ActionScript track state.",
+            "retainedGap": "Full interactive Flash timeline playback and original mixer animation remain unavailable."
+          },
+          "evidenceDoc": "docs/m08-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "No dedicated runtime route exists; source-reconstruction slices must precede route creation."
+      "auditFinding": "A dedicated route implements all eight source tunes, exact 1-3-5-7 selections, embedded loop sounds, the legacy game key 3 gate, and the renderer limitation; Marcus visual approval remains open."
     },
     {
       "id": "orchestra",
       "title": "Orchestra game",
-      "routeIds": [],
-      "lifecycle": "planned",
-      "classifications": ["defect"],
+      "routeIds": ["orchestra"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "inferred behavior", "documented fallback"],
       "sourceInputs": ["analysis/setup/app/games/orchestragame/orchestra.swf"],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md"],
+      "promotedAssets": [
+        "app/src/assets/m08-source/orchestra-stage.png",
+        "app/src/assets/m08-source/orchestra-curtain.png",
+        "app/src/assets/m08-source/orchestra-frame-bottom.png"
+      ],
+      "evidenceDocs": ["docs/m08-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-341", "JIP-841", "JIP-842", "JIP-843", "JIP-844", "JIP-845"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/orchestragame/orchestra.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frames 1-2095; JPEG3 ids 0030, 0734, 0742, and 0747; sound ids 1-19 and 838",
+            "frameOrState": "root frames 1 through 2095 at 15 fps"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the interactive Orchestra timeline; the root probe terminates with SIGSEGV after unresolved display-list children."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes promoted source-local frame layers, all 18 exact labels, and extracted source prompt and feedback sounds.",
+            "retainedGap": "Full interactive Flash timeline playback and exact animated instrument highlighting remain unavailable."
+          },
+          "evidenceDoc": "docs/m08-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "No runtime route exists; source-reconstruction slices must precede route creation."
+      "auditFinding": "The exact 18-instrument order, labels, prompt/feedback sounds, count-once behavior, game key 4 gate, promoted layers, and renderer limitation are implemented; Marcus visual approval remains open."
     },
     {
       "id": "toy-soldiers",
       "title": "Toy Soldiers game",
-      "routeIds": [],
-      "lifecycle": "planned",
-      "classifications": ["defect"],
+      "routeIds": ["toy-soldiers"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original source text", "inferred behavior", "documented fallback"],
       "sourceInputs": ["analysis/setup/app/games/toysoldiersgame/toysoldiersgame.swf"],
       "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md"],
+      "evidenceDocs": ["docs/m08-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-341", "JIP-841", "JIP-842", "JIP-843", "JIP-844", "JIP-845"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/toysoldiersgame/toysoldiersgame.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frame 1; source button id 0030; soldier_0 through soldier_7",
+            "frameOrState": "root frame 1 at 12 fps"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the complete Toy Soldiers board because button id 30 has an unknown child; only staff primitives render."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes the recoverable source behavior and eight source note sounds with a documented keyboard-accessible staff layer.",
+            "retainedGap": "Full interactive Flash drag timeline playback and the original soldier artwork remain unavailable."
+          },
+          "evidenceDoc": "docs/m08-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "No runtime route exists; source-reconstruction slices must precede route creation."
+      "auditFinding": "The eight-soldier pitch order, 11 snap-position evidence, exact source note sounds, check behavior, no-key boundary, and unresolved source-button limitation are implemented; Marcus visual approval remains open."
     },
     {
       "id": "waltz",
       "title": "Waltz game",
-      "routeIds": [],
-      "lifecycle": "planned",
-      "classifications": ["defect"],
+      "routeIds": ["waltz"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original source text", "inferred behavior", "documented fallback"],
       "sourceInputs": ["analysis/setup/app/games/wedding/waltz.swf"],
       "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md"],
+      "evidenceDocs": ["docs/m08-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-341", "JIP-841", "JIP-842", "JIP-843", "JIP-844", "JIP-845"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/wedding/waltz.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frames 1-785 at 12 fps with source sound stream",
+            "frameOrState": "root frames 1 through 785 at 12 fps"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the complete Waltz timeline; the successful root probe contains only an incomplete gray gradient."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime retains the exact timeline facts and bundled source music with a limited source-derived gradient layer.",
+            "retainedGap": "Full source timeline playback and unresolved animated display-list imagery remain unavailable."
+          },
+          "evidenceDoc": "docs/m08-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "No runtime route exists; source-reconstruction slices must precede route creation."
+      "auditFinding": "The exact 785-frame timeline, bundled source audio, and absence of recovered gameplay or key behavior are represented without invented mechanics; Marcus visual approval remains open."
     },
     {
       "id": "alice-puzzles",
       "title": "Alice puzzle family",
-      "routeIds": [],
-      "lifecycle": "planned",
-      "classifications": ["defect"],
+      "routeIds": ["alice-puzzles"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "inferred behavior", "documented fallback"],
       "sourceInputs": ["analysis/setup/app/games/aliceSWF"],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md"],
+      "promotedAssets": [
+        "app/src/assets/m08-source/alice-puzzle-01-primary.png",
+        "app/src/assets/m08-source/alice-puzzle-07-primary.png",
+        "app/src/assets/m08-source/alice-puzzle-10-primary.png"
+      ],
+      "evidenceDocs": ["docs/m08-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-342", "JIP-846", "JIP-847", "JIP-848", "JIP-849", "JIP-850"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/aliceSWF/game_01.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frame 1; JPEG3 id 0003; chooser gameCombination1 through gameCombination12",
+            "frameOrState": "puzzle root frame 1 at 15 fps; chooser frames 1 through 641"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the Alice puzzle display lists; all 12 puzzle root probes terminate with SIGSEGV and the chooser output is incomplete."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes puzzle-local promoted source art with the exact 12-game selector and three-value ActionScript solution state.",
+            "retainedGap": "Full interactive Flash chooser timeline playback, original gear animation, and complete puzzle display lists remain unavailable."
+          },
+          "evidenceDoc": "docs/m08-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "Only a generic shared puzzles placeholder exists; the 12 source puzzle movies require their source-first slices."
+      "auditFinding": "A dedicated route represents all 12 source puzzle movies, four byte-identical source groups, exact three-dial solution behavior, puzzle-local art, no-key boundary, and renderer limitation; Marcus visual approval remains open."
     },
     {
       "id": "nut-house",
       "title": "Nut House rooms",
-      "routeIds": [],
-      "lifecycle": "planned",
-      "classifications": ["defect"],
+      "routeIds": ["nut-house"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "inferred behavior", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/games/nuthouse",
         "analysis/setup/app/games/data/nuthouserooms.txt"
       ],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "promotedAssets": [
+        "app/src/assets/m08-source/nut-house-room-11-scene.png",
+        "app/src/assets/m08-source/nut-house-room-18-scene.png",
+        "app/src/assets/m08-source/nut-house-room-18-stage.png"
+      ],
+      "evidenceDocs": ["docs/m08-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-342", "JIP-846", "JIP-847", "JIP-848", "JIP-849", "JIP-850"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/nuthouse/room11.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "room11 root frames 1-41; JPEG3 ids 0030 and 0199; lossless id 0034",
+            "frameOrState": "room11 frames 1 through 41 at 15 fps; room18 frames 1 through 32"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the interactive Nut House room timelines; all eight room root probes terminate with SIGSEGV."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes room-local promoted source layers and embedded mirror sounds with exact room transition and persistence state.",
+            "retainedGap": "Full interactive Flash room timeline playback and original mirror animation remain unavailable."
+          },
+          "evidenceDoc": "docs/m08-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "Only a generic shared puzzles placeholder exists; room art, transitions, and saved door state require source reconstruction."
+      "auditFinding": "All eight rooms, exact 8-3-1-7-6-4-5-2 mirror sequence, persisted openDoor behavior, embedded sounds, game key 7 gate, and renderer limitation are implemented; Marcus visual approval remains open."
     },
     {
       "id": "certificate-reward",

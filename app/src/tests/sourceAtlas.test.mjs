@@ -19,23 +19,27 @@ describe("project-wide source atlas", () => {
   it("covers every app route with existing source evidence and a manual gate", () => {
     const result = validateSourceAtlas({ writeContactSheet: false });
 
-    expect(result.routeCount).toBe(23);
+    expect(result.routeCount).toBe(28);
     expect(result.routeIds).toContain("overture");
     expect(result.routeIds).toContain("nutcracker-chooser");
     expect(result.routeIds).toContain("song-8");
     expect(result.routeIds).toContain("flying-instruments");
-    expect(result.routeIds).toContain("puzzles");
+    expect(result.routeIds).toContain("alice-puzzles");
+    expect(result.routeIds).toContain("nut-house");
     expect(result.entries.every((entry) => entry.manualApproval === "required")).toBe(true);
     expect(result.entries.find((entry) => entry.id === "nutcracker-chooser")?.followUpIssues).toContain("JIP-349");
     expect(result.entries.find((entry) => entry.id === "nutcracker-songs")?.followUpIssues).toContain("JIP-349");
   });
 
-  it("tracks defects as Linear follow-ups instead of accepting placeholders", () => {
+  it("keeps completed reconstruction routes tied to Linear review gates", () => {
     const result = validateSourceAtlas({ writeContactSheet: false });
     const defects = result.entries.filter((entry) => entry.classifications.includes("defect"));
 
-    expect(defects.length).toBeGreaterThan(7);
-    expect(defects.every((entry) => entry.followUpIssues.length > 0)).toBe(true);
+    expect(defects).toHaveLength(0);
+    expect(result.entries.find((entry) => entry.id === "childrens-album")?.lifecycle).toBe("implemented-review");
+    expect(result.entries.find((entry) => entry.id === "loopy-tunes")?.followUpIssues).toContain("JIP-840");
+    expect(result.entries.find((entry) => entry.id === "orchestra")?.followUpIssues).toContain("JIP-845");
+    expect(result.entries.find((entry) => entry.id === "alice-puzzles")?.followUpIssues).toContain("JIP-850");
     expect(result.entries.find((entry) => entry.id === "trivia")?.followUpIssues).toContain("JIP-821");
     expect(result.entries.find((entry) => entry.id === "overture")?.followUpIssues).toContain("JIP-818");
   });
