@@ -222,6 +222,7 @@ The full source inventory, locked hashes, per-SWF dimensions, promoted child lay
 | Alice source contains no save-key action | Activity is supplementary | no invented progress key |
 | Nut House room11..18 correct mirrors `[8,3,1,7,6,4,5,2]` | Correct mirror loads the next room | `nutHouseCorrectMirror(room)` |
 | Mirror rollover calls `checkMirror(N)`; release plays room-local `badGuess` or `youWin`; raw ids differ from mirror numbers | Source preview and answer feedback use the exact room export maps | `nutHouseMirrorSoundId()` and `nutHouseSoundMaps` |
+| Room 11 fish tutorial; room-local framed song prompts; gameplay `?`, `EXIT`, and `PLAY`; `mainMusic` export is sound id `0011` in every room | Source tutorial/prompt/gameplay/help/exit flow and target-song replay | 33 hash-locked Ruffle captures plus source-shaped accessible hit regions; PLAY uses room-local `sound-11.mp3` |
 | `openDoor` in `nuthouserooms.txt`; room18 saves key 7 | Room progress persists; final room grants key 7 | `setNutHouseOpenDoor(room - 10)` and `markGameKey(7)` |
 
 ## Save And Progress Files

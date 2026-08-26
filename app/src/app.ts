@@ -187,6 +187,7 @@ type ShellState = {
   aliceDialValues: [number, number, number];
   aliceFeedback: "correct" | "wrong" | null;
   nutHouseRoom: number;
+  nutHousePhase: "tutorial" | "prompt" | "playing" | "help" | "exit";
   nutHouseFeedback: "correct" | "wrong" | "win" | null;
 };
 
@@ -268,6 +269,99 @@ const aliceChooserButtonPositions = [
   { puzzle: 11, x: 210, y: 46 },
   { puzzle: 12, x: 320, y: 17 },
 ] as const;
+
+type NutHouseMirrorHitRegion = {
+  readonly mirror: number;
+  readonly sourceSpriteId: number;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly shape: string;
+};
+
+const nutHouseMirrorHitRegions: Readonly<Record<number, readonly NutHouseMirrorHitRegion[]>> = {
+  11: [
+    { mirror: 1, sourceSpriteId: 138, x: 48, y: 34, width: 316, height: 105, shape: "ellipse(50% 46% at 50% 50%)" },
+    { mirror: 2, sourceSpriteId: 144, x: 83, y: 180, width: 44, height: 43, shape: "circle(48% at 50% 50%)" },
+    { mirror: 3, sourceSpriteId: 151, x: 145, y: 178, width: 77, height: 118, shape: "polygon(8% 2%,92% 2%,92% 98%,8% 98%)" },
+    { mirror: 4, sourceSpriteId: 161, x: 331, y: 115, width: 111, height: 245, shape: "polygon(23% 4%,89% 0,100% 100%,0 91%)" },
+    { mirror: 5, sourceSpriteId: 167, x: 70, y: 322, width: 341, height: 97, shape: "polygon(4% 2%,73% 31%,100% 98%,0 98%)" },
+    { mirror: 6, sourceSpriteId: 182, x: 73, y: 239, width: 63, height: 57, shape: "circle(48% at 50% 50%)" },
+    { mirror: 7, sourceSpriteId: 189, x: 246, y: 144, width: 75, height: 191, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 8, sourceSpriteId: 197, x: 464, y: 51, width: 135, height: 367, shape: "polygon(26% 4%,100% 0,82% 100%,0 92%)" },
+  ],
+  12: [
+    { mirror: 1, sourceSpriteId: 84, x: 246, y: 79, width: 333, height: 45, shape: "polygon(0 3%,100% 3%,95% 97%,10% 97%)" },
+    { mirror: 2, sourceSpriteId: 92, x: 20, y: 50, width: 124, height: 168, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 3, sourceSpriteId: 101, x: 432, y: 194, width: 96, height: 90, shape: "polygon(5% 4%,95% 4%,95% 96%,5% 96%)" },
+    { mirror: 4, sourceSpriteId: 112, x: 303, y: 154, width: 72, height: 160, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 5, sourceSpriteId: 123, x: 199, y: 376, width: 396, height: 47, shape: "polygon(6% 4%,100% 4%,94% 96%,0 96%)" },
+    { mirror: 6, sourceSpriteId: 132, x: 345, y: 319, width: 207, height: 34, shape: "polygon(8% 3%,100% 3%,91% 97%,0 97%)" },
+    { mirror: 7, sourceSpriteId: 143, x: 75, y: 222, width: 123, height: 165, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 8, sourceSpriteId: 151, x: 209, y: 142, width: 83, height: 184, shape: "ellipse(48% 50% at 50% 50%)" },
+  ],
+  13: [
+    { mirror: 1, sourceSpriteId: 83, x: 500, y: 95, width: 101, height: 266, shape: "polygon(2% 7%,82% 0,100% 100%,20% 91%)" },
+    { mirror: 2, sourceSpriteId: 90, x: 279, y: 165, width: 60, height: 179, shape: "polygon(0 0,100% 0,83% 100%,17% 100%)" },
+    { mirror: 3, sourceSpriteId: 99, x: 322, y: 163, width: 137, height: 116, shape: "polygon(0 0,100% 0,100% 100%,0 100%)" },
+    { mirror: 4, sourceSpriteId: 107, x: 41, y: 79, width: 133, height: 139, shape: "polygon(0 0,100% 34%,100% 100%,0 72%)" },
+    { mirror: 5, sourceSpriteId: 117, x: 40, y: 303, width: 133, height: 131, shape: "polygon(0 0,100% 0,100% 67%,0 100%)" },
+    { mirror: 6, sourceSpriteId: 125, x: 213, y: 165, width: 64, height: 179, shape: "polygon(0 0,100% 0,83% 100%,17% 100%)" },
+    { mirror: 7, sourceSpriteId: 133, x: 41, y: 186, width: 133, height: 117, shape: "polygon(0 0,100% 0,100% 100%,0 100%)" },
+    { mirror: 8, sourceSpriteId: 143, x: 344, y: 247, width: 96, height: 98, shape: "circle(48% at 50% 50%)" },
+  ],
+  14: [
+    { mirror: 1, sourceSpriteId: 84, x: 287, y: 145, width: 68, height: 147, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 2, sourceSpriteId: 92, x: 404, y: 109, width: 207, height: 48, shape: "polygon(0 2%,100% 2%,96% 98%,12% 98%)" },
+    { mirror: 3, sourceSpriteId: 101, x: 30, y: 124, width: 123, height: 252, shape: "polygon(0 0,100% 15%,100% 85%,0 100%)" },
+    { mirror: 4, sourceSpriteId: 156, x: 360, y: 252, width: 96, height: 96, shape: "circle(48% at 50% 50%)" },
+    { mirror: 5, sourceSpriteId: 117, x: 339, y: 348, width: 261, height: 84, shape: "polygon(0 0,100% 0,94% 100%,9% 100%)" },
+    { mirror: 6, sourceSpriteId: 124, x: 499, y: 212, width: 109, height: 94, shape: "circle(48% at 50% 50%)" },
+    { mirror: 7, sourceSpriteId: 134, x: 225, y: 20, width: 384, height: 78, shape: "polygon(0 0,100% 0,94% 100%,18% 100%)" },
+    { mirror: 8, sourceSpriteId: 144, x: 172, y: 85, width: 99, height: 325, shape: "polygon(18% 0,100% 3%,83% 100%,0 97%)" },
+  ],
+  15: [
+    { mirror: 1, sourceSpriteId: 90, x: 482, y: 291, width: 47, height: 76, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 2, sourceSpriteId: 98, x: 149, y: 52, width: 344, height: 82, shape: "polygon(0 0,100% 0,87% 100%,14% 100%)" },
+    { mirror: 3, sourceSpriteId: 106, x: 548, y: 302, width: 53, height: 108, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 4, sourceSpriteId: 117, x: 482, y: 82, width: 124, height: 137, shape: "polygon(0 0,100% 13%,100% 100%,0 89%)" },
+    { mirror: 5, sourceSpriteId: 124, x: 229, y: 211, width: 90, height: 91, shape: "circle(48% at 50% 50%)" },
+    { mirror: 6, sourceSpriteId: 132, x: 483, y: 188, width: 124, height: 105, shape: "circle(48% at 50% 50%)" },
+    { mirror: 7, sourceSpriteId: 140, x: 30, y: 115, width: 165, height: 275, shape: "polygon(0 0,100% 12%,100% 88%,0 100%)" },
+    { mirror: 8, sourceSpriteId: 148, x: 341, y: 211, width: 83, height: 93, shape: "circle(48% at 50% 50%)" },
+  ],
+  16: [
+    { mirror: 1, sourceSpriteId: 86, x: 510, y: 79, width: 94, height: 146, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 2, sourceSpriteId: 94, x: 285, y: 145, width: 46, height: 79, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 3, sourceSpriteId: 103, x: 360, y: 116, width: 128, height: 262, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 4, sourceSpriteId: 112, x: 277, y: 248, width: 68, height: 107, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 5, sourceSpriteId: 127, x: 20, y: 163, width: 89, height: 136, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 6, sourceSpriteId: 135, x: 130, y: 138, width: 108, height: 93, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 7, sourceSpriteId: 145, x: 109, y: 254, width: 145, height: 93, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 8, sourceSpriteId: 153, x: 500, y: 263, width: 103, height: 139, shape: "ellipse(48% 50% at 50% 50%)" },
+  ],
+  17: [
+    { mirror: 1, sourceSpriteId: 83, x: 124, y: 334, width: 367, height: 91, shape: "ellipse(50% 48% at 50% 50%)" },
+    { mirror: 2, sourceSpriteId: 91, x: 222, y: 166, width: 44, height: 42, shape: "polygon(3% 3%,97% 3%,97% 97%,3% 97%)" },
+    { mirror: 3, sourceSpriteId: 99, x: 285, y: 165, width: 41, height: 42, shape: "polygon(3% 3%,97% 3%,97% 97%,3% 97%)" },
+    { mirror: 4, sourceSpriteId: 108, x: 434, y: 58, width: 164, height: 307, shape: "polygon(0 0,100% 10%,100% 90%,0 100%)" },
+    { mirror: 5, sourceSpriteId: 116, x: 342, y: 167, width: 43, height: 41, shape: "polygon(3% 3%,97% 3%,97% 97%,3% 97%)" },
+    { mirror: 6, sourceSpriteId: 126, x: 272, y: 82, width: 67, height: 60, shape: "circle(48% at 50% 50%)" },
+    { mirror: 7, sourceSpriteId: 136, x: 198, y: 252, width: 219, height: 52, shape: "ellipse(50% 48% at 50% 50%)" },
+    { mirror: 8, sourceSpriteId: 147, x: 30, y: 58, width: 145, height: 307, shape: "polygon(0 10%,100% 0,100% 100%,0 90%)" },
+  ],
+  18: [
+    { mirror: 1, sourceSpriteId: 82, x: 24, y: 153, width: 74, height: 215, shape: "polygon(0 0,100% 15%,100% 85%,0 100%)" },
+    { mirror: 2, sourceSpriteId: 93, x: 83, y: 34, width: 374, height: 47, shape: "ellipse(50% 48% at 50% 50%)" },
+    { mirror: 3, sourceSpriteId: 101, x: 331, y: 170, width: 65, height: 151, shape: "polygon(9% 0,100% 7%,91% 100%,0 92%)" },
+    { mirror: 4, sourceSpriteId: 110, x: 133, y: 183, width: 156, height: 131, shape: "polygon(0 0,100% 10%,100% 90%,0 100%)" },
+    { mirror: 5, sourceSpriteId: 117, x: 404, y: 161, width: 98, height: 174, shape: "polygon(4% 0,100% 7%,96% 100%,0 93%)" },
+    { mirror: 6, sourceSpriteId: 127, x: 518, y: 94, width: 90, height: 162, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 7, sourceSpriteId: 135, x: 515, y: 280, width: 91, height: 124, shape: "ellipse(48% 50% at 50% 50%)" },
+    { mirror: 8, sourceSpriteId: 143, x: 90, y: 98, width: 279, height: 56, shape: "ellipse(50% 48% at 50% 50%)" },
+  ],
+};
 
 function getM08Asset(path: string): string {
   return m08Assets[`./assets/m08-source${path}`] ?? "";
@@ -360,6 +454,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     aliceDialValues: [4, 4, 4],
     aliceFeedback: null,
     nutHouseRoom: 11 + Math.min(progress.getSnapshot().nutHouse.openDoor, 7),
+    nutHousePhase: progress.getSnapshot().nutHouse.openDoor === 0 ? "tutorial" : "prompt",
     nutHouseFeedback: null,
   };
   const melodyTimerIds = new Set<number>();
@@ -1228,6 +1323,51 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       });
     });
 
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-tutorial]")?.addEventListener("click", () => {
+      shellState.nutHousePhase = "prompt";
+      shellState.nutHouseFeedback = null;
+      render("[data-nut-house-start]", "[data-source-nut-house-board]");
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-start]")?.addEventListener("click", () => {
+      shellState.nutHousePhase = "playing";
+      shellState.nutHouseFeedback = null;
+      audio.stopSceneAudio();
+      audio.playOneShot(getM08Asset(`/audio/embedded/nut-house-${shellState.nutHouseRoom}/sound-11.mp3`));
+      render("[data-nut-house-play]", "[data-source-nut-house-board]");
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-play]")?.addEventListener("click", () => {
+      audio.stopSceneAudio();
+      audio.playOneShot(getM08Asset(`/audio/embedded/nut-house-${shellState.nutHouseRoom}/sound-11.mp3`));
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-help]")?.addEventListener("click", () => {
+      audio.stopSceneAudio();
+      shellState.nutHousePhase = "help";
+      render("[data-nut-house-help-close]", "[data-source-nut-house-board]");
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-help-close]")?.addEventListener("click", () => {
+      shellState.nutHousePhase = "playing";
+      render("[data-nut-house-help]", "[data-source-nut-house-board]");
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-exit]")?.addEventListener("click", () => {
+      audio.stopSceneAudio();
+      shellState.nutHousePhase = "exit";
+      render("[data-nut-house-exit-no]", "[data-source-nut-house-board]");
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-exit-no]")?.addEventListener("click", () => {
+      shellState.nutHousePhase = "playing";
+      render("[data-nut-house-exit]", "[data-source-nut-house-board]");
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-exit-yes]")?.addEventListener("click", () => {
+      navigate("main-menu");
+    });
+
     mount.querySelectorAll<HTMLButtonElement>("[data-nut-house-mirror]").forEach((button) => {
       const playMirrorPreview = () => {
         const mirror = Number(button.dataset.nutHouseMirror);
@@ -1267,13 +1407,17 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
             shellState.nutHouseFeedback = "win";
           } else {
             shellState.nutHouseRoom = room + 1;
+            shellState.nutHousePhase = "prompt";
             shellState.nutHouseFeedback = "correct";
           }
         } else {
           shellState.nutHouseFeedback = "wrong";
         }
-        suppressNextNutHouseFocusPreview = true;
-        render(`[data-nut-house-mirror="${mirror}"]`, "[data-source-nut-house-board]");
+        suppressNextNutHouseFocusPreview = !correct || room === 18;
+        render(
+          correct && room < 18 ? "[data-nut-house-start]" : `[data-nut-house-mirror="${mirror}"]`,
+          "[data-source-nut-house-board]",
+        );
       });
     });
 
@@ -1388,6 +1532,11 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.alicePuzzle = 1;
       shellState.aliceDialValues = [4, 4, 4];
       shellState.aliceFeedback = null;
+    }
+    if (routeChanged && routeId === "nut-house") {
+      shellState.nutHouseRoom = 11 + Math.min(progress.getSnapshot().nutHouse.openDoor, 7);
+      shellState.nutHousePhase = progress.getSnapshot().nutHouse.openDoor === 0 ? "tutorial" : "prompt";
+      shellState.nutHouseFeedback = null;
     }
     shellState.routeId = routeId;
     shellState.helpOpen = false;
@@ -1691,6 +1840,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.aliceDialValues = [4, 4, 4];
       shellState.aliceFeedback = null;
       shellState.nutHouseRoom = 11;
+      shellState.nutHousePhase = "tutorial";
       shellState.nutHouseFeedback = null;
       render();
       return;
@@ -2927,30 +3077,61 @@ function renderAlicePuzzles(state: ShellState): string {
 
 function renderNutHouse(state: ShellState, unlocked: boolean): string {
   const room = Math.min(Math.max(state.nutHouseRoom, 11), 18);
+  const phase = state.nutHousePhase === "tutorial" && room !== 11 ? "prompt" : state.nutHousePhase;
+  const imageSuffix = phase === "playing" ? "gameplay" : phase;
   const feedback = state.nutHouseFeedback === "win"
-    ? "THE FINAL MIRROR OPENS — GAME KEY 7"
+    ? "The final mirror opens. Game key 7 is saved."
     : state.nutHouseFeedback === "correct"
-      ? `ROOM ${room - 1} OPENED`
+      ? `Room ${room - 1} opened.`
       : state.nutHouseFeedback === "wrong"
-        ? "THAT MIRROR STAYS CLOSED"
-        : "FIND THE MIRROR THAT OPENS THIS ROOM";
+        ? "That mirror stays closed."
+        : "";
+  const playingControls = phase === "playing" && state.nutHouseFeedback !== "win"
+    ? `
+      <div class="m08-nut-house-hit-regions" role="group" aria-label="Room ${room} mirrors">
+        ${(nutHouseMirrorHitRegions[room] ?? []).map((region) => `
+          <button type="button" class="m08-source-hit-region m08-nut-house-mirror"
+            data-nut-house-mirror="${region.mirror}" aria-label="Mirror ${region.mirror}"
+            data-source-sprite="room${room}.swf sprite ${String(region.sourceSpriteId).padStart(4, "0")}"
+            data-source-hit-region="${region.x},${region.y},${region.width},${region.height}"
+            data-source-classification="documented fallback"
+            style="--source-left:${region.x}px;--source-top:${region.y}px;--source-width:${region.width}px;--source-height:${region.height}px;--source-shape:${region.shape}"></button>
+        `).join("")}
+      </div>
+      <button type="button" class="m08-source-hit-region m08-nut-house-play" data-nut-house-play
+        aria-label="Play this room's music"></button>
+      <button type="button" class="m08-source-hit-region m08-nut-house-help" data-nut-house-help
+        aria-label="Show the Nut House helper"></button>
+      <button type="button" class="m08-source-hit-region m08-nut-house-exit" data-nut-house-exit
+        aria-label="Exit the Nut House"></button>
+    `
+    : "";
+  const phaseControls = phase === "tutorial"
+    ? `<button type="button" class="m08-source-hit-region m08-nut-house-tutorial" data-nut-house-tutorial
+        aria-label="Continue to the Nut House music prompt"></button>`
+    : phase === "prompt"
+      ? `<button type="button" class="m08-source-hit-region m08-nut-house-start" data-nut-house-start
+          aria-label="Play the room music and enter room ${room}"></button>`
+      : phase === "help"
+        ? `<button type="button" class="m08-source-hit-region m08-nut-house-help-close" data-nut-house-help-close
+            aria-label="Return to room ${room}"></button>`
+        : phase === "exit"
+          ? `<button type="button" class="m08-source-hit-region m08-nut-house-exit-yes" data-nut-house-exit-yes
+              aria-label="Yes, exit the Nut House"></button>
+            <button type="button" class="m08-source-hit-region m08-nut-house-exit-no" data-nut-house-exit-no
+              aria-label="No, stay in the Nut House"></button>`
+          : "";
   return `
     <div class="scene-body m08-scene m08-nut-house-scene" data-source-nut-house-board tabindex="-1"
       data-source-swf="analysis/setup/app/games/nuthouse/room${room}.swf"
-      data-source-frame="room${room}.swf, 640 x 480 at 15 fps"
-      data-source-action="maxMir=8; exact room11..18 mirror sequence 8,3,1,7,6,4,5,2; room18 grants gameKey7; openDoor persists"
-      data-source-fallback="room root render crashes or produces no usable scene; source-local JPEG3/lossless child layers and embedded mirror sounds are composed here">
-      <img class="m08-full-stage" src="${getM08Asset(`/nut-house-room-${room}-stage.png`)}" alt="" aria-hidden="true"
-        data-source-classification="original asset" />
-      <img class="m08-nut-house-art" src="${getM08Asset(`/nut-house-room-${room}-scene.png`)}" alt="" aria-hidden="true"
-        data-source-classification="original asset" />
-      <img class="m08-frame-medallion" src="${getM08Asset(`/nut-house-room-${room}-frame-medallion.png`)}" alt="" aria-hidden="true"
-        data-source-classification="original asset" />
-      <h1 class="m08-title">THE NUTHOUSE · ROOM ${room}</h1>
-      <div class="m08-mirror-grid" role="group" aria-label="Room mirrors" data-source-classification="documented fallback">
-        ${Array.from({ length: 8 }, (_item, index) => `<button type="button" data-nut-house-mirror="${index + 1}"><span>${index + 1}</span></button>`).join("")}
-      </div>
-      <p class="m08-feedback" aria-live="polite">${feedback}${unlocked ? " · KEY SAVED" : ""}</p>
+      data-source-frame="room${room}.swf stable ${phase} state, captured at 800 x 600 through Ruffle 0.5.0 and promoted at 640 x 480"
+      data-source-action="mainMusic is sound 11; maxMir=8; exact room11..18 mirror sequence 8,3,1,7,6,4,5,2; room18 grants gameKey7; openDoor persists"
+      data-source-fallback="Ruffle captures resolve the full display list that local SWFTools crashes on; transparent DOM hit regions preserve keyboard access while live mirror morphs, fish motion, and success timelines remain manual-review gaps">
+      <img class="m08-nut-house-source-frame" src="${getM08Asset(`/nut-house-room-${room}-${imageSuffix}.png`)}" alt="" aria-hidden="true"
+        data-source-classification="original source-runtime capture" />
+      ${playingControls}
+      ${phaseControls}
+      <p class="sr-only" aria-live="polite">${feedback || (unlocked ? "Game key 7 is saved." : "")}</p>
     </div>
   `;
 }

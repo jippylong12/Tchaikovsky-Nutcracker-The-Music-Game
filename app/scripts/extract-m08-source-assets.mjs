@@ -99,6 +99,42 @@ const aliceRecoveredRenders = [
   ["alice-stage-12.png", "ebda39ff6ef2c1026abd76c5c8f42dee08e95eab26e58fcc12b37a888ee3aab8"],
 ];
 
+const nutHouseRecoveredRenders = [
+  ["nut-house-room-11-tutorial.png", "555d3bc7b52a8ee20b6b3b111950094c4536594726b4795afc3c736077a61c93"],
+  ["nut-house-room-11-prompt.png", "8792f764a3ed844bc33fb1180d7a7fe5a217dcdc21068775c3cd13aba15688af"],
+  ["nut-house-room-11-gameplay.png", "a452f2aa6e1677274a85ddf687cae200e9a5872a391efe80f7a144d585bac8b6"],
+  ["nut-house-room-11-help.png", "12dec7a9983b81041c250003c422f0e009b8fe3cea262103753d7faed085ac1b"],
+  ["nut-house-room-11-exit.png", "f1c64a27e7f3290e6a75d6e4d32d649913b157341331a0abfb80c1fb065076fa"],
+  ["nut-house-room-12-prompt.png", "ffafcda0faaefe405991c1a47338dac3a38a256c1df20cce931b61d1245013e8"],
+  ["nut-house-room-12-gameplay.png", "6408c23f9e275fcdf1bf4515959489f3e99d2bbdb495fdd6bfcc2832aad8965e"],
+  ["nut-house-room-12-help.png", "4fd80d0173c2ab0a25f36aa3d1fb12f1783054253c35efe30d1878132e531e34"],
+  ["nut-house-room-12-exit.png", "8ba40bfebb478f716e56e75913477e0e82301f2c20e377996ce818f29705ed01"],
+  ["nut-house-room-13-prompt.png", "4f3d397dfc428053cc15cb3f0eda85cc3e0dc9eae43fc5b3f89a753d26733f1d"],
+  ["nut-house-room-13-gameplay.png", "0a9448e4764199fb416cf19c7d7279edc9b4136d0f2ffbea173624b9446a42b3"],
+  ["nut-house-room-13-help.png", "29030142bafd03ec84a7127d47646332a9d7f78088fdde87e2f26dd9052d4d7a"],
+  ["nut-house-room-13-exit.png", "13acd5312d888fabbb4fd29f7124e99f67e3fa48b7a262369c8f72fceccc55a0"],
+  ["nut-house-room-14-prompt.png", "1efcc94e76e6f42c02a61a614ad7f2e30f6eda372b73714404b6cb89f071bfd3"],
+  ["nut-house-room-14-gameplay.png", "1378fdbd3b290c044697382c5fd59d078c44951e7039e4e3ae6510b4e9971e76"],
+  ["nut-house-room-14-help.png", "d835fec3ee8b4939b61b17cc2777016fe82bfd735c4e2cb7e6925c40ef783d06"],
+  ["nut-house-room-14-exit.png", "b6e0117ca341f199be7ada52f43d3df03a983735f89098452e596a786a3cfcf5"],
+  ["nut-house-room-15-prompt.png", "ae810141d83768a437e776cdab260f837b4e67c56bd670d4983a03ea93f4ca38"],
+  ["nut-house-room-15-gameplay.png", "3557ecdae22819f43a5b7c6b319c81285dd1f25b1bd0cb33a7c7f17596294c44"],
+  ["nut-house-room-15-help.png", "e5ae2448bec866fada4b36bc3589a1d2757d619bfac02fbb3b2e67de07ec25ce"],
+  ["nut-house-room-15-exit.png", "3b8363c8f9b04c87f7e2e912d96509418db0be3c180673535f65c01621523c99"],
+  ["nut-house-room-16-prompt.png", "343351c8b89f22b009f55f258cbc417d0e9c425b0ad79685701f88781835caa2"],
+  ["nut-house-room-16-gameplay.png", "ab819ae6c3dde79a22f1a8960bc52913809d96452678cca9b25084b56db46f4e"],
+  ["nut-house-room-16-help.png", "e2428e559c007623aff59a9ab82fc478c991a6d11c203f3c9d993303b294915b"],
+  ["nut-house-room-16-exit.png", "f5c152e9bf3c32898226d6a5b6b8b0aefe1fcd2e02916512a77323fe5e6f4e52"],
+  ["nut-house-room-17-prompt.png", "b0865626e42c007d662633f967e01c6d89048f0a543413e8374793ce0c0a87fa"],
+  ["nut-house-room-17-gameplay.png", "f3cfad065e96756c302f95402a62944dab1060b258a4868e52f881429eace065"],
+  ["nut-house-room-17-help.png", "3ab1c546c94f20bfef314ac434b5cf42313f67fd60b3fb1b4f1dc6e04c87acc2"],
+  ["nut-house-room-17-exit.png", "86fdf75c7d233ac1cc3aaab44c3350a4756bcd3426003ded3df9857b7cc11047"],
+  ["nut-house-room-18-prompt.png", "c4013c8e791cb654b92da4df197310e4c005b8b46a65d1d3da6fc74053a360b7"],
+  ["nut-house-room-18-gameplay.png", "5cad2aac248d6ba3daa1d53840779f8f3c5d3166c09a3e7903c095b960be5d82"],
+  ["nut-house-room-18-help.png", "00ca1ad58ad146ded58e7196ae530f78c09e0f909309a130b61733d536abe14a"],
+  ["nut-house-room-18-exit.png", "7f6700715834e4ed35bc472a46391d1822a27c26a1ff6a71d636398267ccaa25"],
+];
+
 const sources = [...fixedSources, ...repeatedSources].map(([id, swf]) => ({ id, swf }));
 
 const companionMappings = [
@@ -158,6 +194,11 @@ function preflightInputs() {
   }
   for (const [name, expectedHash] of aliceRecoveredRenders) {
     const sourcePath = join(projectRoot, "analysis/setup/app/games/aliceswf/recovered-renders", name);
+    requirePath(sourcePath);
+    assertEqual(sha256(readFileSync(sourcePath)), expectedHash, `${name} recovered render SHA-256`);
+  }
+  for (const [name, expectedHash] of nutHouseRecoveredRenders) {
+    const sourcePath = join(projectRoot, "analysis/setup/app/games/nuthouse/recovered-renders", name);
     requirePath(sourcePath);
     assertEqual(sha256(readFileSync(sourcePath)), expectedHash, `${name} recovered render SHA-256`);
   }
@@ -408,33 +449,18 @@ function promoteSemanticImages() {
       `alice-puzzle-${String(index + 1).padStart(2, "0")}-primary.png`,
     ]);
   }
-  const nutHouseBackgroundIds = [199, 30, 36, 30, 31, 31, 31, 31];
-  const nutHouseFrameIds = [30, 43, 49, 43, 44, 44, 44, 44];
-  const nutHouseStageIds = [34, 47, 53, 47, 48, 48, 48, 48];
-  for (let index = 0; index < 8; index += 1) {
-    const room = index + 11;
-    aliases.push([
-      `nut-house-${room}`,
-      `jpeg3-${nutHouseBackgroundIds[index]}.png`,
-      `nut-house-room-${room}-scene.png`,
-    ]);
-    aliases.push([
-      `nut-house-${room}`,
-      `jpeg3-${nutHouseFrameIds[index]}.png`,
-      `nut-house-room-${room}-frame-medallion.png`,
-    ]);
-    aliases.push([
-      `nut-house-${room}`,
-      `lossless-${nutHouseStageIds[index]}.png`,
-      `nut-house-room-${room}-stage.png`,
-    ]);
-  }
   for (const [sourceId, generatedName, promotedName] of aliases) {
     promoteAlias(sourceId, generatedName, promotedName);
   }
   for (const [name] of aliceRecoveredRenders) {
     copySourceFile(
       join(projectRoot, "analysis/setup/app/games/aliceswf/recovered-renders", name),
+      join(promotedRoot, name),
+    );
+  }
+  for (const [name] of nutHouseRecoveredRenders) {
+    copySourceFile(
+      join(projectRoot, "analysis/setup/app/games/nuthouse/recovered-renders", name),
       join(promotedRoot, name),
     );
   }
@@ -456,6 +482,11 @@ function promoteSemanticImages() {
     ...aliceRecoveredRenders.map(([name]) => ({
       sourceId: "alice-ruffle-capture",
       generatedName: `analysis/setup/app/games/aliceswf/recovered-renders/${name}`,
+      promotedName: name,
+    })),
+    ...nutHouseRecoveredRenders.map(([name]) => ({
+      sourceId: "nut-house-ruffle-capture",
+      generatedName: `analysis/setup/app/games/nuthouse/recovered-renders/${name}`,
       promotedName: name,
     })),
     ...renderedSymbols,
@@ -544,4 +575,4 @@ const soundCount = manifest.reduce(
   (total, source) => total + source.embeddedSounds.filter((sound) => sound.status === "extracted").length,
   0,
 );
-console.log(`M08 source audit extracted ${manifest.length} SWFs, ${imageCount} source images, ${streamCount} embedded streams, ${soundCount} embedded sounds, and ${companions.length} companion files; verified ${aliceRecoveredRenders.length} Alice Ruffle renders.`);
+console.log(`M08 source audit extracted ${manifest.length} SWFs, ${imageCount} source images, ${streamCount} embedded streams, ${soundCount} embedded sounds, and ${companions.length} companion files; verified ${aliceRecoveredRenders.length} Alice and ${nutHouseRecoveredRenders.length} Nut House Ruffle renders.`);

@@ -1020,8 +1020,7 @@ button {
 .m08-frame-medallion,
 .m08-frame-bottom,
 .m08-source-scene,
-.m08-full-stage,
-.m08-nut-house-art {
+.m08-full-stage {
   position: absolute;
   z-index: 0;
   pointer-events: none;
@@ -1510,37 +1509,87 @@ button {
 }
 
 .m08-nut-house-scene {
-  background: #16264c;
+  background: #000;
 }
 
-.m08-nut-house-art {
-  inset: 55px 0 0;
+.m08-nut-house-source-frame {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
   width: 640px;
-  height: 370px;
-  object-fit: contain;
-  opacity: 0.78;
+  height: 480px;
+  pointer-events: none;
 }
 
-.m08-mirror-grid {
+.m08-source-hit-region {
   position: absolute;
   z-index: 5;
-  left: 72px;
-  top: 112px;
-  display: grid;
-  grid-template-columns: repeat(4, 100px);
-  gap: 42px 35px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: transparent;
+  background: transparent;
+  appearance: none;
 }
 
-.m08-mirror-grid button {
+.m08-nut-house-mirror {
+  left: var(--source-left);
+  top: var(--source-top);
+  width: var(--source-width);
+  height: var(--source-height);
+  clip-path: var(--source-shape);
+}
+
+.m08-nut-house-mirror:focus-visible {
+  outline: 0;
+  background: rgb(255 234 0 / 22%);
+}
+
+.m08-nut-house-tutorial,
+.m08-nut-house-help-close {
+  inset: 0;
+}
+
+.m08-nut-house-start {
+  left: 270px;
+  top: 250px;
   width: 100px;
-  height: 100px;
-  border: 8px double #d5ad56;
-  border-radius: 50% 50% 44% 44%;
-  color: #fff6bd;
-  background: rgba(28, 51, 91, 0.78);
-  font-size: 22px;
-  font-weight: 700;
-  box-shadow: inset 0 0 20px #050a16;
+  height: 76px;
+}
+
+.m08-nut-house-play {
+  left: 270px;
+  top: 416px;
+  width: 100px;
+  height: 64px;
+}
+
+.m08-nut-house-help {
+  left: 0;
+  top: 0;
+  width: 78px;
+  height: 82px;
+}
+
+.m08-nut-house-exit {
+  right: 0;
+  top: 0;
+  width: 82px;
+  height: 82px;
+}
+
+.m08-nut-house-exit-yes {
+  left: 218px;
+  top: 112px;
+  width: 96px;
+  height: 70px;
+}
+
+.m08-nut-house-exit-no {
+  left: 310px;
+  top: 112px;
+  width: 105px;
+  height: 70px;
 }
 
 .sr-only {

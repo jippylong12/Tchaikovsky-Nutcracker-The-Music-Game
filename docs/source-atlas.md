@@ -42,5 +42,5 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 
 - The shell/reference retrofits now carry durable source classifications and explicit playback/display-list fallbacks. JIP-818 through JIP-820 remain open for Marcus's visual approval, not as generic-UI defects.
 - M06 chooser/song work has durable source classifications and approval evidence, but exact timeline/manual gates remain open.
-- M07 and M08 routes are source-backed review surfaces with exact automated evidence and retained Marcus approval gates. M08's incomplete root renders remain documented renderer gaps rather than generic-UI defects.
+- M07 and M08 routes are source-backed review surfaces with exact automated evidence and retained Marcus approval gates. Alice and Nut House now use hash-locked official-Ruffle captures where SWFTools cannot resolve their full display lists; remaining static-capture motion/timeline gaps stay documented rather than being replaced with generic UI.
 - JIP-345 release QA remains blocked by JIP-360 and must use this matrix/contact sheet rather than rediscover route coverage at packaging time.

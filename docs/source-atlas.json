@@ -826,15 +826,22 @@
       "title": "Nut House rooms",
       "routeIds": ["nut-house"],
       "lifecycle": "implemented-review",
-      "classifications": ["original asset", "original source text", "inferred behavior", "documented fallback"],
+      "classifications": ["original asset", "inferred behavior", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/games/nuthouse",
+        "analysis/setup/app/games/nuthouse/recovered-renders",
         "analysis/setup/app/games/data/nuthouserooms.txt"
       ],
       "promotedAssets": [
-        "app/src/assets/m08-source/nut-house-room-11-scene.png",
-        "app/src/assets/m08-source/nut-house-room-18-scene.png",
-        "app/src/assets/m08-source/nut-house-room-18-stage.png"
+        "app/src/assets/m08-source/nut-house-room-11-tutorial.png",
+        "app/src/assets/m08-source/nut-house-room-11-prompt.png",
+        "app/src/assets/m08-source/nut-house-room-11-gameplay.png",
+        "app/src/assets/m08-source/nut-house-room-11-help.png",
+        "app/src/assets/m08-source/nut-house-room-11-exit.png",
+        "app/src/assets/m08-source/nut-house-room-18-prompt.png",
+        "app/src/assets/m08-source/nut-house-room-18-gameplay.png",
+        "app/src/assets/m08-source/nut-house-room-18-help.png",
+        "app/src/assets/m08-source/nut-house-room-18-exit.png"
       ],
       "evidenceDocs": ["docs/m08-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-342", "JIP-846", "JIP-847", "JIP-848", "JIP-849", "JIP-850"],
@@ -849,18 +856,18 @@
           "toolLimitation": {
             "capability": "interactive-timeline-flattening",
             "tool": "SWFTools",
-            "observedFailure": "SWFTools cannot flatten the interactive Nut House room timelines; all eight room root probes terminate with SIGSEGV."
+            "observedFailure": "SWFTools cannot flatten the interactive Nut House room timelines; all eight room root probes terminate with SIGSEGV. Official Ruffle 0.5.0 playback resolves the complete display lists."
           },
           "runtimeFallback": {
-            "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes room-local promoted source layers and embedded mirror sounds with exact room transition and persistence state.",
-            "retainedGap": "Full interactive Flash room timeline playback and original mirror animation remain unavailable."
+            "mechanism": "promoted-source-stills-with-typescript-state",
+            "details": "The runtime uses 33 hash-locked promoted room-local Ruffle source stills for the room 11 tutorial, all prompts, gameplay rooms, fish-help states, and fish-backed exit warnings, with transparent source-shaped hit regions, TypeScript state, and embedded source audio.",
+            "retainedGap": "Live mirror morph/color animation, fish motion and voice timing, and the correct-answer transition/key timeline remain represented by stable captures rather than replayed timelines."
           },
           "evidenceDoc": "docs/m08-mini-games-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "All eight rooms, exact 8-3-1-7-6-4-5-2 mirror sequence, persisted openDoor behavior, embedded sounds, game key 7 gate, and renderer limitation are implemented; Marcus visual approval remains open."
+      "auditFinding": "All eight complete source-runtime rooms, the room 11 tutorial, framed song prompts, PLAY/help/exit states, exact 8-3-1-7-6-4-5-2 mirror sequence, persisted openDoor behavior, embedded sounds, game key 7 gate, and remaining static-capture limits are implemented; Marcus visual approval remains open."
     },
     {
       "id": "certificate-reward",

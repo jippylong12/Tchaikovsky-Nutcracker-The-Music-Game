@@ -1280,6 +1280,31 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLElement>("[data-source-nut-house-board]")?.dataset.sourceAction).toContain(
       "8,3,1,7,6,4,5,2",
     );
+    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-source-frame")?.src).toContain(
+      "room-11-tutorial",
+    );
+    expect(mount.textContent).not.toContain("THE NUTHOUSE");
+    expect(mount.querySelectorAll("[data-nut-house-mirror]")).toHaveLength(0);
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-tutorial]")?.click();
+    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-source-frame")?.src).toContain("room-11-prompt");
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-start]")?.click();
+    expect(lastPlayedSource()).toContain("nut-house-11/sound-11.mp3");
+    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-source-frame")?.src).toContain(
+      "room-11-gameplay",
+    );
+    expect(mount.querySelectorAll("[data-nut-house-mirror]")).toHaveLength(8);
+    const roomElevenCorrectMirror = mount.querySelector<HTMLButtonElement>('[data-nut-house-mirror="8"]');
+    expect(roomElevenCorrectMirror?.dataset.sourceSprite).toContain("sprite 0197");
+    expect(roomElevenCorrectMirror?.dataset.sourceHitRegion).toBe("464,51,135,367");
+    expect(roomElevenCorrectMirror?.getAttribute("style")).toContain("--source-shape:polygon");
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-play]")?.click();
+    expect(lastPlayedSource()).toContain("nut-house-11/sound-11.mp3");
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-help]")?.click();
+    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-source-frame")?.src).toContain("room-11-help");
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-help-close]")?.click();
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-exit]")?.click();
+    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-source-frame")?.src).toContain("room-11-exit");
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-exit-no]")?.click();
     mount.querySelector<HTMLButtonElement>('[data-nut-house-mirror="1"]')?.dispatchEvent(new Event("pointerenter"));
     expect(lastPlayedSource()).toContain("nut-house-11/sound-9.mp3");
     mount.querySelector<HTMLButtonElement>('[data-nut-house-mirror="1"]')?.click();
@@ -1287,8 +1312,47 @@ describe("desktop app shell", () => {
     mount.querySelector<HTMLButtonElement>('[data-nut-house-mirror="8"]')?.click();
     expect(lastPlayedSource()).toContain("nut-house-11/sound-1.mp3");
     expect(progress.getSnapshot().nutHouse.openDoor).toBe(1);
-    expect(mount.textContent).toContain("ROOM 12");
-    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-art")?.src).toContain("room-12-scene");
+    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-source-frame")?.src).toContain("room-12-prompt");
+    expect(mount.querySelectorAll("[data-nut-house-mirror]")).toHaveLength(0);
+
+    [3, 1, 7, 6, 4, 5, 2].forEach((correctMirror, index) => {
+      const room = index + 12;
+      mount.querySelector<HTMLButtonElement>("[data-nut-house-start]")?.click();
+      expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-source-frame")?.src).toContain(
+        `room-${room}-gameplay`,
+      );
+      mount.querySelector<HTMLButtonElement>(`[data-nut-house-mirror="${correctMirror}"]`)?.click();
+      expect(progress.getSnapshot().nutHouse.openDoor).toBe(room - 10);
+      if (room < 18) {
+        expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-source-frame")?.src).toContain(
+          `room-${room + 1}-prompt`,
+        );
+      }
+    });
+    expect(progress.getSnapshot().gameKeys[7]).toBe(true);
+    expect(lastPlayedSource()).toContain("nut-house-18/sound-3.mp3");
+    expect(mount.querySelectorAll("[data-nut-house-mirror]")).toHaveLength(0);
+    expect(mount.querySelector("[data-nut-house-play]")).toBeNull();
+    expect(mount.querySelector("[data-nut-house-help]")).toBeNull();
+    expect(mount.querySelector("[data-nut-house-exit]")).toBeNull();
+    expect(mount.querySelector("[data-source-nut-house-board] .sr-only")?.textContent).toBe(
+      "The final mirror opens. Game key 7 is saved.",
+    );
+  });
+
+  it("honors the Nut House exit confirmation without changing progress", () => {
+    const mount = document.createElement("main");
+    const progress = createTestShell(mount);
+
+    mount.querySelector<HTMLButtonElement>('[data-route="nut-house"]')?.click();
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-tutorial]")?.click();
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-start]")?.click();
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-exit]")?.click();
+    expect(mount.querySelector<HTMLButtonElement>("[data-nut-house-exit-no]")).not.toBeNull();
+    mount.querySelector<HTMLButtonElement>("[data-nut-house-exit-yes]")?.click();
+
+    expect(mount.querySelector<HTMLButtonElement>('[data-route="main-menu"]')?.getAttribute("aria-current")).toBe("page");
+    expect(progress.getSnapshot().nutHouse.openDoor).toBe(0);
   });
 
   it("resets persisted and transient Nut House progress to room 11", () => {
@@ -1296,13 +1360,14 @@ describe("desktop app shell", () => {
     const progress = createTestShell(mount, (store) => store.setNutHouseOpenDoor(4));
 
     mount.querySelector<HTMLButtonElement>('[data-route="nut-house"]')?.click();
-    expect(mount.textContent).toContain("ROOM 15");
+    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-source-frame")?.src).toContain("room-15-prompt");
 
     mount.querySelector<HTMLButtonElement>('[data-action="reset-progress"]')?.click();
 
     expect(progress.getSnapshot().nutHouse.openDoor).toBe(0);
-    expect(mount.textContent).toContain("ROOM 11");
-    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-art")?.src).toContain("room-11-scene");
+    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-source-frame")?.src).toContain(
+      "room-11-tutorial",
+    );
   });
 
   it("keeps Toy Soldiers, Waltz, and Alice faithful to their recovered source boundaries", () => {

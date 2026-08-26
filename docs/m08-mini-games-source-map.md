@@ -2,7 +2,7 @@
 
 This map is the source-of-truth record for the M08 recreation pass. The runtime inputs are the recovered Flash files under `analysis/setup/app/games/`; `app/scripts/extract-m08-source-assets.mjs` verifies their SHA-256 hashes before writing ignored evidence under `app/generated/m08-source-extract/` and promoted runtime files under `app/src/assets/m08-source/`.
 
-Run `npm run assets:m08` from `app/`. A valid pass reports 34 SWFs, 112 source images, 3 extracted root streams, 205 extracted `DefineSound` files, 77 runtime companion files, and 13 verified Alice Ruffle renders. The extractor excludes backup files and alternate Children's Album WAV copies while retaining the source MP3s and Waltz WAV. It preflights every required source/companion, all 34 locked SWF hashes, and the 13 source-runtime capture hashes before removing only its owned generated and promoted M08 roots for the rebuild.
+Run `npm run assets:m08` from `app/`. A valid pass reports 34 SWFs, 112 source images, 3 extracted root streams, 205 extracted `DefineSound` files, 77 runtime companion files, 13 verified Alice Ruffle renders, and 33 verified Nut House Ruffle renders. The extractor excludes backup files and alternate Children's Album WAV copies while retaining the source MP3s and Waltz WAV. It preflights every required source/companion, all 34 locked SWF hashes, and all 46 source-runtime capture hashes before removing only its owned generated and promoted M08 roots for the rebuild.
 
 ## Source inventory
 
@@ -64,6 +64,25 @@ Every recovered `gameCombination1` through `gameCombination12` array equals `[1,
 
 Rooms 11-18 each set `maxMir=8`. Their exact correct mirror sequence is `[8,3,1,7,6,4,5,2]`. A correct choice loads the next room, and room 18 grants `gameKey7`. The original `openDoor` value in `nuthouserooms.txt` is mapped to `progress.setNutHouseOpenDoor(room - 10)`.
 
+Direct playback through the official self-hosted Ruffle 0.5.0 runtime resolves every complete room display list that the local SWFTools root render crashes on. Room 11 uniquely opens on the source fish tutorial, advances to the framed `Dance of the Sugar Plum Fairy` prompt, and then enters the room. Rooms 12-18 open on their framed song prompts: `Dance of the Reed-Flutes`, `Arab Dance`, `Waltz of the Flowers`, `Russian Dance (Trepak)`, `March`, `Overture`, and `Chinese Dance`. Each gameplay frame includes the real eight source mirrors, the top-left `?`, top-right `EXIT`, and bottom `PLAY` controls. The runtime now uses hash-locked, room-local Ruffle captures for the tutorial, eight prompts, eight gameplay rooms, eight fish-help states, and eight fish-backed YES/NO exit warnings. It no longer draws a numbered mirror grid, a made-up room heading, or visible fallback feedback inside the 640 x 480 viewport.
+
+The root `checkMusic()` action stops current audio, resets all mirror frames, and the bottom PLAY button starts semantic export `mainMusic`; every room exports that track as DefineSound id `0011`. The remake therefore starts `sound-11.mp3` when the source prompt PLAY control enters a room and when the gameplay PLAY control is activated. The source help/exit controls delegate to the shared `usmus` timeline. Help brings the fish over the current room; EXIT opens the source YES/NO warning, where NO returns to the room and YES leaves the Nut House.
+
+The mirror instances and correct sprite evidence are:
+
+| Room | Mirror sprite ids 1..8 | Correct source sprite |
+| --- | --- | --- |
+| 11 | `0138,0144,0151,0161,0167,0182,0189,0197` | mirror 8 / `0197` |
+| 12 | `0084,0092,0101,0112,0123,0132,0143,0151` | mirror 3 / `0101` |
+| 13 | `0083,0090,0099,0107,0117,0125,0133,0143` | mirror 1 / `0083` |
+| 14 | `0084,0092,0101,0156,0117,0124,0134,0144` | mirror 7 / `0134` |
+| 15 | `0090,0098,0106,0117,0124,0132,0140,0148` | mirror 6 / `0132` |
+| 16 | `0086,0094,0103,0112,0127,0135,0145,0153` | mirror 4 / `0112` |
+| 17 | `0083,0091,0099,0108,0116,0126,0136,0147` | mirror 5 / `0116` |
+| 18 | `0082,0093,0101,0110,0117,0127,0135,0143` | mirror 2 / `0093` |
+
+Transparent keyboard-accessible hit regions follow the recovered mirror silhouettes rather than the source's abstract two-row instance origins. Room 18 is the clearest reason: mirror 2 is sprite `0093`, placed at `(244.05,106.00)`, but its child sprite is translated to `(-2.95,-49.00)`, producing the upper ceiling mirror rather than a generic second grid cell. Pointer entry and keyboard focus still preview the corresponding semantic mirror sound; activation preserves the room-local success/failure audio and persistence actions.
+
 Each mirror's source rollover/focus action calls `checkMirror(N)` and previews semantic export `sN`; the correct mirror instead previews `goodGuess`. Release stops the preview and plays `badGuess` for a wrong mirror or `youWin` for the correct mirror. The exported raw ids are:
 
 | Room | Mirror 1..8 preview ids | `badGuess` | `youWin` |
@@ -82,7 +101,7 @@ Full root probes are not reliable with the installed SWFTools build:
 - Children's Album and Orchestra terminate with `SIGSEGV` after unresolved JPEG/display-list children.
 - Each Loopy board terminates with `SIGSEGV`.
 - Alice puzzle boards terminate with `SIGSEGV`; the chooser's SWFTools output contains only an incomplete pale ring. Direct playback through the official Ruffle 0.5.0 self-hosted runtime resolves the complete 800 x 600 puzzle display lists and the post-intro chooser. Those source-runtime captures are now hash-locked inputs under `analysis/setup/app/games/aliceswf/recovered-renders/`; SWFTools remains the deterministic child-asset path for gear id `0098` and cropped dial id `0151`. The stable puzzle captures do not change with the runtime clock state, replay the randomized `angleToFrame` mapping, or animate the correct-state character/gear sequence; those remain manual-review gaps.
-- Nut House rooms terminate with `SIGSEGV`.
+- Nut House rooms terminate with `SIGSEGV` under the local SWFTools root-render path. Official Ruffle 0.5.0 playback resolves the complete display lists. The 33 stable source-runtime captures are hash-locked under `analysis/setup/app/games/nuthouse/recovered-renders/` and promoted by `npm run assets:m08`. The static captures do not reproduce live mirror morph/color animation, fish motion/voice timing, or the correct-answer transition/key timeline; those remain explicit manual-review gaps rather than permission to invent replacement UI.
 - Toy Soldiers exits successfully and exposes the green field, the first frame of the cyan moving shape, staff lines, and feedback flashes, but it omits the button-backed soldiers and controls; isolated sprite id `0031` renders transparent because button id `0030` is unresolved even though child shape id `0029` is recoverable.
 - Waltz exits successfully but only exposes a gray gradient.
 
