@@ -28,6 +28,7 @@ npm run assets:nutcracker-swf
 npm run assets:nutcracker-ui
 npm run assets:nutcracker-actors
 npm run assets:nutcracker-jpeg3
+npm run assets:certificates
 ```
 
 The SWF pass writes ignored proof artifacts to `app/generated/nutcracker-source-extract/full-swf-pass/`:
@@ -40,6 +41,8 @@ The SWF pass writes ignored proof artifacts to `app/generated/nutcracker-source-
 
 The JPEG3 pass writes ignored repaired image proof artifacts to `app/generated/nutcracker-source-extract/direct-image-tags/`.
 
+The certificate pass extracts the appended Flash payloads from `analysis/setup/app/fscommand/n_certificate.exe` and `nc_certificate.exe`, writes ignored projector/SWF/action/text/display-list proof under `app/generated/certificate-projectors/`, and promotes only the intact Nutcracker-specific sprite id `0018` certificate to `app/src/assets/nutcracker-source/nutcracker-club-certificate.png`.
+
 The actor promotion pass reads the ignored SWF output and writes committed actor assets to `app/src/assets/nutcracker-source/song#-track#-actor.png`.
 It intentionally skips copying when ImageMagick reports the selected generated PNG is pixel-equivalent to the committed target, because `swfextract` can rewrite identical indexed PNG art with different bytes.
 
@@ -47,6 +50,12 @@ The UI promotion pass currently copies source UI bitmap evidence such as `song1_
 
 ## Things Already Learned The Hard Way
 
+- Do not treat the two certificate EXEs as opaque Windows-only launchers. Each has a valid compressed `CWS` appended at byte `860160`; use `app/scripts/lib/flash-projector.mjs` and `npm run assets:certificates` to validate/inflate the final embedded payload before inspecting it with the SWF tools.
+- Do not accept a zlib-valid byte stream as sufficient SWF proof or inflate beyond its declared size. The projector parser validates the RECT/frame header and complete top-level tag stream, bounds decompression to the declared body length, and the certificate pass locks the recovered projector/SWF hashes, offset, sprite placement, print/quit actions, and certificate text before promotion.
+- Strip generated PNG metadata during certificate promotion. ImageMagick otherwise embeds generation timestamps and creates byte churn from an unchanged source render; `npm run assets:certificates` must produce a byte-identical committed certificate on consecutive runs.
+- Do not render the certificate projector root stage and conclude the certificate is missing. Both embedded movies advertise an `18 x 18` stage and rotate/scale the real certificate instance offstage for `print:#bmax`. Extract the inner certificate sprite instead: id `0018` for `nc_certificate` and id `0042` for `n_certificate`.
+- Prefer `nc_certificate.exe` for the Nutcracker Key 1 reward. Its inner sprite renders the complete `THE Nutcracker CLUB` certificate. The generic `n_certificate.exe` inner composition references dynamic text ids `0006` and `0016`; local `swfrender` reports them unknown and scatters the red glyphs, so keep that result as ignored evidence rather than promoting damaged art.
+- Do not add a generic certificate button inside the preserved `640 x 480` Flash viewport. The source helper immediately runs `print:#bmax` against instance `nc_certificate` and later quits. The current fallback unlocks an external side-panel `Print / Save PDF` action with `gameKey1`, prints only the source certificate through `window.print()`, and names the legacy-print/webview limitation in DOM metadata and this source map.
 - `npm run assets:nutcracker-swf` is also the deterministic display-list proof gate. It parses all 73 placement dumps with `app/scripts/lib/swf-display-list.mjs`, writes full ignored JSON plus `display-list/contact-sheet.html`, and refreshes the compact committed `app/src/data/generated/nutcrackerDisplayListCatalog.ts`. Do not hand-edit that catalog or copy matrices back into prose-only evidence. The six required targets are chooser ids `0021`/`0034`/`0068` and song ids `0063`/`0333`/`0340`; any missing symbol or placement must fail with the exact blocker.
 - A target symbol appearing somewhere in the SWF is not enough proof. Lock required targets to their recovered owner/frame/depth/name, require source child IDs, and for root-gated overlays retain the sibling frame composition (`0333`/`0334` for help; `0340`/`0341`/`0346`/`0351`/`0352` for warning). Do not fall back to the first placement candidate when an exact placement requirement misses. Preflight all 73 source SWFs and every promoted target asset before reporting the display-list gate as recovered.
 - Do not infer sprite ownership from indentation-stripped snippets. The parser must keep a `DEFINESPRITE`/`END` stack and accept all three observed placement forms: `places id`, `moves object`, and `moves id`. The real 73-SWF corpus exposed `PLACEOBJECT2 moves id 0082`; a synthetic fixture that only covers anonymous moves is insufficient.
@@ -125,6 +134,7 @@ The UI promotion pass currently copies source UI bitmap evidence such as `song1_
 - The song app-level Help fallback is source-mapped to the recovered `song1/song.swf helpframe` path. The DOM help surface records placements for `0333` and `0334`, uses source help art plus `song-helpframe-talker.png`, and keeps unproven instructional copy screen-reader-only.
 - Song EXIT uses the recovered `song1/song.swf warningFrame` path. The DOM warning surface records placements for `0340`, `0341`, `0346`, `0351`, and `0352`, uses source-rendered warning talker/YES/NO assets, maps NO to the source control-restore behavior, and maps YES to the app's equivalent chooser-return flow.
 - Final Nutcracker completion uses the recovered `song1/song.swf keyFrame` path. The DOM shows `song-keyframe-talker.png` only when the current correct solve completes all eight doors and grants game key 1.
+- Key 1 also unlocks the external certificate print flow. The printable surface uses promoted `nc_certificate.exe` sprite id `0018` art; print CSS removes the desktop shell, and the `window.print()` fallback exposes host printing/PDF saving without placing a modern control inside the source viewport.
 
 ## Known Remaining Gaps
 
@@ -132,6 +142,7 @@ The UI promotion pass currently copies source UI bitmap evidence such as `song1_
 - Some song 2-8 scene composition remains source-derived but not full Flash display-list playback.
 - Full root-frame rendering for song-scene `warningFrame` remains a display-list renderer gap. The app composes recovered sprite/text assets with source placement metadata and no invented warning wording until a renderer can play the complete frame.
 - Exact `flyinghelp` frame rendering remains a dynamic text/timeline renderer gap. The current DOM fallback is source-layered from `PLACEOBJECT2` and `DEFINEEDITTEXT` evidence, not a rendered source bitmap.
+- A native print dialog or saved PDF still needs manual desktop verification. Automated tests cover the Key 1 gate, source metadata, promoted asset, and print callback, but cannot approve the host print UI.
 - Browser visual approval is still Marcus-gated. Automated checks can prove build/test/extraction health, not that the UI is approved.
 
 ## Commit Discipline

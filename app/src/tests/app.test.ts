@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createAppShell } from "../app";
 import { createAudioService, type AudioElementLike } from "../audio/audioService";
 import { getCorrectNutcrackerTrackNumbers, nutcrackerSongGames } from "../data/nutcrackerSongGames";
@@ -653,6 +653,41 @@ describe("desktop app shell", () => {
     expect(mount.textContent).toContain("Game keys1/9");
     expect(mount.textContent).toContain("Song doors");
     expect(mount.textContent).toContain("8/8");
+  });
+
+  it("unlocks the source-backed Nutcracker certificate print flow with game key 1", () => {
+    const lockedMount = document.createElement("main");
+    createTestShell(lockedMount);
+    expect(lockedMount.querySelector('[data-action="print-certificate"]')).toBeNull();
+    expect(lockedMount.querySelector(".certificate-print-surface")).toBeNull();
+
+    const mount = document.createElement("main");
+    const progress = createProgressStore(createMemoryPersistence());
+    progress.markGameKey(1);
+    const printCertificate = vi.fn();
+    createAppShell(mount, {
+      progress,
+      audio: createAudioService({
+        createAudioElement: () => new FakeAudioElement(),
+      }),
+      printCertificate,
+    });
+
+    const printButton = mount.querySelector<HTMLButtonElement>('[data-action="print-certificate"]');
+    expect(printButton?.textContent).toContain("Print / Save PDF");
+    expect(printButton?.dataset.sourceReward).toBe("gameKey1");
+    expect(mount.querySelector<HTMLImageElement>(".certificate-print-surface img")?.src).toContain(
+      "nutcracker-club-certificate",
+    );
+    expect(mount.querySelector<HTMLElement>(".certificate-print-surface")?.dataset.sourceAction).toContain(
+      "print:#bmax",
+    );
+    expect(mount.querySelector<HTMLElement>(".certificate-print-surface")?.dataset.sourceFallback).toContain(
+      "window.print",
+    );
+
+    printButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(printCertificate).toHaveBeenCalledOnce();
   });
 
   it("marks the next Nutcracker door ready after clearing a song", () => {

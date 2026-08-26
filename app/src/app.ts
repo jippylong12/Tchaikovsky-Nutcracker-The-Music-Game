@@ -35,6 +35,7 @@ import songHelpframeTalkerUrl from "./assets/nutcracker-source/song-helpframe-ta
 import songHintLabelUrl from "./assets/nutcracker-source/song-hint-label.png";
 import songKeyFrameTalkerUrl from "./assets/nutcracker-source/song-keyframe-talker.png";
 import songListenLabelUrl from "./assets/nutcracker-source/song-listen-label.png";
+import nutcrackerClubCertificateUrl from "./assets/nutcracker-source/nutcracker-club-certificate.png";
 import songNoLabelUrl from "./assets/nutcracker-source/song-no-label.png";
 import songPlayAgainButtonBodyUrl from "./assets/nutcracker-source/song-play-again-button-body.png";
 import songPlayAgainLabelUrl from "./assets/nutcracker-source/song-play-again-label.png";
@@ -95,6 +96,7 @@ export type AppShellOptions = {
   progress?: ProgressStoreController;
   audio?: AudioService;
   previewAudioPath?: string;
+  printCertificate?: () => void;
 };
 
 const defaultPreviewAudioPath = suiteTracks[0].audioPath;
@@ -103,6 +105,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   const progress = options.progress ?? createProgressStore();
   const audio = options.audio ?? createAudioService();
   const previewAudioPath = options.previewAudioPath ?? defaultPreviewAudioPath;
+  const printCertificate = options.printCertificate ?? (() => window.print());
   const shellState: ShellState = {
     routeId: "overture",
     routeStack: [],
@@ -191,6 +194,17 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
                 <button class="panel-button" type="button" data-progress="children-door" data-door="1">Album 1</button>
                 <button class="panel-button" type="button" data-progress="nut-house" data-door="1">Room 1</button>
               </div>
+              ${
+                progressSnapshot.gameKeys[1]
+                  ? `<button
+                      class="panel-button certificate-print-button"
+                      type="button"
+                      data-action="print-certificate"
+                      data-source-reward="gameKey1"
+                      data-source-action="all eight Nutcracker doors grant gameKey1; legacy nc_certificate.exe prints target nc_certificate with print:#bmax"
+                    >Print / Save PDF</button>`
+                  : ""
+              }
               <button class="panel-button danger" type="button" data-action="reset-progress">Reset progress</button>
             </section>
             <section class="progress-panel" aria-label="Audio controls">
@@ -210,6 +224,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
             <p class="build-note">Local desktop package only. Recovered media stays bundled locally under the app shell.</p>
           </nav>
         </div>
+        ${progressSnapshot.gameKeys[1] ? renderNutcrackerCertificatePrintSurface() : ""}
       </section>
     `;
 
@@ -554,6 +569,13 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     if (action === "reset-progress") {
       progress.resetAll();
       render();
+      return;
+    }
+
+    if (action === "print-certificate") {
+      if (progress.getSnapshot().gameKeys[1]) {
+        printCertificate();
+      }
       return;
     }
 
@@ -1665,6 +1687,21 @@ function renderMenuCard(route: RouteDefinition): string {
       <span>${route.title}</span>
       <small>${route.levelTarget}</small>
     </button>
+  `;
+}
+
+function renderNutcrackerCertificatePrintSurface(): string {
+  return `
+    <section
+      class="certificate-print-surface"
+      aria-label="Nutcracker Club membership award certificate"
+      data-source-projector="analysis/setup/app/fscommand/nc_certificate.exe embedded CWS at byte 860160"
+      data-source-sprite="nc_certificate embedded SWF sprite id 0018; 550 by 354 source background; promoted from the intact inner render"
+      data-source-action="frame 1 GetUrl print:#bmax targets nc_certificate; frame 5 FSCommand quit"
+      data-source-fallback="the webview cannot execute legacy Flash print:#bmax or projector quit; window.print opens the host print dialog, whose Save PDF option replaces the legacy printer-only flow"
+    >
+      <img src="${nutcrackerClubCertificateUrl}" alt="The Nutcracker Club membership award certificate" />
+    </section>
   `;
 }
 
