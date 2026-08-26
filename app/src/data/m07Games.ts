@@ -64,14 +64,20 @@ export function getMelodyNoteAudio(note: number, length: "s" | "m" | "L"): strin
   return caseInsensitiveEntry[1];
 }
 
-export function createMemoryDeck(pairCount: number): readonly MemoryCard[] {
+export function createMemoryDeck(pairCount: number, random: () => number = Math.random): readonly MemoryCard[] {
   const safePairCount = Math.min(Math.max(Math.trunc(pairCount), 1), 18);
-  const pairs = Array.from({ length: safePairCount }, (_item, index) => index + 1);
-  const orderedPairIds = pairs.flatMap((pairId, index) => [pairId, pairs[pairs.length - index - 1] ?? pairId]);
+  const orderedPairIds = Array.from({ length: safePairCount }, (_item, index) => index + 1).flatMap((pairId) => [
+    pairId,
+    pairId,
+  ]);
+  for (let index = orderedPairIds.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.min(Math.max(Math.floor(random() * (index + 1)), 0), index);
+    [orderedPairIds[index], orderedPairIds[swapIndex]] = [orderedPairIds[swapIndex], orderedPairIds[index]];
+  }
   return orderedPairIds.map((pairId, index) => ({
     id: index + 1,
     pairId,
-    faceUrl: getM07Asset(`/memory-card-face-${String(((pairId - 1) % 16) + 1).padStart(2, "0")}.png`),
+    faceUrl: getM07Asset(`/memory-card-face-${String(pairId).padStart(2, "0")}.png`),
     soundUrl: getM07Asset(`/audio/memory/${pairId}.mp3`),
   }));
 }
@@ -81,7 +87,8 @@ export function memoryPairsForLevel(level: number): number {
 }
 
 export function memoryErrorsForPairs(pairCount: number): number {
-  return pairCount * 2;
+  const safePairCount = Math.min(Math.max(Math.trunc(pairCount), 1), 18);
+  return safePairCount + Math.floor(safePairCount / 2);
 }
 
 export function createTreeRounds(variant: 1 | 2 | 3): readonly TreeRound[] {
@@ -110,21 +117,22 @@ export function createTreeRounds(variant: 1 | 2 | 3): readonly TreeRound[] {
 
 const flyingInstrumentDefinitions: readonly [string, FlyingFamily, string, number][] = [
   ["Flute", "woodwinds", "flying-flute.png", 1],
-  ["Oboe", "woodwinds", "flying-oboe.png", 2],
-  ["Clarinet", "woodwinds", "flying-clarinet.png", 3],
+  ["Clarinet", "woodwinds", "flying-clarinet.png", 2],
+  ["Oboe", "woodwinds", "flying-oboe.png", 3],
   ["Bassoon", "woodwinds", "flying-bassoon.png", 4],
   ["Harp", "strings", "flying-harp.png", 5],
-  ["Double bass", "strings", "flying-double-bass.png", 6],
-  ["Cello", "strings", "flying-cello.png", 7],
-  ["Violin", "strings", "flying-violin.png", 8],
-  ["Trumpet", "brass", "flying-trumpet.png", 9],
-  ["Trombone", "brass", "flying-trombone.png", 10],
-  ["French horn", "brass", "flying-french-horn.png", 11],
-  ["Tuba", "brass", "flying-tuba.png", 12],
-  ["Grand piano", "percussion", "flying-grand-piano-blue.png", 13],
-  ["Piano", "percussion", "flying-grand-piano-brown.png", 14],
-  ["Drum", "percussion", "flying-drum.png", 15],
-  ["Cymbals", "percussion", "flying-cymbals.png", 16],
+  ["Piano", "percussion", "flying-grand-piano-blue.png", 6],
+  ["Harpsichord", "percussion", "flying-grand-piano-brown.png", 7],
+  ["Timpani", "percussion", "flying-drum.png", 8],
+  ["Cymbals", "percussion", "flying-cymbals.png", 9],
+  ["Double bass", "strings", "flying-double-bass.png", 10],
+  ["Cello", "strings", "flying-cello.png", 11],
+  ["Violin", "strings", "flying-violin.png", 12],
+  ["Viola", "strings", "flying-viola.png", 13],
+  ["Trumpet", "brass", "flying-trumpet.png", 14],
+  ["Trombone", "brass", "flying-trombone.png", 15],
+  ["French horn", "brass", "flying-french-horn.png", 16],
+  ["Tuba", "brass", "flying-tuba.png", 17],
 ];
 
 export const flyingInstruments: readonly FlyingInstrument[] = flyingInstrumentDefinitions.map(
@@ -138,6 +146,20 @@ export const flyingInstruments: readonly FlyingInstrument[] = flyingInstrumentDe
 );
 
 export const flyingFamilies: readonly FlyingFamily[] = ["woodwinds", "strings", "brass", "percussion"];
+
+const flyingInstrumentIdsByLevel: Readonly<Record<1 | 2 | 3, readonly number[]>> = {
+  1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+  2: [17, 6, 8, 12, 14, 16, 7, 5],
+  3: [17, 6, 8, 1, 12, 16, 7, 5],
+};
+
+export function getFlyingInstrumentSequence(level: 1 | 2 | 3): readonly FlyingInstrument[] {
+  return flyingInstrumentIdsByLevel[level].map((id) => {
+    const instrument = flyingInstruments.find((candidate) => candidate.id === id);
+    if (!instrument) throw new Error(`Missing recovered flying instrument ${id}`);
+    return instrument;
+  });
+}
 
 export function isMelodyDifficulty(value: string): value is MelodyDifficulty {
   return value === "beg" || value === "easy" || value === "inter" || value === "adv";

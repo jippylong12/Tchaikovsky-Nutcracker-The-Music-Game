@@ -86,7 +86,7 @@ import {
   createMemoryDeck,
   createTreeRounds,
   flyingFamilies,
-  flyingInstruments,
+  getFlyingInstrumentSequence,
   getM07Asset,
   getMelodyNoteAudio,
   getMelodySequences,
@@ -124,12 +124,13 @@ type ShellState = {
   melodySequenceIndex: number;
   melodyInput: number[];
   melodyFeedback: "correct" | "wrong" | null;
+  melodyDemoPlaying: boolean;
   memoryLevel: number;
   memoryDeck: readonly MemoryCard[];
   memoryRevealed: number[];
   memoryMatchedPairs: number[];
   memoryErrorsLeft: number;
-  memoryFeedback: "match" | "miss" | "level-complete" | "win" | null;
+  memoryFeedback: "match" | "miss" | "loss" | "level-complete" | "win" | null;
   treeVariant: 1 | 2 | 3;
   treeRoundIndex: number;
   treeCorrectCount: number;
@@ -227,6 +228,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     melodySequenceIndex: 0,
     melodyInput: [],
     melodyFeedback: null,
+    melodyDemoPlaying: false,
     memoryLevel: 1,
     memoryDeck: createMemoryDeck(memoryPairsForLevel(1)),
     memoryRevealed: [],
@@ -241,6 +243,13 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     flyingInstrumentIndex: 0,
     flyingCorrectCount: 0,
     flyingFeedback: null,
+  };
+  const melodyTimerIds = new Set<number>();
+
+  const stopMelodyPlayback = () => {
+    melodyTimerIds.forEach((timerId) => window.clearTimeout(timerId));
+    melodyTimerIds.clear();
+    shellState.melodyDemoPlaying = false;
   };
 
   const render = (focusSelector?: string, fallbackFocusSelector?: string) => {
@@ -583,7 +592,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     });
 
     mount.querySelector<HTMLButtonElement>("[data-trivia-next]")?.addEventListener("click", () => {
-      shellState.triviaQuestionIndex += 1;
+      if (shellState.triviaFeedback === "correct") shellState.triviaQuestionIndex += 1;
       shellState.triviaFeedback = null;
       render("[data-trivia-answer]", "[data-source-trivia-question]");
     });
@@ -596,6 +605,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         shellState.melodySequenceIndex = 0;
         shellState.melodyInput = [];
         shellState.melodyFeedback = null;
+        stopMelodyPlayback();
         render("[data-melody-listen]", "[data-source-melody-levels]");
       });
     });
@@ -604,18 +614,32 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       const sequences = getMelodySequences(shellState.melodyDifficulty);
       const sequence = sequences[shellState.melodySequenceIndex % sequences.length];
       if (!sequence) return;
+      stopMelodyPlayback();
       audio.stopSceneAudio();
+      shellState.melodyDemoPlaying = true;
       let delay = 0;
       sequence.tokens.forEach((token) => {
-        window.setTimeout(() => {
+        const timerId = window.setTimeout(() => {
+          melodyTimerIds.delete(timerId);
+          if (!shellState.melodyDemoPlaying || shellState.routeId !== "melody") return;
           shellState.activeAudioId = audio.playOneShot(getMelodyNoteAudio(token.note, token.length)).id;
         }, delay);
+        melodyTimerIds.add(timerId);
         delay += token.delayMs;
       });
+      const completionTimerId = window.setTimeout(() => {
+        melodyTimerIds.delete(completionTimerId);
+        if (!shellState.melodyDemoPlaying || shellState.routeId !== "melody") return;
+        shellState.melodyDemoPlaying = false;
+        render("[data-melody-listen]", "[data-source-melody-keyboard]");
+      }, delay);
+      melodyTimerIds.add(completionTimerId);
+      render("[data-melody-listen]", "[data-source-melody-keyboard]");
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-melody-note]").forEach((button) => {
       button.addEventListener("click", () => {
+        if (shellState.melodyFeedback || shellState.melodyDemoPlaying) return;
         const note = Number(button.dataset.melodyNote);
         const sequences = getMelodySequences(shellState.melodyDifficulty);
         const sequence = sequences[shellState.melodySequenceIndex % sequences.length];
@@ -626,7 +650,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
           if (melodyInputIsCorrect(sequence, shellState.melodyInput)) {
             shellState.melodyFeedback = "correct";
             shellState.melodySequenceIndex += 1;
-            if (shellState.melodySequenceIndex >= sequences.length) progress.markGameKey(5);
+            if (shellState.melodySequenceIndex >= 3) progress.markGameKey(5);
           } else {
             shellState.melodyFeedback = "wrong";
           }
@@ -637,6 +661,11 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     });
 
     mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.addEventListener("click", () => {
+      const sequences = getMelodySequences(shellState.melodyDifficulty);
+      if (shellState.melodyFeedback === "correct" && shellState.melodySequenceIndex >= sequences.length) {
+        shellState.melodySequenceIndex = 0;
+        shellState.melodyInput = [];
+      }
       shellState.melodyFeedback = null;
       render("[data-melody-listen]", "[data-source-melody-keyboard]");
     });
@@ -645,7 +674,14 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       button.addEventListener("click", () => {
         const cardId = Number(button.dataset.memoryCard);
         const card = shellState.memoryDeck.find((candidate) => candidate.id === cardId);
-        if (!card || shellState.memoryMatchedPairs.includes(card.pairId) || shellState.memoryRevealed.includes(cardId)) return;
+        if (
+          !card ||
+          shellState.memoryFeedback === "loss" ||
+          shellState.memoryFeedback === "level-complete" ||
+          shellState.memoryFeedback === "win" ||
+          shellState.memoryMatchedPairs.includes(card.pairId) ||
+          shellState.memoryRevealed.includes(cardId)
+        ) return;
         audio.playOneShot(card.soundUrl);
         shellState.memoryRevealed.push(cardId);
         if (shellState.memoryRevealed.length === 2) {
@@ -657,7 +693,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
             shellState.memoryFeedback = "match";
           } else {
             shellState.memoryErrorsLeft = Math.max(shellState.memoryErrorsLeft - 1, 0);
-            shellState.memoryFeedback = "miss";
+            shellState.memoryFeedback = shellState.memoryErrorsLeft === 0 ? "loss" : "miss";
           }
           shellState.memoryRevealed = [];
           const pairCount = memoryPairsForLevel(shellState.memoryLevel);
@@ -672,6 +708,17 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
 
     mount.querySelector<HTMLButtonElement>("[data-memory-next]")?.addEventListener("click", () => {
       shellState.memoryLevel = Math.min(shellState.memoryLevel + 1, 14);
+      const pairs = memoryPairsForLevel(shellState.memoryLevel);
+      shellState.memoryDeck = createMemoryDeck(pairs);
+      shellState.memoryRevealed = [];
+      shellState.memoryMatchedPairs = [];
+      shellState.memoryErrorsLeft = memoryErrorsForPairs(pairs);
+      shellState.memoryFeedback = null;
+      render("[data-memory-card]", "[data-source-memory-board]");
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-memory-reset]")?.addEventListener("click", () => {
+      if (shellState.memoryFeedback === "win") shellState.memoryLevel = 1;
       const pairs = memoryPairsForLevel(shellState.memoryLevel);
       shellState.memoryDeck = createMemoryDeck(pairs);
       shellState.memoryRevealed = [];
@@ -730,19 +777,21 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     });
 
     mount.querySelector<HTMLButtonElement>("[data-flying-listen]")?.addEventListener("click", () => {
-      const instrument = flyingInstruments[shellState.flyingInstrumentIndex % flyingInstruments.length];
+      const sequence = getFlyingInstrumentSequence(shellState.flyingLevel);
+      const instrument = sequence[shellState.flyingInstrumentIndex % sequence.length];
       if (instrument) playSceneAudio(instrument.soundUrl, false);
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-flying-family]").forEach((button) => {
       button.addEventListener("click", () => {
         const family = button.dataset.flyingFamily;
-        const instrument = flyingInstruments[shellState.flyingInstrumentIndex % flyingInstruments.length];
+        const sequence = getFlyingInstrumentSequence(shellState.flyingLevel);
+        const instrument = sequence[shellState.flyingInstrumentIndex % sequence.length];
         if (!family || !isFlyingFamily(family) || !instrument) return;
         if (family === instrument.family) {
           shellState.flyingCorrectCount += 1;
           shellState.flyingInstrumentIndex += 1;
-          const targetCount = shellState.flyingLevel === 1 ? flyingInstruments.length : 8;
+          const targetCount = sequence.length;
           shellState.flyingFeedback = shellState.flyingCorrectCount >= targetCount ? "win" : "correct";
           if (shellState.flyingCorrectCount >= targetCount) progress.markGameKey(3);
         } else {
@@ -809,6 +858,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     shellState.nutcrackerChooserWarningOpen = false;
     shellState.pendingNutcrackerSongChange = null;
     shellState.pendingNutcrackerSongExit = null;
+    stopMelodyPlayback();
     audio.stopSceneAudio();
     shellState.activeAudioId = null;
     shellState.activeSuiteTrackId = null;
@@ -816,6 +866,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   };
 
   const stopSceneAudio = () => {
+    stopMelodyPlayback();
     audio.stopSceneAudio();
     shellState.activeAudioId = null;
     shellState.activeSuiteTrackId = null;
@@ -1544,17 +1595,17 @@ function renderMelodyGame(state: ShellState, unlocked: boolean): string {
           data-source-fallback="full sprite render blocked by INVALID GRADIENT and unknown child IDs; recovered source stage and controls remain layered">
           <span aria-hidden="true">♪</span>
         </div>
-        <p class="m07-melody-progress">${state.melodySequenceIndex + 1} / ${sequences.length}</p>
-        <button class="m07-source-button m07-melody-listen" type="button" data-melody-listen>LISTEN</button>
+        <p class="m07-melody-progress">${Math.min(state.melodySequenceIndex + 1, sequences.length)} / ${sequences.length}</p>
+        <button class="m07-source-button m07-melody-listen" type="button" data-melody-listen ${state.melodyFeedback || state.melodyDemoPlaying ? "disabled" : ""}>LISTEN</button>
         <div class="m07-melody-keyboard" data-source-melody-keyboard
           data-source-placement="keyboard sprite id 0290 scale 1.583 x 317.95 y 370.35">
-          ${Array.from({ length: 17 }, (_item, index) => `<button type="button" data-melody-note="${index + 1}"
+          ${Array.from({ length: 17 }, (_item, index) => `<button type="button" data-melody-note="${index + 1}" ${state.melodyFeedback || state.melodyDemoPlaying ? "disabled" : ""}
             aria-label="Note ${index + 1}"><span aria-hidden="true">${index + 1}</span></button>`).join("")}
         </div>
         <p class="m07-feedback" aria-live="polite">${
           state.melodyFeedback === "correct" ? "CONGRATULATIONS!" : state.melodyFeedback === "wrong" ? "TRY AGAIN" : ""
         }</p>
-        ${state.melodyFeedback ? '<button class="m07-source-button m07-melody-next" type="button" data-melody-next>CONTINUE</button>' : ""}
+        ${state.melodyFeedback ? `<button class="m07-source-button m07-melody-next" type="button" data-melody-next>${state.melodyFeedback === "correct" && state.melodySequenceIndex >= sequences.length ? "NEW GAME" : "CONTINUE"}</button>` : ""}
         ${unlocked ? '<p class="m07-source-reward" data-source-key="gameKey5">NEW GAME</p>' : ""}
         <span class="sr-only">${sequence ? `Sequence ${sequence.id} has ${sequence.tokens.length} notes.` : "No sequence loaded."}</span>
       </section>
@@ -1569,7 +1620,7 @@ function renderMemoryGame(state: ShellState, unlocked: boolean): string {
 
   return `
     <div class="scene-body m07-scene m07-memory-scene" data-source-swf="analysis/setup/app/games/memorygame/memory.swf"
-      data-source-frame="root frames 1-4; initial ncol 4 nrow 3 pairs 5 errors pairs x 2">
+      data-source-frame="root frames 1-4; initial ncol 4 nrow 3 pairs 5 errors pairs plus floor(pairs / 2)">
       ${renderM07SourceFrame("memory", "analysis/setup/app/games/memorygame/memory.swf")}
       <dl class="m07-memory-status">
         <div><dt>errors left :</dt><dd>${state.memoryErrorsLeft}</dd></div>
@@ -1582,7 +1633,7 @@ function renderMemoryGame(state: ShellState, unlocked: boolean): string {
             const showing = state.memoryRevealed.includes(card.id) || state.memoryMatchedPairs.includes(card.pairId);
             return `<button class="m07-memory-card" type="button" data-memory-card="${card.id}"
               aria-label="Card ${card.id}${showing ? `, pair ${card.pairId}` : ""}"
-              ${state.memoryMatchedPairs.includes(card.pairId) ? "disabled" : ""}>
+              ${state.memoryFeedback === "loss" || state.memoryFeedback === "level-complete" || state.memoryFeedback === "win" || state.memoryMatchedPairs.includes(card.pairId) ? "disabled" : ""}>
               <img src="${showing ? card.faceUrl : backUrl}" alt="" aria-hidden="true"
                 data-source-classification="swf-derived recreation"
                 data-source-image="${showing ? `memory card face sprite id 0057 frame ${card.pairId}` : "memory card back sprite id 0061"}" />
@@ -1595,13 +1646,16 @@ function renderMemoryGame(state: ShellState, unlocked: boolean): string {
           ? "CORRECT"
           : state.memoryFeedback === "miss"
             ? "TRY AGAIN"
-            : state.memoryFeedback === "level-complete"
-              ? "NEXT LEVEL"
-              : state.memoryFeedback === "win"
-                ? "CONGRATULATIONS!"
-                : ""
+            : state.memoryFeedback === "loss"
+              ? "PLAY AGAIN"
+              : state.memoryFeedback === "level-complete"
+                ? "NEXT LEVEL"
+                : state.memoryFeedback === "win"
+                  ? "CONGRATULATIONS!"
+                  : ""
       }</p>
       ${state.memoryFeedback === "level-complete" ? '<button class="m07-source-button m07-memory-next" type="button" data-memory-next>NEXT LEVEL</button>' : ""}
+      ${state.memoryFeedback === "loss" || state.memoryFeedback === "win" ? `<button class="m07-source-button" type="button" data-memory-reset>${state.memoryFeedback === "win" ? "NEW GAME" : "PLAY AGAIN"}</button>` : ""}
       ${unlocked ? '<p class="m07-source-reward" data-source-key="gameKey2">NEW GAME</p>' : ""}
     </div>
   `;
@@ -1649,8 +1703,9 @@ function renderTreeGame(state: ShellState, unlocked: boolean): string {
 }
 
 function renderFlyingInstruments(state: ShellState, unlocked: boolean): string {
-  const targetCount = state.flyingLevel === 1 ? flyingInstruments.length : 8;
-  const instrument = flyingInstruments[state.flyingInstrumentIndex % flyingInstruments.length];
+  const sequence = getFlyingInstrumentSequence(state.flyingLevel);
+  const targetCount = sequence.length;
+  const instrument = sequence[state.flyingInstrumentIndex % sequence.length];
   const imageUrl = state.flyingFeedback === "win" ? getM07Asset("/flying-star.png") : instrument.imageUrl;
 
   return `

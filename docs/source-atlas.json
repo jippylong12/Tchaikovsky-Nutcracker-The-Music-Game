@@ -518,7 +518,8 @@
       "sourceInputs": ["analysis/setup/app/games/memorygame/memory.swf", "analysis/setup/app/games/memorygame/snd"],
       "promotedAssets": [
         "app/src/assets/m07-source/memory-card-back.png",
-        "app/src/assets/m07-source/memory-card-face-01.png"
+        "app/src/assets/m07-source/memory-card-face-01.png",
+        "app/src/assets/m07-source/memory-card-face-18.png"
       ],
       "evidenceDocs": ["docs/m07-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-338", "JIP-826", "JIP-827", "JIP-828", "JIP-829", "JIP-830"],
@@ -538,7 +539,7 @@
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
             "details": "The runtime composes promoted source card back and recoverable face layers with the original level, error, matching, audio, and reward state.",
-            "retainedGap": "Full interactive card-flip timeline playback and two unflattened parent face states remain unavailable."
+            "retainedGap": "Full interactive card-flip timeline playback remains unavailable; all 18 source face states have correctly named child-layer promotions."
           },
           "evidenceDoc": "docs/m07-mini-games-source-map.md"
         }
@@ -572,6 +573,7 @@
       "sourceInputs": ["analysis/setup/app/games/flyinginstruments/flyinginstruments.swf"],
       "promotedAssets": [
         "app/src/assets/m07-source/flying-flute.png",
+        "app/src/assets/m07-source/flying-viola.png",
         "app/src/assets/m07-source/flying-star.png"
       ],
       "evidenceDocs": ["docs/m07-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
@@ -581,7 +583,7 @@
           "source": "analysis/setup/app/games/flyinginstruments/flyinginstruments.swf",
           "sourceLocator": {
             "kind": "sprite-timeline",
-            "identifier": "root frames 1-7; source instrument JPEG3 ids 0074-0123; source star id 0123",
+            "identifier": "root frames 1-7; source instrument JPEG3 ids 0074-0120; viola child shape id 0048; source star id 0123",
             "frameOrState": "chooseLevel frame 2, playLevel1 frame 3, playLevel2 frame 4, playLevel3 frame 5, and bye frame 6"
           },
           "toolLimitation": {
@@ -598,7 +600,7 @@
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "A dedicated source-backed route now exposes all sixteen promoted instrument images, embedded sounds, three level states, family classification, key gate, and the exact transparent-render limitation; Marcus visual approval remains open."
+      "auditFinding": "A dedicated source-backed route now exposes all seventeen source instruments in their logical ID, sound, and family mapping, embedded sounds, three level states, family classification, key gate, and the exact transparent-render limitation; Marcus visual approval remains open."
     },
     {
       "id": "loopy-tunes",

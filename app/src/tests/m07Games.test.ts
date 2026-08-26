@@ -4,6 +4,7 @@ import {
   createTreeRounds,
   flyingFamilies,
   flyingInstruments,
+  getFlyingInstrumentSequence,
   getMelodySequences,
   getTriviaQuestion,
   melodyInputIsCorrect,
@@ -36,8 +37,9 @@ describe("M07 recovered mini-game data", () => {
   it("matches the source memory level, pair, and error rules", () => {
     expect(memoryPairsForLevel(1)).toBe(5);
     expect(memoryPairsForLevel(14)).toBe(18);
-    expect(memoryErrorsForPairs(5)).toBe(10);
-    expect(createMemoryDeck(5).map((card) => card.pairId)).toEqual([1, 5, 2, 4, 3, 3, 4, 2, 5, 1]);
+    expect(memoryErrorsForPairs(5)).toBe(7);
+    expect(createMemoryDeck(5, () => 0).map((card) => card.pairId)).toEqual([1, 2, 2, 3, 3, 4, 4, 5, 5, 1]);
+    expect(createMemoryDeck(18, () => 0).find((card) => card.pairId === 18)?.faceUrl).toContain("memory-card-face-18");
   });
 
   it("builds three source tree rounds for each recovered sound variant", () => {
@@ -52,10 +54,13 @@ describe("M07 recovered mini-game data", () => {
     ]);
   });
 
-  it("maps all 16 promoted flying instruments to the four source game families", () => {
-    expect(flyingInstruments).toHaveLength(16);
+  it("maps all 17 source flying instruments and deterministic source-defined level sets", () => {
+    expect(flyingInstruments).toHaveLength(17);
     expect(new Set(flyingInstruments.map((instrument) => instrument.family))).toEqual(new Set(flyingFamilies));
     expect(flyingInstruments[0]).toMatchObject({ name: "Flute", family: "woodwinds" });
-    expect(flyingInstruments[flyingInstruments.length - 1]).toMatchObject({ name: "Cymbals", family: "percussion" });
+    expect(flyingInstruments[12]).toMatchObject({ name: "Viola", family: "strings" });
+    expect(flyingInstruments[flyingInstruments.length - 1]).toMatchObject({ name: "Tuba", family: "brass" });
+    expect(getFlyingInstrumentSequence(2).map((instrument) => instrument.id)).toEqual([17, 6, 8, 12, 14, 16, 7, 5]);
+    expect(getFlyingInstrumentSequence(3).map((instrument) => instrument.id)).toEqual([17, 6, 8, 1, 12, 16, 7, 5]);
   });
 });

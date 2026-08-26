@@ -3,6 +3,7 @@ import { createAppShell } from "../app";
 import { createAudioService, type AudioElementLike } from "../audio/audioService";
 import { getCorrectNutcrackerTrackNumbers, nutcrackerSongGames } from "../data/nutcrackerSongGames";
 import { dictionaryInstruments, readingActivities } from "../data/referenceContent";
+import { createMemoryDeck, getMelodySequences } from "../data/m07Games";
 import {
   createProgressStore,
   progressStorageKey,
@@ -15,13 +16,17 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 class FakeAudioElement implements AudioElementLike {
+  static playCount = 0;
   src = "";
   loop = false;
   muted = false;
   volume = 1;
   preload = "";
   currentTime = 0;
-  play = () => Promise.resolve();
+  play = () => {
+    FakeAudioElement.playCount += 1;
+    return Promise.resolve();
+  };
   pause = () => undefined;
   load = () => undefined;
   addEventListener = () => undefined;
@@ -40,7 +45,10 @@ function createMemoryPersistence(): ProgressPersistence {
   };
 }
 
-function createTestShell(mount: HTMLElement, configureProgress?: (progress: ProgressStoreController) => void): void {
+function createTestShell(
+  mount: HTMLElement,
+  configureProgress?: (progress: ProgressStoreController) => void,
+): ProgressStoreController {
   const progress = createProgressStore(createMemoryPersistence());
   configureProgress?.(progress);
   createAppShell(mount, {
@@ -50,6 +58,7 @@ function createTestShell(mount: HTMLElement, configureProgress?: (progress: Prog
     }),
     previewAudioPath: "/local-media/audio/activities/originals/theme1.mp3",
   });
+  return progress;
 }
 
 function publicAssetSize(publicPath: string): number {
@@ -794,6 +803,20 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLButtonElement>("[data-trivia-next]")?.textContent).toBe("NEXT");
   });
 
+  it("repeats the same recovered trivia question after a wrong answer", () => {
+    const mount = document.createElement("main");
+    createTestShell(mount);
+
+    mount.querySelector<HTMLButtonElement>('[data-route="trivia"]')?.click();
+    const prompt = mount.querySelector<HTMLElement>("[data-source-trivia-question]")?.textContent;
+    mount.querySelector<HTMLButtonElement>('[data-trivia-answer="1"]')?.click();
+    expect(mount.querySelector<HTMLButtonElement>("[data-trivia-next]")?.textContent).toBe("AGAIN");
+    mount.querySelector<HTMLButtonElement>("[data-trivia-next]")?.click();
+
+    expect(mount.querySelector<HTMLElement>("[data-source-trivia-question]")?.textContent).toBe(prompt);
+    expect(mount.textContent).toContain("WRONG1");
+  });
+
   it("renders and accepts the first recovered Funky Monkey melody", () => {
     const mount = document.createElement("main");
     createTestShell(mount);
@@ -807,6 +830,47 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLElement>(".m07-melody-source-fallback")?.dataset.sourceFallback).toContain(
       "INVALID GRADIENT",
     );
+    expect(mount.querySelector<HTMLButtonElement>('[data-melody-note="5"]')?.disabled).toBe(true);
+  });
+
+  it("blocks input during the melody demonstration and cancels its pending notes on navigation", () => {
+    vi.useFakeTimers();
+    try {
+      const mount = document.createElement("main");
+      createTestShell(mount);
+      FakeAudioElement.playCount = 0;
+
+      mount.querySelector<HTMLButtonElement>('[data-route="melody"]')?.click();
+      mount.querySelector<HTMLButtonElement>("[data-melody-listen]")?.click();
+      expect(mount.querySelector<HTMLButtonElement>('[data-melody-note="5"]')?.disabled).toBe(true);
+      mount.querySelector<HTMLButtonElement>('[data-route="trivia"]')?.click();
+      vi.runAllTimers();
+
+      expect(FakeAudioElement.playCount).toBe(0);
+      expect(mount.querySelector(".m07-trivia-scene")).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("grants the source melody key after sequence three and resets after the final sequence", () => {
+    const mount = document.createElement("main");
+    const progress = createTestShell(mount);
+    const sequences = getMelodySequences("beg");
+
+    mount.querySelector<HTMLButtonElement>('[data-route="melody"]')?.click();
+    sequences.forEach((sequence, index) => {
+      sequence.tokens.forEach((token) => {
+        mount.querySelector<HTMLButtonElement>(`[data-melody-note="${token.note}"]`)?.click();
+      });
+      if (index === 2) expect(progress.getSnapshot().gameKeys[5]).toBe(true);
+      if (index < sequences.length - 1) mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.click();
+    });
+
+    expect(mount.querySelector<HTMLElement>(".m07-melody-progress")?.textContent).toBe("8 / 8");
+    expect(mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.textContent).toBe("NEW GAME");
+    mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.click();
+    expect(mount.querySelector<HTMLElement>(".m07-melody-progress")?.textContent).toBe("1 / 8");
   });
 
   it("uses promoted source card art for the deterministic memory deck", () => {
@@ -817,10 +881,30 @@ describe("desktop app shell", () => {
     expect(mount.querySelectorAll("[data-memory-card]")).toHaveLength(10);
     expect(mount.querySelector<HTMLImageElement>('[data-memory-card="1"] img')?.src).toContain("memory-card-back");
     mount.querySelector<HTMLButtonElement>('[data-memory-card="1"]')?.click();
-    mount.querySelector<HTMLButtonElement>('[data-memory-card="10"]')?.click();
 
-    expect(mount.textContent).toContain("CORRECT");
-    expect(mount.querySelector<HTMLImageElement>('[data-memory-card="1"] img')?.src).toContain("memory-card-face-01");
+    expect(mount.querySelector<HTMLImageElement>('[data-memory-card="1"] img')?.src).toContain("memory-card-face-");
+  });
+
+  it("stops the memory board at the recovered error limit and restarts the level", () => {
+    const mount = document.createElement("main");
+    const deck = createMemoryDeck(5, () => 0);
+    const first = deck[0];
+    const second = deck.find((card) => card.pairId !== first.pairId);
+    const random = vi.spyOn(Math, "random").mockReturnValue(0);
+    createTestShell(mount);
+    random.mockRestore();
+
+    mount.querySelector<HTMLButtonElement>('[data-route="memory"]')?.click();
+    for (let attempt = 0; attempt < 7; attempt += 1) {
+      mount.querySelector<HTMLButtonElement>(`[data-memory-card="${first.id}"]`)?.click();
+      mount.querySelector<HTMLButtonElement>(`[data-memory-card="${second?.id}"]`)?.click();
+    }
+
+    expect(mount.querySelector<HTMLElement>(".m07-memory-status")?.textContent).toContain("errors left :0");
+    expect(mount.querySelector<HTMLButtonElement>("[data-memory-reset]")?.textContent).toBe("PLAY AGAIN");
+    expect(mount.querySelector<HTMLButtonElement>('[data-memory-card="1"]')?.disabled).toBe(true);
+    mount.querySelector<HTMLButtonElement>("[data-memory-reset]")?.click();
+    expect(mount.querySelector<HTMLElement>(".m07-memory-status")?.textContent).toContain("errors left :7");
   });
 
   it("keeps tree hotspots at recovered coordinates and advances the correct source option", () => {
@@ -847,6 +931,11 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLElement>("[data-source-flying-grid]")?.dataset.sourceFallback).toContain(
       "transparent",
     );
+
+    mount.querySelector<HTMLButtonElement>('[data-flying-level="2"]')?.click();
+    expect(mount.querySelector<HTMLImageElement>(".m07-flying-instrument")?.src).toContain("flying-tuba");
+    mount.querySelector<HTMLButtonElement>('[data-flying-family="brass"]')?.click();
+    expect(mount.querySelector<HTMLImageElement>(".m07-flying-instrument")?.src).toContain("flying-grand-piano-blue");
   });
 
   it("uses real local image assets for reading activities", () => {

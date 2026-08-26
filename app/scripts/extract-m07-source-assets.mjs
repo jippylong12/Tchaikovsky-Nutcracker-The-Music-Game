@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import console from "node:console";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
@@ -109,7 +109,7 @@ const sourceImagePromotions = {
   },
 };
 
-const memoryCardShapeIds = [26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 53, 55];
+const memoryCardShapeIds = [26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 53, 55, 36, 56];
 const treeShapePromotions = new Map([
   [1, "tree-sky-gradient.png"],
   [2, "tree-door-blue.png"],
@@ -293,6 +293,8 @@ function extractEmbeddedSound(sourcePath, sourceId, targetPath) {
   execFileSync("swfextract", ["-s", String(sourceId), "-o", targetPath, sourcePath], { stdio: "pipe" });
 }
 
+rmSync(generatedRoot, { recursive: true, force: true });
+rmSync(promotedRoot, { recursive: true, force: true });
 mkdirSync(generatedRoot, { recursive: true });
 mkdirSync(promotedRoot, { recursive: true });
 const manifest = [];
@@ -361,13 +363,22 @@ const treeShapeEvidence = [...treeShapePromotions].map(([id, name]) => renderTri
   join(promotedRoot, name),
 ));
 
+const flyingSourcePath = join(projectRoot, "analysis/setup/app/games/flyinginstruments/flyinginstruments.swf");
+const flyingShapeEvidence = [
+  renderTrimmedSymbol(
+    flyingSourcePath,
+    48,
+    join(generatedRoot, "flying-instruments/instrument-viola-48"),
+    join(promotedRoot, "flying-viola.png"),
+  ),
+];
+
 promoteCompanionFiles();
 const triviaSourcePath = join(projectRoot, "analysis/setup/app/games/trivia/trivia.swf");
 extractEmbeddedSound(triviaSourcePath, 100, join(promotedRoot, "audio/trivia/intro.mp3"));
 extractEmbeddedSound(triviaSourcePath, 135, join(promotedRoot, "audio/trivia/correct.mp3"));
 extractEmbeddedSound(triviaSourcePath, 150, join(promotedRoot, "audio/trivia/wrong.mp3"));
 
-const flyingSourcePath = join(projectRoot, "analysis/setup/app/games/flyinginstruments/flyinginstruments.swf");
 const flyingSoundExports = new Map([
   [1, "sound12"], [2, "sound13"], [3, "sound17"], [4, "sound14"], [5, "sound15"],
   [6, "sound8"], [7, "sound9"], [8, "sound6"], [9, "sound2"], [10, "sound16"],
@@ -386,6 +397,7 @@ writeFileSync(manifestPath, `${JSON.stringify({
     sourceImages: sourceImagePromotions,
     memoryShapeEvidence,
     treeShapeEvidence,
+    flyingShapeEvidence,
     triviaEmbeddedSounds: { 100: "intro", 135: "correct", 150: "wrong" },
     flyingSoundExports: Object.fromEntries(flyingSoundExports),
   },
