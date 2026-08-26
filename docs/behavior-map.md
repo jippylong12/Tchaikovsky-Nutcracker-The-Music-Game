@@ -91,6 +91,9 @@ Recovered behavior:
 | Label `win` and `winFrame` | Game completion screen flow | `sceneState.phase = 'win'` |
 | `GetUrl URL:"FSCommand:exec" Label:"saveKey8.exe"` | Completion persists `gameKey8=1` | `progress.markGameKey(8)` |
 | Sets `_level0.gameKey8 = 1` and calls `updateKeys` | In-memory completion update and key display refresh | `progress.markGameKey(8); rewards.refreshKeys()` |
+| Root instances `pl_1` through `pl_12` use fixed placements | Three rows of four source sound targets | exact source-coordinate `data-tree-round` / `data-tree-option` hotspots |
+| Three bundled variants use `Snd_1` through `Snd_3` with `c_1`…`c_3` and `i_<round>_<option>` | Each round plays one prompt and four candidate clips | `createTreeRounds(variant)` resolves the promoted source audio |
+| `otgad == 3` before the win/key path | Exactly three correct rounds complete the game | `treeCorrectCount >= 3` grants game key 8 |
 
 Modern tree game model:
 
@@ -132,6 +135,52 @@ type TriviaQuestion = {
   failureText?: string;
 };
 ```
+
+The M07 reconstruction additionally locks root frame 20, question edit text id 109 at x 132.40/y 66.05, answer instances `b1` through `b4` at x 373.25 and source y positions 89.95, 144.00, 199.80, and 265.20, and the exact embedded correct/wrong sounds. The runtime parses all 106 recovered questions and layers them over promoted DefineBitsJPEG3 id 5 book art. See `docs/m07-mini-games-source-map.md`.
+
+## Funky Monkey Melody
+
+File: `games/melody/melody.swf`
+
+| Evidence | Meaning | Modern method |
+| --- | --- | --- |
+| Loads `Games/Melody/Snd/Melody.txt` | Four difficulty banks are external Flash variables | `parseMelodySequences()` and `getMelodySequences()` |
+| Keys `m_beg_*`, `m_easy_*`, `m_inter_*`, `m_adv_*` | 8 beginner, 8 easy, 10 intermediate, and 10 advanced phrases | typed `MelodyDifficulty` sequence sets |
+| Tokens pair note/length such as `5m` with a delay | Plays exact short/medium/long note clip and waits source duration | `getMelodyNoteAudio()` plus scheduled token delay |
+| Root labels `init` 2, `new_seq` 8, `fin` 13 | Level selection, active phrase, and completion states | typed difficulty/index/input/feedback state |
+| Keyboard sprite id 290 at scale 1.583 x 317.95/y 370.35 | Seventeen playable note targets | 17 source-positioned DOM note buttons |
+| `saveKey5.exe` completion path | Completion persists game key 5 | `progress.markGameKey(5)` |
+
+The full monkey/keyboard composition cannot be flattened by the local renderer because it reports `INVALID GRADIENT` and unknown children. Promoted source stage/frame layers and exact audio/state are composed with a documented keyboard/character fallback; full nested timeline playback remains open for manual fidelity review.
+
+## MusiCards Memory
+
+File: `games/memorygame/memory.swf`
+
+| Evidence | Meaning | Modern method |
+| --- | --- | --- |
+| Initializes level 1, pairs 5, `ncol = 4`, `nrow = 3` | First board has ten cards in a four-column region | `memoryPairsForLevel(1)` and a source-sized grid |
+| Sets `errors = pairs * 2` | Error budget grows with the board | `memoryErrorsForPairs()` |
+| Increments pairs until 18 | Fourteen-level progression from 5 through 18 pairs | `memoryPairsForLevel(level)` capped at 18 |
+| Face sprite id 57 has 18 frames; back sprite id 61 | Source card-face and hidden-card states | promoted recovered face shapes and exact 37 x 52 card back |
+| Bundled `snd/1.mp3` through `snd/18.mp3` | Each pair has its own source sound | `MemoryCard.soundUrl` |
+| 18-pair completion calls `saveKey2.exe` | Final board persists game key 2 | `progress.markGameKey(2)` |
+
+## Flying Instruments
+
+File: `games/flyinginstruments/flyinginstruments.swf`
+
+| Evidence | Meaning | Modern method |
+| --- | --- | --- |
+| Root labels `chooseLevel` 2, `playLevel1` 3, `playLevel2` 4, `playLevel3` 5, `bye` 6 | Three playable level states and exit | typed level/index/correct/feedback state on dedicated route |
+| Source text `CHOOSE A GAME TO PLAY`, `START`, `RESUME`, `HELP` | Visible control vocabulary comes from source | exact source strings in preserved viewport |
+| JPEG3 ids 74 through 120 and star id 123 | Sixteen recoverable instrument images plus reward star | correctly named per-instrument source promotions |
+| Embedded exports map instrument and family sounds | No external companion directory is required | extracted `audio/flying/*.mp3` promotions |
+| Four-by-seven grid and family/instrument actions | Tetris-like instrument-to-family classification | pointer/keyboard family targets with exact behavior and documented motion fallback |
+| `maxInst = 17` for level 1, `8` for levels 2/3 | Full-set first level and shorter later levels | 16 recovered visual instruments for level 1; 8 correct for levels 2/3 |
+| Completion calls `saveKey3.exe` | Persists game key 3 | `progress.markGameKey(3)` |
+
+The full root probe produces a transparent 640 x 480, 406-byte PNG while reporting missing JPEG and unknown child IDs. The runtime therefore composes promoted source instrument/stage imagery and embedded sounds with the typed grid substitute. Exact falling/grid animation remains a documented renderer gap.
 
 ## Save And Progress Files
 

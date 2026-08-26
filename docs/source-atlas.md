@@ -20,17 +20,17 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 | `nutcracker-chooser` | Source-backed, documented playback fallbacks, manual review open | `games/nutcrackergame/nutchooser.swf` | JIP-334, JIP-347, JIP-349, JIP-357, JIP-359 |
 | `song-1` … `song-8` | Source-backed, actor/timeline fallback and manual review open | `games/nutcrackergame/song*/` | JIP-335, JIP-347, JIP-349, JIP-357, JIP-358, JIP-359 |
 | `childrens-album` | Defect: generic placeholder | `games/childrensalbum/`, door/data files | JIP-836 → JIP-840 |
-| `tree-game` | Defect: generic placeholder | `games/tree/` | JIP-831 → JIP-835 |
-| `trivia` | Defect: generic placeholder | `games/trivia/` | JIP-821 → JIP-825 |
-| `melody` | Defect: generic placeholder | `games/melody/` | JIP-826 → JIP-830 |
-| `memory` | Defect: generic placeholder | `games/memorygame/` | JIP-826 → JIP-830 |
+| `tree-game` | Source-backed scene layers, exact 12 hotspots and 3-round audio/key flow; timeline fallback and manual review open | `games/tree/tree.swf`, `Snd_1`…`Snd_3` | JIP-831 → JIP-835 |
+| `flying-instruments` | Dedicated source-backed route with 16 instrument images, embedded sounds and 3 level states; grid-motion fallback and manual review open | `games/flyinginstruments/flyinginstruments.swf` | JIP-831 → JIP-835 |
+| `trivia` | Source book, 106 questions, exact controls/counters and embedded feedback/key flow; timeline fallback and manual review open | `games/trivia/trivia.swf`, `questions/trivia.txt` | JIP-821 → JIP-825 |
+| `melody` | Source stage, 35 sequences, exact note audio and keyboard state; nested-sprite fallback and manual review open | `games/melody/melody.swf`, `snd/Melody.txt` | JIP-826 → JIP-830 |
+| `memory` | Source card art/audio and 5-to-18-pair progression; card-timeline fallback and manual review open | `games/memorygame/memory.swf` | JIP-826 → JIP-830 |
 | `puzzles` | Defect: generic shared placeholder | `games/aliceSWF/`, `games/nuthouse/` | JIP-846 → JIP-850 |
 
 ## Planned source families not yet represented by dedicated routes
 
 | Activity | Source | Source-first slices |
 | --- | --- | --- |
-| Flying Instruments | `games/flyinginstruments/flyinginstruments.swf` | JIP-831 → JIP-835 |
 | Loopy Tunes | `games/loopytunes/` | JIP-836 → JIP-840 |
 | Orchestra / Toy Soldiers / Waltz | `games/orchestragame/`, `games/toysoldiersgame/`, `games/wedding/` | JIP-841 → JIP-845 |
 | Alice puzzles / Nut House rooms | `games/aliceSWF/`, `games/nuthouse/`, `games/data/nuthouserooms.txt` | JIP-846 → JIP-850 |
@@ -40,5 +40,5 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 
 - The shell/reference retrofits now carry durable source classifications and explicit playback/display-list fallbacks. JIP-818 through JIP-820 remain open for Marcus's visual approval, not as generic-UI defects.
 - M06 chooser/song work has durable source classifications and approval evidence, but exact timeline/manual gates remain open.
-- M07/M08 placeholders are defects, not implementation baselines. Their broad parents now point to five ordered source-reconstruction slices: audit, promotion, behavior, renderer, and approval.
+- M07 routes are source-backed review surfaces with exact automated evidence and retained Marcus approval gates. M08 placeholders remain defects; their broad parents point to five ordered source-reconstruction slices: audit, promotion, behavior, renderer, and approval.
 - JIP-345 release QA remains blocked by JIP-360 and must use this matrix/contact sheet rather than rediscover route coverage at packaging time.

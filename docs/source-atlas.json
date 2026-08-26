@@ -400,53 +400,151 @@
       "id": "tree-game",
       "title": "Instrument tree game",
       "routeIds": ["tree-game"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["inferred behavior", "defect"],
-      "sourceInputs": ["analysis/setup/app/games/tree"],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "SWF-derived recreation", "original source text", "inferred behavior", "documented fallback"],
+      "sourceInputs": [
+        "analysis/setup/app/games/tree/tree.swf",
+        "analysis/setup/app/games/tree/Snd_1",
+        "analysis/setup/app/games/tree/Snd_2",
+        "analysis/setup/app/games/tree/Snd_3"
+      ],
+      "promotedAssets": [
+        "app/src/assets/m07-source/tree-hallway-line-art.png",
+        "app/src/assets/m07-source/tree-branch.png"
+      ],
+      "evidenceDocs": ["docs/m07-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-339", "JIP-831", "JIP-832", "JIP-833", "JIP-834", "JIP-835"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/tree/tree.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frames 1-46; JPEG3 id 0004; source shapes id 0001, 0002, 0003, and 0007",
+            "frameOrState": "root labels ini frame 1, beg frame 2, win frame 18, go_out frame 39, and goOut frame 46"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the interactive root timeline because the installed renderer reports missing JPEG support and writes no PNG."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes promoted source hallway, sky, door, and branch layers with all twelve exact source-coordinate hotspots.",
+            "retainedGap": "Full interactive timeline playback and the original random permutation remain unavailable."
+          },
+          "evidenceDoc": "docs/m07-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "The route is a visible generic placeholder; no source scene composition or behavior is implemented."
+      "auditFinding": "The three source sound sets, exact twelve hotspot placements, recovered scene layers, three-correct key gate, and renderer limitation are implemented; Marcus visual approval remains open."
     },
     {
       "id": "trivia",
       "title": "Trivia game",
       "routeIds": ["trivia"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["inferred behavior", "defect"],
-      "sourceInputs": ["analysis/setup/app/games/trivia"],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "inferred behavior", "documented fallback"],
+      "sourceInputs": ["analysis/setup/app/games/trivia/trivia.swf", "analysis/setup/app/games/trivia/questions/trivia.txt"],
+      "promotedAssets": ["app/src/assets/m07-source/trivia-book.png"],
+      "evidenceDocs": ["docs/m07-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-337", "JIP-821", "JIP-822", "JIP-823", "JIP-824", "JIP-825"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/trivia/trivia.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frames 1-40; question frame 20; JPEG3 id 0005; edit text id 0109",
+            "frameOrState": "root question state at frame 20 and helpframe at frame 23 of 40"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the interactive trivia timeline because the installed renderer reports missing JPEG support and writes no PNG."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes the promoted full source book with source-positioned text and answer controls driven by all 106 original questions.",
+            "retainedGap": "Full interactive Flash timeline playback and animated helper states remain unavailable."
+          },
+          "evidenceDoc": "docs/m07-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "The route is a visible generic placeholder; original question data alone is not source-fidelity UI or behavior."
+      "auditFinding": "The source book, all 106 questions, exact answer/counter placements, embedded feedback sounds, ten-correct key gate, and renderer limitation are implemented; Marcus visual approval remains open."
     },
     {
       "id": "melody",
       "title": "Melody game",
       "routeIds": ["melody"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["inferred behavior", "defect"],
-      "sourceInputs": ["analysis/setup/app/games/melody"],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "SWF-derived recreation", "original source text", "inferred behavior", "documented fallback"],
+      "sourceInputs": ["analysis/setup/app/games/melody/melody.swf", "analysis/setup/app/games/melody/snd/Melody.txt"],
+      "promotedAssets": [
+        "app/src/assets/m07-source/melody-stage.png",
+        "app/src/assets/m07-source/melody-curtain.png"
+      ],
+      "evidenceDocs": ["docs/m07-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-338", "JIP-826", "JIP-827", "JIP-828", "JIP-829", "JIP-830"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/melody/melody.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frames 1-17; makaka sprite id 0170; keyboard sprite id 0290",
+            "frameOrState": "root init frame 2, new_seq frame 8, and fin frame 13 of 17"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the interactive melody timeline; it reports INVALID GRADIENT and unknown child IDs and writes no root PNG."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes source-local promoted stage/frame layers with a TypeScript sequence player and DOM keyboard at the recovered placement.",
+            "retainedGap": "Full interactive monkey and keyboard sprite timeline playback remain unavailable."
+          },
+          "evidenceDoc": "docs/m07-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "The route is a visible generic placeholder; the copied Melody data/audio has not yet been reconstructed into source behavior or scene art."
+      "auditFinding": "All four source difficulty sets, exact note audio/timing, source labels, promoted scene layers, key gate, and nested-sprite renderer gap are implemented; Marcus visual approval remains open."
     },
     {
       "id": "memory",
       "title": "Memory game",
       "routeIds": ["memory"],
-      "lifecycle": "implemented-defect",
-      "classifications": ["inferred behavior", "defect"],
-      "sourceInputs": ["analysis/setup/app/games/memorygame"],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "SWF-derived recreation", "original source text", "inferred behavior", "documented fallback"],
+      "sourceInputs": ["analysis/setup/app/games/memorygame/memory.swf", "analysis/setup/app/games/memorygame/snd"],
+      "promotedAssets": [
+        "app/src/assets/m07-source/memory-card-back.png",
+        "app/src/assets/m07-source/memory-card-face-01.png"
+      ],
+      "evidenceDocs": ["docs/m07-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-338", "JIP-826", "JIP-827", "JIP-828", "JIP-829", "JIP-830"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/memorygame/memory.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frames 1-4; card face sprite id 0057; card back sprite id 0061",
+            "frameOrState": "root frames 1 through 4 with initial level 1, five pairs, four columns, and three rows"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the interactive memory timeline because the installed renderer reports missing JPEG support and writes no root PNG."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes promoted source card back and recoverable face layers with the original level, error, matching, audio, and reward state.",
+            "retainedGap": "Full interactive card-flip timeline playback and two unflattened parent face states remain unavailable."
+          },
+          "evidenceDoc": "docs/m07-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "The route is a visible generic placeholder; the copied sound set has not yet been reconstructed into the source card/state model."
+      "auditFinding": "The source card art and sounds, five-through-eighteen pair progression, error budget, matching behavior, key gate, and renderer limitation are implemented; Marcus visual approval remains open."
     },
     {
       "id": "puzzles",
@@ -468,15 +566,39 @@
     {
       "id": "flying-instruments",
       "title": "Flying Instruments",
-      "routeIds": [],
-      "lifecycle": "planned",
-      "classifications": ["defect"],
+      "routeIds": ["flying-instruments"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "original source text", "inferred behavior", "documented fallback"],
       "sourceInputs": ["analysis/setup/app/games/flyinginstruments/flyinginstruments.swf"],
-      "promotedAssets": [],
-      "evidenceDocs": ["docs/source-inventory.md"],
+      "promotedAssets": [
+        "app/src/assets/m07-source/flying-flute.png",
+        "app/src/assets/m07-source/flying-star.png"
+      ],
+      "evidenceDocs": ["docs/m07-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-339", "JIP-831", "JIP-832", "JIP-833", "JIP-834", "JIP-835"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/flyinginstruments/flyinginstruments.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "root frames 1-7; source instrument JPEG3 ids 0074-0123; source star id 0123",
+            "frameOrState": "chooseLevel frame 2, playLevel1 frame 3, playLevel2 frame 4, playLevel3 frame 5, and bye frame 6"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the interactive grid timeline; it reports missing JPEG and unknown child IDs and writes a transparent 640 x 480 PNG."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes promoted source instrument/stage layers and embedded audio with TypeScript level state and pointer/keyboard family targets.",
+            "retainedGap": "Full interactive Tetris-like sprite-grid timeline animation and motion remain unavailable."
+          },
+          "evidenceDoc": "docs/m07-mini-games-source-map.md"
+        }
+      ],
       "manualApproval": "required",
-      "auditFinding": "No dedicated runtime route exists; source-reconstruction slices must precede route creation."
+      "auditFinding": "A dedicated source-backed route now exposes all sixteen promoted instrument images, embedded sounds, three level states, family classification, key gate, and the exact transparent-render limitation; Marcus visual approval remains open."
     },
     {
       "id": "loopy-tunes",

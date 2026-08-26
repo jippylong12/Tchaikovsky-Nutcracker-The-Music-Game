@@ -178,7 +178,17 @@ export const routes = [
     title: "Tree Game",
     heading: "Instrument tree game",
     summary:
-      "Placeholder for the recovered tree activity. Completion will unlock game key 8 through the local progress API.",
+      "Source-backed three-round listening game using the recovered tree layers, exact hotspots, bundled prompts, and game key 8 path.",
+    group: "mini-game",
+    levelTarget: "_level1",
+    mainMenu: true,
+  },
+  {
+    id: "flying-instruments",
+    title: "Flying Instruments",
+    heading: "Flying Instruments",
+    summary:
+      "Source-backed instrument-family game using the recovered instrument art, embedded sounds, level grid, and game key 3 completion path.",
     group: "mini-game",
     levelTarget: "_level1",
     mainMenu: true,
@@ -188,7 +198,7 @@ export const routes = [
     title: "Trivia",
     heading: "Trivia challenge",
     summary:
-      "Placeholder for the question-bank game. Completion will unlock game key 9 without invoking Windows helper programs.",
+      "Source-backed 106-question game using the recovered book, exact question/answer placements, embedded feedback sounds, and game key 9 path.",
     group: "mini-game",
     levelTarget: "_level1",
     mainMenu: true,
@@ -198,7 +208,7 @@ export const routes = [
     title: "Melody",
     heading: "Melody sequence game",
     summary:
-      "Placeholder for sequence playback and answer checking using parsed melody text data.",
+      "Source-backed Funky Monkey sequence game using recovered stage art, all four source difficulty sets, exact note audio, and game key 5 path.",
     group: "mini-game",
     levelTarget: "_level1",
     mainMenu: true,
@@ -208,7 +218,7 @@ export const routes = [
     title: "Memory",
     heading: "Memory game",
     summary:
-      "Placeholder for matching-card gameplay and shared audio feedback.",
+      "Source-backed MusiCards game using promoted card faces/backs, recovered level and error rules, bundled sounds, and game key 2 path.",
     group: "mini-game",
     levelTarget: "_level1",
     mainMenu: true,

@@ -82,6 +82,24 @@ import {
   type NutcrackerTrack,
   type NutcrackerTrackNumber,
 } from "./data/nutcrackerSongGames";
+import {
+  createMemoryDeck,
+  createTreeRounds,
+  flyingFamilies,
+  flyingInstruments,
+  getM07Asset,
+  getMelodyNoteAudio,
+  getMelodySequences,
+  getTriviaQuestion,
+  isFlyingFamily,
+  isMelodyDifficulty,
+  melodyInputIsCorrect,
+  memoryErrorsForPairs,
+  memoryPairsForLevel,
+  type FlyingFamily,
+  type MelodyDifficulty,
+  type MemoryCard,
+} from "./data/m07Games";
 import { getRouteById, isRouteId, routes, type RouteDefinition, type RouteId } from "./routes";
 import { createProgressStore, type DoorKey, type GameKey, type ProgressStoreController } from "./state/progressStore";
 
@@ -98,6 +116,28 @@ type ShellState = {
   activeSuiteTrackId: string | null;
   nutcrackerSelections: Record<NutcrackerSongId, NutcrackerTrackNumber[]>;
   nutcrackerFeedback: Record<NutcrackerSongId, string | null>;
+  triviaQuestionIndex: number;
+  triviaCorrectCount: number;
+  triviaWrongCount: number;
+  triviaFeedback: "correct" | "wrong" | null;
+  melodyDifficulty: MelodyDifficulty;
+  melodySequenceIndex: number;
+  melodyInput: number[];
+  melodyFeedback: "correct" | "wrong" | null;
+  memoryLevel: number;
+  memoryDeck: readonly MemoryCard[];
+  memoryRevealed: number[];
+  memoryMatchedPairs: number[];
+  memoryErrorsLeft: number;
+  memoryFeedback: "match" | "miss" | "level-complete" | "win" | null;
+  treeVariant: 1 | 2 | 3;
+  treeRoundIndex: number;
+  treeCorrectCount: number;
+  treeFeedback: "correct" | "wrong" | "win" | null;
+  flyingLevel: 1 | 2 | 3;
+  flyingInstrumentIndex: number;
+  flyingCorrectCount: number;
+  flyingFeedback: "correct" | "wrong" | "win" | null;
 };
 
 type MainRoomHotspot = {
@@ -125,7 +165,7 @@ const mainRoomHotspots: readonly MainRoomHotspot[] = [
   { sourceButtonId: 625, depth: 5, x: 604.6, y: 131.8, label: "The NutHouse", sourcePath: "games/nuthouse/room11.swf", routeId: "puzzles" },
   { sourceButtonId: 631, depth: 7, x: 214.55, y: 293.15, label: "Children's Album Game", sourcePath: "games/childrensalbum/childrensalbum.swf", routeId: "childrens-album" },
   { sourceButtonId: 632, depth: 12, x: 332.85, y: 377.05, label: "MusiCards", sourcePath: "games/memorygame/memory.swf", routeId: "memory" },
-  { sourceButtonId: 634, depth: 19, x: 357.9, y: 429.25, label: "Flying Instruments", sourcePath: "games/flyinginstruments/flyinginstruments.swf" },
+  { sourceButtonId: 634, depth: 19, x: 357.9, y: 429.25, label: "Flying Instruments", sourcePath: "games/flyinginstruments/flyinginstruments.swf", routeId: "flying-instruments" },
   { sourceButtonId: 635, depth: 23, x: 203.55, y: 427.85, label: "Musical Encyclopedia", sourcePath: "activities/musictionary/musictionary.swf", routeId: "music-dictionary" },
   { sourceButtonId: 636, depth: 29, x: 446.55, y: 347.8, label: "Music Trivia", sourcePath: "games/trivia/trivia.swf", routeId: "trivia" },
   { sourceButtonId: 638, depth: 35, x: 562.5, y: 361.55, label: "The Funky Monkey Game", sourcePath: "games/melody/melody.swf", routeId: "melody" },
@@ -179,6 +219,28 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     activeSuiteTrackId: null,
     nutcrackerSelections: createNutcrackerSelectionState(),
     nutcrackerFeedback: createNutcrackerFeedbackState(),
+    triviaQuestionIndex: 0,
+    triviaCorrectCount: 0,
+    triviaWrongCount: 0,
+    triviaFeedback: null,
+    melodyDifficulty: "beg",
+    melodySequenceIndex: 0,
+    melodyInput: [],
+    melodyFeedback: null,
+    memoryLevel: 1,
+    memoryDeck: createMemoryDeck(memoryPairsForLevel(1)),
+    memoryRevealed: [],
+    memoryMatchedPairs: [],
+    memoryErrorsLeft: memoryErrorsForPairs(memoryPairsForLevel(1)),
+    memoryFeedback: null,
+    treeVariant: 1,
+    treeRoundIndex: 0,
+    treeCorrectCount: 0,
+    treeFeedback: null,
+    flyingLevel: 1,
+    flyingInstrumentIndex: 0,
+    flyingCorrectCount: 0,
+    flyingFeedback: null,
   };
 
   const render = (focusSelector?: string, fallbackFocusSelector?: string) => {
@@ -501,6 +563,195 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       });
     });
 
+    mount.querySelectorAll<HTMLButtonElement>("[data-trivia-answer]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (shellState.triviaFeedback) return;
+        const option = Number(button.dataset.triviaAnswer);
+        const question = getTriviaQuestion(shellState.triviaQuestionIndex);
+        if (option === question.correctOption) {
+          shellState.triviaCorrectCount += 1;
+          shellState.triviaFeedback = "correct";
+          audio.playOneShot(getM07Asset("/audio/trivia/correct.mp3"));
+          if (shellState.triviaCorrectCount >= 10) progress.markGameKey(9);
+        } else {
+          shellState.triviaWrongCount += 1;
+          shellState.triviaFeedback = "wrong";
+          audio.playOneShot(getM07Asset("/audio/trivia/wrong.mp3"));
+        }
+        render("[data-trivia-next]", "[data-source-trivia-question]");
+      });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-trivia-next]")?.addEventListener("click", () => {
+      shellState.triviaQuestionIndex += 1;
+      shellState.triviaFeedback = null;
+      render("[data-trivia-answer]", "[data-source-trivia-question]");
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-melody-difficulty]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const difficulty = button.dataset.melodyDifficulty;
+        if (!difficulty || !isMelodyDifficulty(difficulty)) return;
+        shellState.melodyDifficulty = difficulty;
+        shellState.melodySequenceIndex = 0;
+        shellState.melodyInput = [];
+        shellState.melodyFeedback = null;
+        render("[data-melody-listen]", "[data-source-melody-levels]");
+      });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-melody-listen]")?.addEventListener("click", () => {
+      const sequences = getMelodySequences(shellState.melodyDifficulty);
+      const sequence = sequences[shellState.melodySequenceIndex % sequences.length];
+      if (!sequence) return;
+      audio.stopSceneAudio();
+      let delay = 0;
+      sequence.tokens.forEach((token) => {
+        window.setTimeout(() => {
+          shellState.activeAudioId = audio.playOneShot(getMelodyNoteAudio(token.note, token.length)).id;
+        }, delay);
+        delay += token.delayMs;
+      });
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-melody-note]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const note = Number(button.dataset.melodyNote);
+        const sequences = getMelodySequences(shellState.melodyDifficulty);
+        const sequence = sequences[shellState.melodySequenceIndex % sequences.length];
+        if (!sequence || !Number.isInteger(note) || note < 1 || note > 17) return;
+        audio.playOneShot(getMelodyNoteAudio(note, "m"));
+        shellState.melodyInput.push(note);
+        if (shellState.melodyInput.length >= sequence.tokens.length) {
+          if (melodyInputIsCorrect(sequence, shellState.melodyInput)) {
+            shellState.melodyFeedback = "correct";
+            shellState.melodySequenceIndex += 1;
+            if (shellState.melodySequenceIndex >= sequences.length) progress.markGameKey(5);
+          } else {
+            shellState.melodyFeedback = "wrong";
+          }
+          shellState.melodyInput = [];
+        }
+        render("[data-melody-note]", "[data-source-melody-keyboard]");
+      });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.addEventListener("click", () => {
+      shellState.melodyFeedback = null;
+      render("[data-melody-listen]", "[data-source-melody-keyboard]");
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-memory-card]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const cardId = Number(button.dataset.memoryCard);
+        const card = shellState.memoryDeck.find((candidate) => candidate.id === cardId);
+        if (!card || shellState.memoryMatchedPairs.includes(card.pairId) || shellState.memoryRevealed.includes(cardId)) return;
+        audio.playOneShot(card.soundUrl);
+        shellState.memoryRevealed.push(cardId);
+        if (shellState.memoryRevealed.length === 2) {
+          const [firstId, secondId] = shellState.memoryRevealed;
+          const first = shellState.memoryDeck.find((candidate) => candidate.id === firstId);
+          const second = shellState.memoryDeck.find((candidate) => candidate.id === secondId);
+          if (first && second && first.pairId === second.pairId) {
+            shellState.memoryMatchedPairs.push(first.pairId);
+            shellState.memoryFeedback = "match";
+          } else {
+            shellState.memoryErrorsLeft = Math.max(shellState.memoryErrorsLeft - 1, 0);
+            shellState.memoryFeedback = "miss";
+          }
+          shellState.memoryRevealed = [];
+          const pairCount = memoryPairsForLevel(shellState.memoryLevel);
+          if (shellState.memoryMatchedPairs.length === pairCount) {
+            shellState.memoryFeedback = pairCount === 18 ? "win" : "level-complete";
+            if (pairCount === 18) progress.markGameKey(2);
+          }
+        }
+        render("[data-memory-card]", "[data-source-memory-board]");
+      });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-memory-next]")?.addEventListener("click", () => {
+      shellState.memoryLevel = Math.min(shellState.memoryLevel + 1, 14);
+      const pairs = memoryPairsForLevel(shellState.memoryLevel);
+      shellState.memoryDeck = createMemoryDeck(pairs);
+      shellState.memoryRevealed = [];
+      shellState.memoryMatchedPairs = [];
+      shellState.memoryErrorsLeft = memoryErrorsForPairs(pairs);
+      shellState.memoryFeedback = null;
+      render("[data-memory-card]", "[data-source-memory-board]");
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-tree-variant]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const variant = Number(button.dataset.treeVariant);
+        if (variant !== 1 && variant !== 2 && variant !== 3) return;
+        shellState.treeVariant = variant;
+        shellState.treeRoundIndex = 0;
+        shellState.treeCorrectCount = 0;
+        shellState.treeFeedback = null;
+        render("[data-tree-prompt]", "[data-source-tree-scene]");
+      });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-tree-prompt]")?.addEventListener("click", () => {
+      const round = createTreeRounds(shellState.treeVariant)[shellState.treeRoundIndex];
+      if (round) playSceneAudio(round.promptAudioUrl, false);
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-tree-option]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const option = Number(button.dataset.treeOption);
+        const roundIndex = Number(button.dataset.treeRound);
+        const round = createTreeRounds(shellState.treeVariant)[shellState.treeRoundIndex];
+        if (!round || roundIndex !== shellState.treeRoundIndex || option < 1 || option > 4) return;
+        audio.playOneShot(round.optionAudioUrls[option - 1]);
+        if (option === round.correctOption) {
+          shellState.treeCorrectCount += 1;
+          shellState.treeRoundIndex += 1;
+          shellState.treeFeedback = shellState.treeCorrectCount >= 3 ? "win" : "correct";
+          if (shellState.treeCorrectCount >= 3) progress.markGameKey(8);
+        } else {
+          shellState.treeFeedback = "wrong";
+        }
+        render("[data-tree-prompt]", "[data-source-tree-scene]");
+      });
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-flying-level]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const level = Number(button.dataset.flyingLevel);
+        if (level !== 1 && level !== 2 && level !== 3) return;
+        shellState.flyingLevel = level;
+        shellState.flyingInstrumentIndex = 0;
+        shellState.flyingCorrectCount = 0;
+        shellState.flyingFeedback = null;
+        render("[data-flying-family]", "[data-source-flying-grid]");
+      });
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-flying-listen]")?.addEventListener("click", () => {
+      const instrument = flyingInstruments[shellState.flyingInstrumentIndex % flyingInstruments.length];
+      if (instrument) playSceneAudio(instrument.soundUrl, false);
+    });
+
+    mount.querySelectorAll<HTMLButtonElement>("[data-flying-family]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const family = button.dataset.flyingFamily;
+        const instrument = flyingInstruments[shellState.flyingInstrumentIndex % flyingInstruments.length];
+        if (!family || !isFlyingFamily(family) || !instrument) return;
+        if (family === instrument.family) {
+          shellState.flyingCorrectCount += 1;
+          shellState.flyingInstrumentIndex += 1;
+          const targetCount = shellState.flyingLevel === 1 ? flyingInstruments.length : 8;
+          shellState.flyingFeedback = shellState.flyingCorrectCount >= targetCount ? "win" : "correct";
+          if (shellState.flyingCorrectCount >= targetCount) progress.markGameKey(3);
+        } else {
+          shellState.flyingFeedback = "wrong";
+        }
+        render("[data-flying-family]", "[data-source-flying-grid]");
+      });
+    });
+
     if (focusSelector) {
       const requestedTarget = mount.querySelector<HTMLElement>(focusSelector);
       const usableTarget =
@@ -798,6 +1049,26 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
 
   if (route.id === "nutcracker-chooser") {
     return renderNutcrackerChooser(progress);
+  }
+
+  if (route.id === "trivia") {
+    return renderTriviaGame(shellState, progress.gameKeys[9]);
+  }
+
+  if (route.id === "melody") {
+    return renderMelodyGame(shellState, progress.gameKeys[5]);
+  }
+
+  if (route.id === "memory") {
+    return renderMemoryGame(shellState, progress.gameKeys[2]);
+  }
+
+  if (route.id === "tree-game") {
+    return renderTreeGame(shellState, progress.gameKeys[8]);
+  }
+
+  if (route.id === "flying-instruments") {
+    return renderFlyingInstruments(shellState, progress.gameKeys[3]);
   }
 
   const song = getNutcrackerSongGameByRoute(route.id);
@@ -1177,6 +1448,235 @@ function renderChooserMagicKey(progress: ReturnType<ProgressStoreController["get
       data-source-image="sprite id 0213 rendered in swfcombine wrapper -X 180 -Y 180 -x 80 -y 90 to avoid negative-coordinate clipping; trimmed output promoted by npm run assets:nutcracker-ui"
       ${visible ? "" : "hidden"}
     />
+  `;
+}
+
+function renderM07SourceFrame(game: "melody" | "memory" | "tree" | "flying", sourceSwf: string): string {
+  return `
+    <img class="m07-stage" src="${getM07Asset(`/${game}-stage.png`)}" alt="" aria-hidden="true"
+      data-source-classification="original asset" data-source-swf="${sourceSwf}"
+      data-source-image="repaired source-local DefineBitsJPEG3 stage image promoted by npm run assets:m07" />
+    <img class="m07-curtain" src="${getM07Asset(`/${game}-curtain.png`)}" alt="" aria-hidden="true"
+      data-source-classification="original asset" data-source-swf="${sourceSwf}"
+      data-source-image="source-local repaired DefineBitsJPEG3 curtain image; source-local promotion retained even where pixels match another game" />
+    <img class="m07-frame-top" src="${getM07Asset(`/${game}-frame-top.png`)}" alt="" aria-hidden="true"
+      data-source-classification="original asset" data-source-swf="${sourceSwf}" />
+    <img class="m07-frame-medallion" src="${getM07Asset(`/${game}-frame-medallion.png`)}" alt="" aria-hidden="true"
+      data-source-classification="original asset" data-source-swf="${sourceSwf}" />
+    <img class="m07-frame-bottom" src="${getM07Asset(`/${game}-frame-bottom.png`)}" alt="" aria-hidden="true"
+      data-source-classification="original asset" data-source-swf="${sourceSwf}" />
+  `;
+}
+
+function renderTriviaGame(state: ShellState, unlocked: boolean): string {
+  const question = getTriviaQuestion(state.triviaQuestionIndex);
+  const feedbackText =
+    state.triviaFeedback === "correct"
+      ? question.successText ?? "Congratulations!!!"
+      : state.triviaFeedback === "wrong"
+        ? question.failureText ?? "Sorry, try again"
+        : "";
+
+  return `
+    <div class="scene-body m07-scene m07-trivia-scene" data-source-swf="analysis/setup/app/games/trivia/trivia.swf"
+      data-source-frame="root frame 20 question state" data-source-classification="swf-derived recreation">
+      <img class="m07-trivia-book" src="${getM07Asset("/trivia-book.png")}" alt="" aria-hidden="true"
+        data-source-classification="original asset" data-source-image="repaired trivia DefineBitsJPEG3 id 0005 at full 640 x 480" />
+      <section class="m07-trivia-question" tabindex="-1" data-source-trivia-question
+        data-source-placement="question edit text id 0109 at x 132.40 y 66.05 on root frame 20">
+        <p>${formatMultilineText(question.prompt)}</p>
+      </section>
+      <div class="m07-trivia-options" role="group" aria-label="Answers"
+        data-source-placement="b1-b4 at x 373.25 and y 89.95, 144.00, 199.80, 265.20; scale 0.872">
+        ${question.options
+          .map(
+            (option, index) => `<button class="m07-trivia-answer" type="button" data-trivia-answer="${index + 1}"
+              ${state.triviaFeedback ? "disabled" : ""}>${formatMultilineText(option)}</button>`,
+          )
+          .join("")}
+      </div>
+      <dl class="m07-trivia-score" data-source-placement="correctQ x 150 y 308; wrongQ x 146 y 345">
+        <div><dt>CORRECT</dt><dd>${state.triviaCorrectCount}</dd></div>
+        <div><dt>WRONG</dt><dd>${state.triviaWrongCount}</dd></div>
+      </dl>
+      <p class="m07-feedback m07-trivia-feedback" aria-live="polite">${escapeHtml(feedbackText)}</p>
+      ${
+        state.triviaFeedback
+          ? `<button class="m07-source-button m07-trivia-next" type="button" data-trivia-next>${
+              state.triviaFeedback === "correct" ? "NEXT" : "AGAIN"
+            }</button>`
+          : ""
+      }
+      ${unlocked ? '<p class="m07-source-reward" data-source-key="gameKey9">CONGRATULATIONS!</p>' : ""}
+    </div>
+  `;
+}
+
+function renderMelodyGame(state: ShellState, unlocked: boolean): string {
+  const sequences = getMelodySequences(state.melodyDifficulty);
+  const sequence = sequences[state.melodySequenceIndex % Math.max(sequences.length, 1)];
+  const levelLabels: readonly [MelodyDifficulty, string][] = [
+    ["beg", "Beginner"],
+    ["easy", "Easy"],
+    ["inter", "Intermediate"],
+    ["adv", "Advanced"],
+  ];
+
+  return `
+    <div class="scene-body m07-scene m07-melody-scene" data-source-swf="analysis/setup/app/games/melody/melody.swf"
+      data-source-frame="root frame 2 label init; new_seq frame 8; fin frame 13">
+      ${renderM07SourceFrame("melody", "analysis/setup/app/games/melody/melody.swf")}
+      <section class="m07-melody-levels" data-source-melody-levels
+        data-source-placement="root frame 1 theStarter sprite id 0050 at x 333 y 153">
+        <p>SELECT LEVEL</p>
+        <div>
+          ${levelLabels
+            .map(
+              ([difficulty, label]) => `<button type="button" data-melody-difficulty="${difficulty}"
+                aria-pressed="${state.melodyDifficulty === difficulty}">${label}</button>`,
+            )
+            .join("")}
+        </div>
+      </section>
+      <section class="m07-melody-board" aria-label="Funky Monkey melody sequence">
+        <div class="m07-melody-source-fallback" data-source-classification="documented fallback"
+          data-source-placement="makaka sprite id 0170 scale -0.703/0.703 x 250.20 y 220.15"
+          data-source-fallback="full sprite render blocked by INVALID GRADIENT and unknown child IDs; recovered source stage and controls remain layered">
+          <span aria-hidden="true">♪</span>
+        </div>
+        <p class="m07-melody-progress">${state.melodySequenceIndex + 1} / ${sequences.length}</p>
+        <button class="m07-source-button m07-melody-listen" type="button" data-melody-listen>LISTEN</button>
+        <div class="m07-melody-keyboard" data-source-melody-keyboard
+          data-source-placement="keyboard sprite id 0290 scale 1.583 x 317.95 y 370.35">
+          ${Array.from({ length: 17 }, (_item, index) => `<button type="button" data-melody-note="${index + 1}"
+            aria-label="Note ${index + 1}"><span aria-hidden="true">${index + 1}</span></button>`).join("")}
+        </div>
+        <p class="m07-feedback" aria-live="polite">${
+          state.melodyFeedback === "correct" ? "CONGRATULATIONS!" : state.melodyFeedback === "wrong" ? "TRY AGAIN" : ""
+        }</p>
+        ${state.melodyFeedback ? '<button class="m07-source-button m07-melody-next" type="button" data-melody-next>CONTINUE</button>' : ""}
+        ${unlocked ? '<p class="m07-source-reward" data-source-key="gameKey5">NEW GAME</p>' : ""}
+        <span class="sr-only">${sequence ? `Sequence ${sequence.id} has ${sequence.tokens.length} notes.` : "No sequence loaded."}</span>
+      </section>
+    </div>
+  `;
+}
+
+function renderMemoryGame(state: ShellState, unlocked: boolean): string {
+  const pairCount = memoryPairsForLevel(state.memoryLevel);
+  const columns = pairCount <= 6 ? 4 : pairCount <= 10 ? 5 : 6;
+  const backUrl = getM07Asset("/memory-card-back.png");
+
+  return `
+    <div class="scene-body m07-scene m07-memory-scene" data-source-swf="analysis/setup/app/games/memorygame/memory.swf"
+      data-source-frame="root frames 1-4; initial ncol 4 nrow 3 pairs 5 errors pairs x 2">
+      ${renderM07SourceFrame("memory", "analysis/setup/app/games/memorygame/memory.swf")}
+      <dl class="m07-memory-status">
+        <div><dt>errors left :</dt><dd>${state.memoryErrorsLeft}</dd></div>
+        <div><dt>level :</dt><dd>${state.memoryLevel}</dd></div>
+      </dl>
+      <div class="m07-memory-board" data-source-memory-board style="--memory-columns: ${columns}"
+        data-source-placement="initial card matrix is 4 columns x 3 rows inside the 385 x 360 source play region">
+        ${state.memoryDeck
+          .map((card) => {
+            const showing = state.memoryRevealed.includes(card.id) || state.memoryMatchedPairs.includes(card.pairId);
+            return `<button class="m07-memory-card" type="button" data-memory-card="${card.id}"
+              aria-label="Card ${card.id}${showing ? `, pair ${card.pairId}` : ""}"
+              ${state.memoryMatchedPairs.includes(card.pairId) ? "disabled" : ""}>
+              <img src="${showing ? card.faceUrl : backUrl}" alt="" aria-hidden="true"
+                data-source-classification="swf-derived recreation"
+                data-source-image="${showing ? `memory card face sprite id 0057 frame ${card.pairId}` : "memory card back sprite id 0061"}" />
+            </button>`;
+          })
+          .join("")}
+      </div>
+      <p class="m07-feedback m07-memory-feedback" aria-live="polite">${
+        state.memoryFeedback === "match"
+          ? "CORRECT"
+          : state.memoryFeedback === "miss"
+            ? "TRY AGAIN"
+            : state.memoryFeedback === "level-complete"
+              ? "NEXT LEVEL"
+              : state.memoryFeedback === "win"
+                ? "CONGRATULATIONS!"
+                : ""
+      }</p>
+      ${state.memoryFeedback === "level-complete" ? '<button class="m07-source-button m07-memory-next" type="button" data-memory-next>NEXT LEVEL</button>' : ""}
+      ${unlocked ? '<p class="m07-source-reward" data-source-key="gameKey2">NEW GAME</p>' : ""}
+    </div>
+  `;
+}
+
+function renderTreeGame(state: ShellState, unlocked: boolean): string {
+  const placements = [
+    [97.75, 188.45], [160.9, 190.65], [245.85, 170.65], [68.9, 303.5],
+    [137.5, 316.8], [226.95, 268.65], [304.55, 255.5], [91.3, 441.95],
+    [159.8, 438.35], [208.2, 419.3], [260.2, 388.05], [309.2, 397.35],
+  ] as const;
+  const currentRound = Math.min(state.treeRoundIndex, 2);
+
+  return `
+    <div class="scene-body m07-scene m07-tree-scene" data-source-swf="analysis/setup/app/games/tree/tree.swf"
+      data-source-frame="ini frame 1; beg frame 2; win frame 18; go_out frame 39; goOut frame 46">
+      ${renderM07SourceFrame("tree", "analysis/setup/app/games/tree/tree.swf")}
+      <div class="m07-tree-source-scene" tabindex="-1" data-source-tree-scene>
+        <img class="m07-tree-sky" src="${getM07Asset("/tree-sky-gradient.png")}" alt="" aria-hidden="true" data-source-classification="swf-derived recreation" data-source-image="source shape id 0001" />
+        <img class="m07-tree-hall-color" src="${getM07Asset("/tree-hallway-color.png")}" alt="" aria-hidden="true" data-source-classification="swf-derived recreation" data-source-image="source shape id 0003" />
+        <img class="m07-tree-hall-line" src="${getM07Asset("/tree-hallway-line-art.png")}" alt="" aria-hidden="true" data-source-classification="original asset" data-source-image="repaired DefineBitsJPEG3 id 0004 with alpha" />
+        <img class="m07-tree-door" src="${getM07Asset("/tree-door-blue.png")}" alt="" aria-hidden="true" data-source-classification="swf-derived recreation" data-source-image="source shape id 0002" />
+        <img class="m07-tree-branch" src="${getM07Asset("/tree-branch.png")}" alt="" aria-hidden="true" data-source-classification="swf-derived recreation" data-source-image="source shape id 0007" />
+        ${placements
+          .map(([x, y], index) => {
+            const round = Math.floor(index / 4);
+            const option = (index % 4) + 1;
+            const active = state.treeRoundIndex < 3 && round === currentRound;
+            return `<button class="m07-tree-option" type="button" data-tree-option="${option}" data-tree-round="${round}"
+              style="left:${x}px;top:${y}px" aria-label="Sound choice ${option}, round ${round + 1}"
+              data-source-placement="pl_${index + 1} x ${x} y ${y}" ${active ? "" : "disabled"}><span aria-hidden="true">${option}</span></button>`;
+          })
+          .join("")}
+      </div>
+      <div class="m07-tree-variants" aria-label="Sound set">
+        ${([1, 2, 3] as const).map((variant) => `<button type="button" data-tree-variant="${variant}" aria-pressed="${state.treeVariant === variant}">${variant}</button>`).join("")}
+      </div>
+      <button class="m07-source-button m07-tree-prompt" type="button" data-tree-prompt>START</button>
+      <p class="m07-feedback m07-tree-feedback" aria-live="polite">${
+        state.treeFeedback === "correct" ? "CORRECT" : state.treeFeedback === "wrong" ? "TRY AGAIN" : state.treeFeedback === "win" ? "CONGRATULATIONS!" : ""
+      }</p>
+      ${unlocked ? '<p class="m07-source-reward" data-source-key="gameKey8">CONGRATULATIONS!</p>' : ""}
+    </div>
+  `;
+}
+
+function renderFlyingInstruments(state: ShellState, unlocked: boolean): string {
+  const targetCount = state.flyingLevel === 1 ? flyingInstruments.length : 8;
+  const instrument = flyingInstruments[state.flyingInstrumentIndex % flyingInstruments.length];
+  const imageUrl = state.flyingFeedback === "win" ? getM07Asset("/flying-star.png") : instrument.imageUrl;
+
+  return `
+    <div class="scene-body m07-scene m07-flying-scene" data-source-swf="analysis/setup/app/games/flyinginstruments/flyinginstruments.swf"
+      data-source-frame="chooseLevel frame 2; playLevel1 frame 3; playLevel2 frame 4; playLevel3 frame 5; bye frame 6">
+      ${renderM07SourceFrame("flying", "analysis/setup/app/games/flyinginstruments/flyinginstruments.swf")}
+      <section class="m07-flying-board" data-source-flying-grid
+        data-source-classification="documented fallback"
+        data-source-fallback="full root render is transparent because local renderer reports missing JPEG and unknown child IDs; source instrument JPEG3s and embedded sounds are promoted individually">
+        <p class="m07-flying-heading">CHOOSE A GAME TO PLAY</p>
+        <div class="m07-flying-levels" aria-label="Level">
+          ${([1, 2, 3] as const).map((level) => `<button type="button" data-flying-level="${level}" aria-pressed="${state.flyingLevel === level}">${level}</button>`).join("")}
+        </div>
+        <img class="m07-flying-instrument" src="${imageUrl}" alt="" aria-hidden="true" data-source-classification="original asset" />
+        <button class="m07-source-button m07-flying-listen" type="button" data-flying-listen>START</button>
+        <div class="m07-flying-families" aria-label="Instrument families">
+          ${flyingFamilies.map((family: FlyingFamily) => `<button type="button" data-flying-family="${family}" aria-label="${family}" title="${family}">?</button>`).join("")}
+        </div>
+        <p class="m07-flying-progress">${Math.min(state.flyingCorrectCount, targetCount)} / ${targetCount}</p>
+        <p class="m07-feedback" aria-live="polite">${
+          state.flyingFeedback === "correct" ? "CORRECT" : state.flyingFeedback === "wrong" ? "TRY AGAIN" : state.flyingFeedback === "win" ? "CONGRATULATIONS!" : ""
+        }</p>
+        ${unlocked ? '<p class="m07-source-reward" data-source-key="gameKey3">RESUME</p>' : ""}
+        <span class="sr-only">Classify the recovered ${escapeHtml(instrument.name)} sound and image.</span>
+      </section>
+    </div>
   `;
 }
 
@@ -1713,6 +2213,11 @@ function isSourceFrameRoute(routeId: RouteId): boolean {
     routeId === "music-dictionary" ||
     routeId === "suite" ||
     routeId === "nutcracker-chooser" ||
+    routeId === "trivia" ||
+    routeId === "melody" ||
+    routeId === "memory" ||
+    routeId === "tree-game" ||
+    routeId === "flying-instruments" ||
     getNutcrackerSongGameByRoute(routeId) !== undefined
   );
 }

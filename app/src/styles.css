@@ -81,6 +81,547 @@ button {
   overflow: hidden;
 }
 
+.m07-scene {
+  position: relative;
+  display: block;
+  width: 640px;
+  height: 480px;
+  min-height: 480px;
+  padding: 0;
+  overflow: hidden;
+  color: #101632;
+  background: #070d30;
+  isolation: isolate;
+}
+
+.m07-stage,
+.m07-curtain,
+.m07-frame-top,
+.m07-frame-medallion,
+.m07-frame-bottom {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.m07-stage {
+  inset: 76px 10px auto;
+  width: 620px;
+  height: 286px;
+}
+
+.m07-curtain {
+  left: 11px;
+  top: 68px;
+  width: 618px;
+  height: 292px;
+}
+
+.m07-frame-top {
+  left: 5px;
+  top: 0;
+  width: 630px;
+  height: 27px;
+}
+
+.m07-frame-medallion {
+  left: 19px;
+  top: 4px;
+  width: 603px;
+  height: 81px;
+}
+
+.m07-frame-bottom {
+  left: 2px;
+  bottom: 0;
+  width: 636px;
+  height: 152px;
+}
+
+.m07-scene button {
+  cursor: pointer;
+}
+
+.m07-scene button:focus-visible {
+  outline: 3px solid #f4de14;
+  outline-offset: 2px;
+}
+
+.m07-scene button:disabled {
+  cursor: default;
+}
+
+.m07-source-button {
+  position: absolute;
+  z-index: 5;
+  min-width: 72px;
+  min-height: 30px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(#385cb2, #0c245f);
+  box-shadow: 0 2px 0 #050a20;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.m07-feedback,
+.m07-source-reward {
+  position: absolute;
+  z-index: 6;
+  margin: 0;
+  color: #f4de14;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+}
+
+.m07-source-reward {
+  right: 30px;
+  top: 30px;
+  font-size: 11px;
+}
+
+.m07-trivia-scene {
+  color: #23170e;
+  background: #e8d39e;
+}
+
+.m07-trivia-book {
+  position: absolute;
+  inset: 0;
+  width: 640px;
+  height: 480px;
+}
+
+.m07-trivia-question {
+  position: absolute;
+  z-index: 2;
+  left: 132px;
+  top: 66px;
+  width: 205px;
+  min-height: 95px;
+  font-family: Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.22;
+}
+
+.m07-trivia-question p {
+  margin: 0;
+}
+
+.m07-trivia-options {
+  position: absolute;
+  z-index: 3;
+  left: 373px;
+  top: 90px;
+  display: grid;
+  gap: 13px;
+  width: 195px;
+}
+
+.m07-trivia-answer {
+  min-height: 42px;
+  padding: 6px 10px;
+  border: 2px solid #5b3317;
+  border-radius: 5px;
+  color: #24160c;
+  background: rgba(249, 231, 177, 0.85);
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  text-align: left;
+}
+
+.m07-trivia-answer:hover:not(:disabled) {
+  background: #f4de14;
+}
+
+.m07-trivia-score {
+  position: absolute;
+  z-index: 2;
+  left: 146px;
+  top: 306px;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.m07-trivia-score div {
+  display: grid;
+  grid-template-columns: 72px 25px;
+  gap: 4px;
+  align-items: center;
+  min-height: 37px;
+}
+
+.m07-trivia-score dt,
+.m07-trivia-score dd {
+  margin: 0;
+}
+
+.m07-trivia-feedback {
+  left: 125px;
+  top: 400px;
+  width: 230px;
+  color: #701d14;
+  text-shadow: none;
+}
+
+.m07-trivia-next {
+  left: 430px;
+  top: 396px;
+}
+
+.m07-melody-levels {
+  position: absolute;
+  z-index: 4;
+  left: 248px;
+  top: 85px;
+  width: 270px;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+}
+
+.m07-melody-levels p,
+.m07-flying-heading {
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+
+.m07-melody-levels div,
+.m07-flying-levels {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.m07-melody-levels button,
+.m07-flying-levels button,
+.m07-tree-variants button {
+  min-height: 24px;
+  border: 1px solid #fff;
+  color: #fff;
+  background: #172b73;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.m07-melody-levels button[aria-pressed="true"],
+.m07-flying-levels button[aria-pressed="true"],
+.m07-tree-variants button[aria-pressed="true"] {
+  color: #121943;
+  background: #f4de14;
+}
+
+.m07-melody-source-fallback {
+  position: absolute;
+  z-index: 2;
+  left: 185px;
+  top: 162px;
+  width: 125px;
+  height: 142px;
+  display: grid;
+  place-items: center;
+  border-radius: 50% 50% 42% 42%;
+  color: #f4de14;
+  background: radial-gradient(circle at 50% 35%, #845c38 0 34%, #2f2119 35% 68%, transparent 69%);
+  font-size: 52px;
+}
+
+.m07-melody-progress {
+  position: absolute;
+  z-index: 4;
+  left: 424px;
+  top: 158px;
+  margin: 0;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+}
+
+.m07-melody-listen {
+  left: 386px;
+  top: 183px;
+}
+
+.m07-melody-keyboard {
+  position: absolute;
+  z-index: 5;
+  left: 150px;
+  top: 330px;
+  display: flex;
+  width: 350px;
+  height: 82px;
+  border: 4px solid #3b2217;
+  background: #3b2217;
+}
+
+.m07-melody-keyboard button {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid #302a23;
+  color: #172b73;
+  background: #fffbe7;
+  font-family: Arial, sans-serif;
+  font-size: 8px;
+  line-height: 135px;
+}
+
+.m07-melody-keyboard button:nth-child(7n + 2),
+.m07-melody-keyboard button:nth-child(7n + 3),
+.m07-melody-keyboard button:nth-child(7n + 5),
+.m07-melody-keyboard button:nth-child(7n + 6),
+.m07-melody-keyboard button:nth-child(7n) {
+  height: 52px;
+  z-index: 2;
+  margin: 0 -5px;
+  color: #fff;
+  background: #141414;
+  line-height: 82px;
+}
+
+.m07-melody-board .m07-feedback {
+  left: 358px;
+  top: 273px;
+  width: 180px;
+}
+
+.m07-melody-next {
+  left: 407px;
+  top: 296px;
+}
+
+.m07-memory-status {
+  position: absolute;
+  z-index: 5;
+  left: 70px;
+  top: 92px;
+  margin: 0;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px #000;
+}
+
+.m07-memory-status div {
+  display: flex;
+  gap: 5px;
+}
+
+.m07-memory-status dt,
+.m07-memory-status dd {
+  margin: 0;
+}
+
+.m07-memory-board {
+  position: absolute;
+  z-index: 4;
+  left: 132px;
+  top: 88px;
+  display: grid;
+  grid-template-columns: repeat(var(--memory-columns), 37px);
+  grid-auto-rows: 52px;
+  gap: 4px;
+  width: 385px;
+  height: 315px;
+  align-content: center;
+  justify-content: center;
+}
+
+.m07-memory-card {
+  width: 37px;
+  height: 52px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+}
+
+.m07-memory-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.m07-memory-feedback {
+  left: 224px;
+  top: 405px;
+  width: 190px;
+}
+
+.m07-memory-next {
+  left: 438px;
+  top: 397px;
+}
+
+.m07-tree-source-scene {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+}
+
+.m07-tree-source-scene > img {
+  position: absolute;
+  pointer-events: none;
+}
+
+.m07-tree-sky {
+  left: 42px;
+  top: 74px;
+  width: 470px;
+  height: 267px;
+}
+
+.m07-tree-hall-color {
+  left: 47px;
+  top: 80px;
+  width: 505px;
+  height: 328px;
+}
+
+.m07-tree-hall-line {
+  left: 45px;
+  top: 73px;
+  width: 510px;
+  height: 336px;
+}
+
+.m07-tree-door {
+  left: 450px;
+  top: 99px;
+  width: 88px;
+  height: 118px;
+}
+
+.m07-tree-branch {
+  left: 32px;
+  top: 70px;
+  width: 315px;
+  height: 405px;
+}
+
+.m07-tree-option {
+  position: absolute;
+  z-index: 5;
+  width: 43px;
+  height: 43px;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(244, 222, 20, 0.6);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(17, 37, 86, 0.62);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.m07-tree-option:disabled {
+  visibility: hidden;
+}
+
+.m07-tree-variants {
+  position: absolute;
+  z-index: 6;
+  left: 348px;
+  top: 89px;
+  display: flex;
+  gap: 3px;
+}
+
+.m07-tree-variants button,
+.m07-flying-levels button {
+  width: 30px;
+}
+
+.m07-tree-prompt {
+  left: 301px;
+  top: 108px;
+}
+
+.m07-tree-feedback {
+  left: 370px;
+  top: 384px;
+  width: 180px;
+}
+
+.m07-flying-board {
+  position: absolute;
+  z-index: 4;
+  inset: 72px 36px 55px;
+  display: grid;
+  justify-items: center;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  text-shadow: 0 1px 2px #000;
+}
+
+.m07-flying-heading {
+  align-self: start;
+  font-size: 14px;
+}
+
+.m07-flying-levels {
+  position: absolute;
+  top: 26px;
+}
+
+.m07-flying-instrument {
+  position: absolute;
+  left: 50%;
+  top: 70px;
+  width: 170px;
+  height: 200px;
+  transform: translateX(-50%);
+  object-fit: contain;
+}
+
+.m07-flying-listen {
+  left: 250px;
+  top: 275px;
+}
+
+.m07-flying-families {
+  position: absolute;
+  left: 120px;
+  top: 310px;
+  display: grid;
+  grid-template-columns: repeat(4, 52px);
+  gap: 8px;
+}
+
+.m07-flying-families button {
+  width: 52px;
+  height: 28px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  color: #f4de14;
+  background: #172b73;
+  font-weight: 700;
+}
+
+.m07-flying-progress {
+  position: absolute;
+  right: 46px;
+  top: 280px;
+  margin: 0;
+}
+
+.m07-flying-board .m07-feedback {
+  left: 154px;
+  top: 282px;
+  width: 130px;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

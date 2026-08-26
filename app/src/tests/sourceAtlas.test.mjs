@@ -19,10 +19,11 @@ describe("project-wide source atlas", () => {
   it("covers every app route with existing source evidence and a manual gate", () => {
     const result = validateSourceAtlas({ writeContactSheet: false });
 
-    expect(result.routeCount).toBe(22);
+    expect(result.routeCount).toBe(23);
     expect(result.routeIds).toContain("overture");
     expect(result.routeIds).toContain("nutcracker-chooser");
     expect(result.routeIds).toContain("song-8");
+    expect(result.routeIds).toContain("flying-instruments");
     expect(result.routeIds).toContain("puzzles");
     expect(result.entries.every((entry) => entry.manualApproval === "required")).toBe(true);
     expect(result.entries.find((entry) => entry.id === "nutcracker-chooser")?.followUpIssues).toContain("JIP-349");
@@ -33,7 +34,7 @@ describe("project-wide source atlas", () => {
     const result = validateSourceAtlas({ writeContactSheet: false });
     const defects = result.entries.filter((entry) => entry.classifications.includes("defect"));
 
-    expect(defects.length).toBeGreaterThan(10);
+    expect(defects.length).toBeGreaterThan(7);
     expect(defects.every((entry) => entry.followUpIssues.length > 0)).toBe(true);
     expect(result.entries.find((entry) => entry.id === "trivia")?.followUpIssues).toContain("JIP-821");
     expect(result.entries.find((entry) => entry.id === "overture")?.followUpIssues).toContain("JIP-818");
@@ -59,6 +60,7 @@ describe("project-wide source atlas", () => {
     expect(() => validateAtlas(customVocabulary, routeIds)).toThrow(/fixed schema/);
 
     const invalidLifecycle = currentAtlas();
+    invalidLifecycle.entries.find((entry) => entry.id === "trivia").lifecycle = "implemented-defect";
     invalidLifecycle.entries.find((entry) => entry.id === "trivia").classifications = ["inferred behavior"];
     expect(() => validateAtlas(invalidLifecycle, routeIds)).toThrow(/implemented-defect/);
 

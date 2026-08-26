@@ -96,7 +96,8 @@ describe("desktop app shell", () => {
     );
     mount.querySelector<HTMLButtonElement>('[data-scene-route="trivia"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(mount.textContent).toContain("Trivia challenge");
+    expect(mount.textContent).toContain("What is the Nutcracker?");
+    expect(mount.querySelector<HTMLImageElement>(".m07-trivia-book")?.src).toContain("trivia-book");
     expect(mount.querySelector(".game-viewport")).not.toBeNull();
   });
 
@@ -777,6 +778,75 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="2"]')?.dataset.doorState).toBe("ready");
     expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="2"]')?.disabled).toBe(false);
     expect(mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="3"]')?.disabled).toBe(true);
+  });
+
+  it("plays the recovered trivia question flow on the source book", () => {
+    const mount = document.createElement("main");
+    createTestShell(mount);
+
+    mount.querySelector<HTMLButtonElement>('[data-route="trivia"]')?.click();
+    expect(mount.querySelector<HTMLElement>(".m07-trivia-scene")?.dataset.sourceFrame).toContain("frame 20");
+    expect(mount.textContent).toContain("d. Ballet");
+
+    mount.querySelector<HTMLButtonElement>('[data-trivia-answer="4"]')?.click();
+    expect(mount.textContent).toContain("Congratulations!!!");
+    expect(mount.textContent).toContain("CORRECT1");
+    expect(mount.querySelector<HTMLButtonElement>("[data-trivia-next]")?.textContent).toBe("NEXT");
+  });
+
+  it("renders and accepts the first recovered Funky Monkey melody", () => {
+    const mount = document.createElement("main");
+    createTestShell(mount);
+
+    mount.querySelector<HTMLButtonElement>('[data-route="melody"]')?.click();
+    expect(mount.textContent).toContain("SELECT LEVEL");
+    expect(mount.querySelectorAll("[data-melody-note]")).toHaveLength(17);
+    [5, 8, 10].forEach((note) => mount.querySelector<HTMLButtonElement>(`[data-melody-note="${note}"]`)?.click());
+
+    expect(mount.textContent).toContain("CONGRATULATIONS!");
+    expect(mount.querySelector<HTMLElement>(".m07-melody-source-fallback")?.dataset.sourceFallback).toContain(
+      "INVALID GRADIENT",
+    );
+  });
+
+  it("uses promoted source card art for the deterministic memory deck", () => {
+    const mount = document.createElement("main");
+    createTestShell(mount);
+
+    mount.querySelector<HTMLButtonElement>('[data-route="memory"]')?.click();
+    expect(mount.querySelectorAll("[data-memory-card]")).toHaveLength(10);
+    expect(mount.querySelector<HTMLImageElement>('[data-memory-card="1"] img')?.src).toContain("memory-card-back");
+    mount.querySelector<HTMLButtonElement>('[data-memory-card="1"]')?.click();
+    mount.querySelector<HTMLButtonElement>('[data-memory-card="10"]')?.click();
+
+    expect(mount.textContent).toContain("CORRECT");
+    expect(mount.querySelector<HTMLImageElement>('[data-memory-card="1"] img')?.src).toContain("memory-card-face-01");
+  });
+
+  it("keeps tree hotspots at recovered coordinates and advances the correct source option", () => {
+    const mount = document.createElement("main");
+    createTestShell(mount);
+
+    mount.querySelector<HTMLButtonElement>('[data-route="tree-game"]')?.click();
+    const firstHotspot = mount.querySelector<HTMLElement>('[data-tree-round="0"][data-tree-option="1"]');
+    expect(firstHotspot?.dataset.sourcePlacement).toContain("pl_1 x 97.75 y 188.45");
+    mount.querySelector<HTMLButtonElement>('[data-tree-round="0"][data-tree-option="2"]')?.click();
+
+    expect(mount.textContent).toContain("CORRECT");
+    expect(mount.querySelector<HTMLButtonElement>('[data-tree-round="1"][data-tree-option="1"]')?.disabled).toBe(false);
+  });
+
+  it("opens the recovered Flying Instruments route with source images and sounds", () => {
+    const mount = document.createElement("main");
+    createTestShell(mount);
+
+    mount.querySelector<HTMLButtonElement>('[data-route="flying-instruments"]')?.click();
+    expect(mount.querySelector<HTMLElement>(".m07-flying-scene")?.dataset.sourceFrame).toContain("playLevel1 frame 3");
+    expect(mount.querySelector<HTMLImageElement>(".m07-flying-instrument")?.src).toContain("flying-flute");
+    expect(mount.querySelectorAll("[data-flying-family]")).toHaveLength(4);
+    expect(mount.querySelector<HTMLElement>("[data-source-flying-grid]")?.dataset.sourceFallback).toContain(
+      "transparent",
+    );
   });
 
   it("uses real local image assets for reading activities", () => {
