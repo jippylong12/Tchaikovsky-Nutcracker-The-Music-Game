@@ -47,6 +47,7 @@ The UI promotion pass currently copies source UI bitmap evidence such as `song1_
 
 ## Things Already Learned The Hard Way
 
+- Treat the source-fidelity classification as a runtime contract, not only documentation. Key visible chooser/song layers carry `data-source-classification` (`original asset`, `swf-derived recreation`, or `documented fallback`). Every selected actor pairs its exact `data-source-animation` SWF path with `data-source-fallback` naming the current toolchain limit: local `swfrender` has no frame selector, representative full animation SWFs render transparent at frame 1, and extracted later frames can crash. Add or update a focused DOM assertion whenever a new visible source layer or fallback is introduced.
 - The local `swfrender` can render `song1/song.swf`, but `nutchooser.swf` and song 2-8 full composites fail with `No JPEG library compiled in`.
 - `swfextract` can list JPEG IDs, but this local build cannot reliably extract those JPEGs. Use `app/scripts/extract-nutcracker-jpeg3.mjs`, which parses `DefineBitsJPEG3` directly, repairs the `FFD9 FFD8` marker quirk, inflates alpha, and writes transparent PNGs.
 - `track*.swf` files are 600 x 460 MP3 soundstream carriers, not visual instrument sprites.

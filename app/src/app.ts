@@ -926,6 +926,7 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
         src="${chooserHallwayFillUrl}"
         alt=""
         aria-hidden="true"
+        data-source-classification="swf-derived recreation"
         data-source-placement="nutchooser.swf sprite id 0021 places shape id 0016 at depth 0001 with root scale 0.743 x 87.85 y 46.15; shape bbox [-5.25,30.05,612.45,387.00]"
         data-source-image="shape id 0016 rendered with swfrender and trimmed by npm run assets:nutcracker-ui"
       />
@@ -934,6 +935,7 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
         src="${chooserHallwayPortalCxformUrl}"
         alt=""
         aria-hidden="true"
+        data-source-classification="swf-derived recreation"
         data-source-placement="nutchooser.swf sprite id 0021 places shape id 0017 at depth 0007 matrix x 273.35 y 137.75 with root scale 0.743 x 87.85 y 46.15"
         data-source-image="shape id 0017 rendered with swfrender, trimmed, then CXForm add 143 60 -10 0 applied by npm run assets:nutcracker-ui"
       />
@@ -942,6 +944,7 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
         src="${chooserHallwayVectorUrl}"
         alt=""
         aria-hidden="true"
+        data-source-classification="swf-derived recreation"
         data-source-placement="nutchooser.swf sprite id 0021 contains shape id 0018 at depth 0011; root scale 0.743 x 87.85 y 46.15; shape bbox [-19.65,-67.05,637.70,414.95]"
         data-source-image="shape id 0018 rendered with swfrender and trimmed by npm run assets:nutcracker-ui; full sprite id 0021 still blocked by local JPEG3 renderer support"
       />
@@ -950,6 +953,7 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
         src="${chooserHallwayTintCxformUrl}"
         alt=""
         aria-hidden="true"
+        data-source-classification="swf-derived recreation"
         data-source-placement="nutchooser.swf sprite id 0021 places shape id 0020 at depth 0012 with root scale 0.743 x 87.85 y 46.15; shape bbox [0.00,0.00,615.20,404.95]"
         data-source-image="shape id 0020 uses bitmap id 0019 fill; alpha from repaired JPEG3 id 0019 resized to shape bbox, then CXForm mul 0 0 0 1 add 255 51 153 0 applied by npm run assets:nutcracker-ui"
       />
@@ -958,6 +962,7 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
         src="${nutChooserFrameUrl}"
         alt=""
         aria-hidden="true"
+        data-source-classification="original asset"
         data-source-placement="nutchooser.swf id 0034 depth 0055 matrix scale 1.055 x 5.55 y -3.85 ratio 5"
       />
       <img
@@ -965,6 +970,7 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
         src="${chooserInstrumentsCxformUrl}"
         alt=""
         aria-hidden="true"
+        data-source-classification="swf-derived recreation"
         data-source-placement="nutchooser.swf id 0068 depth 0069 matrix scale 1.000 x 46.55 y 285.85 ratio 5 cxform add -209 -153 134 -223"
         data-source-image="sprite id 0068 rendered and trimmed, then root depth 0069 CXForm add -209 -153 134 -223 applied by npm run assets:nutcracker-ui"
       />
@@ -998,6 +1004,7 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
                     src="${chooserDoorUrl}"
                     alt=""
                     aria-hidden="true"
+                    data-source-classification="swf-derived recreation"
                     data-source-image="trimmed render of nutchooser.swf movie clip id 0080; no modern hover glow, drop shadow, status label, or disabled opacity"
                   />
                 </button>
@@ -1029,6 +1036,7 @@ function renderChooserMagicKey(progress: ReturnType<ProgressStoreController["get
       src="${chooserMagicKeyUrl}"
       alt=""
       aria-hidden="true"
+      data-source-classification="swf-derived recreation"
       data-source-instance="magicKey"
       data-source-visible="${visible ? "true" : "false"}"
       data-source-placement="nutchooser.swf places magicKey sprite id 0213 at depth 0175 matrix scale 0.642 x 316.05 y 175.80 ratio 5"
@@ -1066,7 +1074,14 @@ function renderNutcrackerSongGame(
 
   return `
     <div class="scene-body nutcracker-song-scene source-flash-scene">
-      <img class="song-source-frame" src="${nutcrackerSongFrameUrl}" alt="" aria-hidden="true" />
+      <img
+        class="song-source-frame"
+        src="${nutcrackerSongFrameUrl}"
+        alt=""
+        aria-hidden="true"
+        data-source-classification="swf-derived recreation"
+        data-source-image="song1/song.swf first frame rendered by swfrender"
+      />
       ${renderNutcrackerSongScenery(song.id)}
       <section class="song-stage-overlay" aria-label="${escapeHtml(song.title)} track choices" data-song-drop-stage="${song.id}">
         <h1 class="sr-only">${escapeHtml(song.title)}</h1>
@@ -1263,7 +1278,7 @@ function renderNutcrackerSongScenery(songId: NutcrackerSongId): string {
   return (scenery[songId] ?? [])
     .map(
       (sourceUrl, index) =>
-        `<img class="song-source-scenery song-source-scenery-${songId}-${index + 1}" src="${sourceUrl}" alt="" aria-hidden="true" />`,
+        `<img class="song-source-scenery song-source-scenery-${songId}-${index + 1}" src="${sourceUrl}" alt="" aria-hidden="true" data-source-classification="original asset" data-source-image="song${songId}/song.swf repaired DefineBitsJPEG3 source asset" />`,
     )
     .join("");
 }
@@ -1282,6 +1297,8 @@ function renderSelectedNutcrackerActors(
         <img
           class="source-selected-actor source-selected-actor-song-${song.id} source-selected-actor-${track.number}${correctnessClass}"
           data-source-animation="games/nutcrackergame/song${song.id}/characters/anim${track.number}.swf"
+          data-source-classification="documented fallback"
+          data-source-fallback="local swfrender has no frame selector; representative full anim SWFs render transparent at frame 1 and extracted later frames can crash, so exact timeline playback remains M06B"
           src="${track.imagePath}"
           alt=""
           aria-hidden="true"

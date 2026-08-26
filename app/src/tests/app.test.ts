@@ -181,6 +181,9 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-fill")?.src).toContain(
       "chooser-hallway-fill",
     );
+    expect(
+      mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-fill")?.dataset.sourceClassification,
+    ).toBe("swf-derived recreation");
     expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-fill")?.dataset.sourcePlacement).toContain(
       "shape id 0016",
     );
@@ -522,7 +525,13 @@ describe("desktop app shell", () => {
 
     mount.querySelector<HTMLButtonElement>('[data-route="song-2"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
+    expect(mount.querySelector<HTMLImageElement>(".song-source-frame")?.dataset.sourceClassification).toBe(
+      "swf-derived recreation",
+    );
     expect(mount.querySelector<HTMLImageElement>(".song-source-scenery-2-1")?.src).toContain("song2-scenery");
+    expect(mount.querySelector<HTMLImageElement>(".song-source-scenery-2-1")?.dataset.sourceClassification).toBe(
+      "original asset",
+    );
     expect(mount.textContent).not.toContain("Test");
   });
 
@@ -541,6 +550,15 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.src).toContain("song1-track1-actor");
     expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.dataset.sourceAnimation).toBe(
       "games/nutcrackergame/song1/characters/anim1.swf",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.dataset.sourceClassification).toBe(
+      "documented fallback",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.dataset.sourceFallback).toContain(
+      "no frame selector",
+    );
+    expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-1")?.dataset.sourceFallback).toContain(
+      "extracted later frames can crash",
     );
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-1")?.dataset.sourceHelp).toBe("BASS");
     expect(mount.querySelector<HTMLElement>(".source-track-hotspot-1")?.dataset.sourceHelpFrame).toBe("2");
@@ -572,6 +590,9 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLImageElement>(".source-selected-actor-song-5.source-selected-actor-7")?.dataset.sourceAnimation).toBe(
       "games/nutcrackergame/song5/characters/anim7.swf",
     );
+    expect(
+      mount.querySelector<HTMLImageElement>(".source-selected-actor-song-5.source-selected-actor-7")?.dataset.sourceFallback,
+    ).toContain("exact timeline playback remains M06B");
   });
 
   it("checks each Nutcracker song game and unlocks the first progress key after all doors", () => {

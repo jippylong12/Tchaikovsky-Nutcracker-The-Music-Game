@@ -16,6 +16,19 @@ This note captures the source evidence used for the Nutcracker song chooser and 
 * `track*.swf`: 600 x 460, 15 fps, MP3 soundstream only.
 * `characters/anim*.swf`: 600 x 460, 15 fps.
 
+## Runtime source-fidelity classification gate
+
+The chooser/song DOM now exposes `data-source-classification` on the key visible runtime layers so the source-map categories are inspectable rather than only prose. Every selected actor also carries its exact `song#/characters/anim#.swf` path in `data-source-animation` and the current renderer/timeline limit in `data-source-fallback`: local `swfrender` has no frame selector, representative full animation SWFs render transparent at frame 1, and extracted later frames can crash.
+
+| Visible runtime surface | Classification | Evidence or limit |
+| --- | --- | --- |
+| Chooser frame and repaired per-song JPEG3 scenery | original asset | Direct PNG/JPEG3 records extracted from the source SWFs; JPEG3 marker/alpha repair does not replace the source pixels. |
+| Chooser hallway layers, door art, instrument strip, controls, warning/help/key art, and song frame/curtain/control compositions | SWF-derived recreation | Rendered source shapes/sprites/text plus recovered matrices, depth order, ratios, and color transforms. |
+| Source control labels and dynamic song strings | original text | Rendered `DEFINETEXT` objects where flattening works; exact recovered ActionScript strings for `_root.message` where dynamic text must remain DOM-backed. |
+| Door availability, fourth-selection checking, and final key visibility | inferred behavior | Modern state mirrors recovered ActionScript and progress variables; visible modern status is kept in data/ARIA rather than painted over source art. |
+| Selected actors, flying-help dynamic text, instrument hit rectangles, and unflattened timeline frames | documented fallback | Per-song source bitmaps plus restrained source-derived motion, layered DOM edit text, and source-bounded hit areas remain until M06B can provide deterministic display-list/timeline playback; selected actors expose the exact source SWF path and current toolchain failure in the DOM. |
+| Generic cards, visible progress/status labels, debug/provenance copy, generated art, correctness glows/badges, or generic modals inside the 640 x 480 viewport | defect | These are not source-backed and must not be reintroduced. |
+
 ## ActionScript behavior
 
 `song1/song.swf` initializes `theSong = 1`, loads `games/nutcrackergame/song1/trackinfo.txt`, then loops from 1 to 8 loading:
@@ -133,7 +146,7 @@ The full `characters/anim*.swf` timelines are not yet played in the DOM. Instead
 
 ## Character animation fallback evidence
 
-Each selected actor element now records its corresponding source movie as `data-source-animation="games/nutcrackergame/song#/characters/anim#.swf"`. The browser does not execute those SWFs, so the DOM fallback uses the promoted per-song lossless actor bitmap plus restrained `steps()` CSS transforms. The transform direction and relative size come from the placement dumps under `app/generated/nutcracker-source-extract/full-swf-pass/dumps/`, with targeted overrides where promoted actors have different source shapes.
+Each selected actor element now records its corresponding source movie as `data-source-animation="games/nutcrackergame/song#/characters/anim#.swf"`. It also records the current toolchain failure in `data-source-fallback`: local `swfrender` has no frame selector, representative full animation SWFs render transparent at frame 1, and extracted later frames can crash. The browser does not execute those SWFs, so the DOM fallback uses the promoted per-song lossless actor bitmap plus restrained `steps()` CSS transforms. The transform direction and relative size come from the placement dumps under `app/generated/nutcracker-source-extract/full-swf-pass/dumps/`, with targeted overrides where promoted actors have different source shapes.
 
 This matters visibly: song 5, song 7, and song 8 track 7 promote a 167 x 358 standing drummer actor from their own `anim7.swf`, while song 1 track 7 remains the 129 x 64 cannon. The previous global `track7-cannon.png` fallback was source-backed only for song 1 and was wrong for those later songs.
 
