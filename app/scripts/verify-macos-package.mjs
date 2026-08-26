@@ -42,9 +42,11 @@ const codeSign = run("codesign", ["-dv", "--verbose=4", appBundle], { allowNonZe
 const signatureOutput = `${codeSign.stdout}\n${codeSign.stderr}`;
 assert(signatureOutput.includes("Signature=adhoc"), "private package should have only an ad-hoc signature");
 assert(signatureOutput.includes("TeamIdentifier=not set"), "private package unexpectedly has a signing team");
+run("codesign", ["--verify", "--deep", "--strict", "--verbose=2", appBundle]);
 run("hdiutil", ["verify", dmg]);
 
 const mountPoint = mkdtempSync(path.join(tmpdir(), "nutcracker-dmg-"));
+const builtAppSha256 = hashPath(appBundle);
 let mounted = false;
 try {
   run("hdiutil", ["attach", dmg, "-readonly", "-nobrowse", "-mountpoint", mountPoint]);
@@ -55,6 +57,10 @@ try {
     run("plutil", ["-convert", "json", "-o", "-", path.join(mountedApp, "Contents/Info.plist")]).stdout,
   );
   assert(mountedPlist.CFBundleIdentifier === config.identifier, "mounted DMG app has the wrong identifier");
+  assert(mountedPlist.CFBundleDisplayName === config.productName, "mounted DMG app has the wrong display name");
+  assert(mountedPlist.CFBundleShortVersionString === config.version, "mounted DMG app has the wrong version");
+  assert(hashPath(mountedApp) === builtAppSha256, "mounted DMG app does not match the freshly built app bundle");
+  run("codesign", ["--verify", "--deep", "--strict", "--verbose=2", mountedApp]);
 } finally {
   if (mounted) run("hdiutil", ["detach", mountPoint]);
   rmSync(mountPoint, { recursive: true, force: true });

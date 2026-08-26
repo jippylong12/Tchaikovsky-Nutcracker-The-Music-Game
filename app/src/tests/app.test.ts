@@ -108,6 +108,33 @@ describe("desktop app shell", () => {
     expect(mount.textContent).not.toContain("Audio diagnostics will appear here.");
   });
 
+  it("keeps the unlocked certificate action available outside the release viewport", () => {
+    const mount = document.createElement("main");
+    const progress = createProgressStore(createMemoryPersistence());
+    const printCertificate = vi.fn();
+    progress.markGameKey(1);
+
+    createAppShell(mount, {
+      progress,
+      audio: createAudioService({
+        createAudioElement: () => new FakeAudioElement(),
+      }),
+      printCertificate,
+      showDeveloperPanel: false,
+    });
+
+    expect(mount.querySelector(".route-panel")).toBeNull();
+    expect(mount.querySelector('.game-viewport [data-action="print-certificate"]')).toBeNull();
+    const printButton = mount.querySelector<HTMLButtonElement>(
+      '.release-certificate-actions [data-action="print-certificate"]',
+    );
+    expect(printButton?.dataset.sourceReward).toBe("gameKey1");
+    expect(mount.querySelector(".certificate-print-surface")).not.toBeNull();
+
+    printButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(printCertificate).toHaveBeenCalledOnce();
+  });
+
   it("switches route content without leaving the shell", () => {
     const mount = document.createElement("main");
 

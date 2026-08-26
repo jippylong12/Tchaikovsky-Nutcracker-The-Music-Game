@@ -28,6 +28,13 @@ assert(
   ["app", "dmg"].every((target) => tauriConfig.bundle?.targets?.includes(target)),
   "macOS app and DMG bundle targets are required",
 );
+assert(tauriConfig.bundle?.macOS?.signingIdentity === "-", "macOS private package must use the ad-hoc signing identity");
+assert(tauriConfig.bundle?.macOS?.hardenedRuntime === false, "macOS ad-hoc package must not claim hardened runtime");
+assert(
+  packageJson.scripts?.["package:mac"]?.includes("tauri build --bundles app,dmg")
+    && !packageJson.scripts?.["package:mac"]?.includes("--no-sign"),
+  "macOS package command must preserve the configured ad-hoc bundle signature",
+);
 assert(
   tauriConfig.bundle.icon.every((icon) => existsSync(path.join(appRoot, "src-tauri", icon))),
   "one or more configured app icons are missing",

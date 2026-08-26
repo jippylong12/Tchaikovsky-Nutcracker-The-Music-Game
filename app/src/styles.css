@@ -2636,10 +2636,34 @@ button {
 }
 
 .certificate-print-button {
-  width: 100%;
   margin-top: 8px;
   color: #fff5ce;
   border-color: rgba(185, 130, 37, 0.8);
+}
+
+.route-panel .certificate-print-button {
+  width: 100%;
+}
+
+.release-certificate-actions {
+  display: flex;
+  width: var(--viewport-width);
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.release-certificate-actions .certificate-print-button {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid rgba(185, 130, 37, 0.8);
+  color: #fff5ce;
+  background: #33271c;
+  cursor: pointer;
+}
+
+.release-certificate-actions .certificate-print-button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .certificate-print-surface {
@@ -3370,6 +3394,10 @@ button {
   }
 
   .desktop-frame {
+    display: none;
+  }
+
+  .release-certificate-actions {
     display: none;
   }
 

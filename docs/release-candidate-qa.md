@@ -9,11 +9,11 @@ Automated/package QA may move M09 work to **In Review**, but the release candida
 ## Fresh automated package evidence — 2026-08-26
 
 - `npm run package:mac` passed after the production frontend built 678 modules and the source-local reader bundle validator confirmed distinct story/biography/ballet assets.
-- App bundle: 155,723,620 bytes; content-tree SHA-256 `7711047be2f8f57f23d0a002aaca8d9083b47d71a6d4d224a16b0347dfc35a39`.
-- DMG: 151,689,590 bytes; SHA-256 `62dbef1062d0bc092ac1bb7957d3e83ebe088a87f96f67dc4be738583afa13f1`.
-- Package verifier confirmed ARM64 Mach-O, bundle identifier `com.jippylong12.nutcracker-music-game`, version `0.1.0`, ad-hoc signature with no signing team, DMG integrity, read-only DMG mount, and expected app metadata inside the mounted image.
+- App bundle: 154,848,796 bytes; content-tree SHA-256 `da5b5764321b649fad41d290898a35ce64b5343fded37d843ab34b5581395996`.
+- DMG: 150,822,236 bytes; SHA-256 `54815df301c8a4bb525e5772658d47c959dd0922aaf652fc290f582294f48a52`.
+- Package verifier confirmed ARM64 Mach-O, bundle identifier `com.jippylong12.nutcracker-music-game`, version `0.1.0`, a valid complete ad-hoc bundle signature with no signing team, DMG integrity, read-only DMG mount, an exact mounted-app match, and expected app metadata inside the mounted image.
 - Bundled frontend inventory: 767 files, including 645 MP3/WAV files and 99 PNG/JPEG files. The lower count than the earlier preflight is intentional: a destructive asset-pipeline audit removed 27 stale/unreferenced ignored audio outputs while restoring the three source-mapped Story/Biography/Ballet narrations.
-- The final automated baseline passed 13 test files / 84 tests, typecheck, lint, production build, the 28-route/22-entry source-atlas gate, and all mandated Nutcracker source extractors. Two consecutive pipeline runs produced 275 runtime audio files with tree SHA-256 `5cb6a0c9fa7aba519e09e45b9504f26a8884f779602b5f5efaf7c77659180878`.
+- The final automated baseline passed 13 test files / 85 tests, typecheck, lint, production build, the 28-route/22-entry source-atlas gate, and all mandated Nutcracker source extractors. Two consecutive pipeline runs produced 275 runtime audio files with tree SHA-256 `5cb6a0c9fa7aba519e09e45b9504f26a8884f779602b5f5efaf7c77659180878`.
 - The packaged app launched as its own local process, remained running for 15 seconds, and the exact task-owned process was then stopped. This is a process smoke, not visual approval.
 - The ignored machine-readable manifest is `app/src-tauri/target/release/bundle/release-candidate-manifest.json`.
 
@@ -60,7 +60,7 @@ Automated/package QA may move M09 work to **In Review**, but the release candida
 - Progress survives a normal quit/relaunch and reset clears every game key, Nutcracker door, Children's Album door, and Nut House room state.
 - No preserved 640 x 480 viewport shows visible debug/provenance copy, generic scaffold cards, undocumented status badges, or a source asset assigned to the wrong scene.
 - Keyboard focus remains visible and usable for source-recreated controls without exposing hidden accessibility text.
-- The unsigned/private install warning and asset-rights caveat match `docs/release-notes-0.1.0-rc1.md`.
+- The non-notarized/private install warning and asset-rights caveat match `docs/release-notes-0.1.0-rc1.md`.
 
 ## Automation boundary
 

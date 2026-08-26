@@ -400,13 +400,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
               </div>
               ${
                 progressSnapshot.gameKeys[1]
-                  ? `<button
-                      class="panel-button certificate-print-button"
-                      type="button"
-                      data-action="print-certificate"
-                      data-source-reward="gameKey1"
-                      data-source-action="all eight Nutcracker doors grant gameKey1; legacy nc_certificate.exe prints target nc_certificate with print:#bmax"
-                    >Print / Save PDF</button>`
+                  ? renderNutcrackerCertificatePrintAction("panel-button certificate-print-button")
                   : ""
               }
               <button class="panel-button danger" type="button" data-action="reset-progress">Reset progress</button>
@@ -430,6 +424,13 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
               : ""
           }
         </div>
+        ${
+          !showDeveloperPanel && progressSnapshot.gameKeys[1]
+            ? `<section class="release-certificate-actions" aria-label="Nutcracker certificate action">
+                ${renderNutcrackerCertificatePrintAction("certificate-print-button")}
+              </section>`
+            : ""
+        }
         ${progressSnapshot.gameKeys[1] ? renderNutcrackerCertificatePrintSurface() : ""}
       </section>
     `;
@@ -2971,6 +2972,18 @@ function renderNutcrackerCertificatePrintSurface(): string {
     >
       <img src="${nutcrackerClubCertificateUrl}" alt="The Nutcracker Club membership award certificate" />
     </section>
+  `;
+}
+
+function renderNutcrackerCertificatePrintAction(className: string): string {
+  return `
+    <button
+      class="${className}"
+      type="button"
+      data-action="print-certificate"
+      data-source-reward="gameKey1"
+      data-source-action="all eight Nutcracker doors grant gameKey1; legacy nc_certificate.exe prints target nc_certificate with print:#bmax"
+    >Print / Save PDF</button>
   `;
 }
 
