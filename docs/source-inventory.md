@@ -4,6 +4,8 @@ Linear issue: JIP-318
 
 This document records the recovered source shape for Tchaikovsky's Nutcracker: The Music Game so later remake work can start from stable paths and counts.
 
+For route-level implementation readiness, use `docs/source-atlas.md` and its machine-readable contract at `docs/source-atlas.json`. Run `npm run assets:source-atlas` from `app/` before visible route work.
+
 ## Source Locations
 
 | Path | Role | Notes |

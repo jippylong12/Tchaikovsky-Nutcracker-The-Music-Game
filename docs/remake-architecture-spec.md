@@ -37,6 +37,8 @@ Do not use a hosted public website as the release artifact. A web build can exis
 
 Use a fixed 640x480 game viewport for original gameplay/activity scenes, centered within a desktop window.
 
+The renderer column below chooses technology, not visual design. Every visible route must first satisfy `docs/source-atlas.md`: source assets/text/placements before DOM/CSS approximations, exact fallback documentation, and Marcus manual approval.
+
 | Content type | Renderer |
 | --- | --- |
 | Main menu, route shell, help/warning/name dialogs | DOM/CSS |

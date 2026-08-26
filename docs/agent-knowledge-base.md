@@ -5,6 +5,7 @@ This document captures reusable lessons from the Nutcracker source-reconstructio
 ## Start Here
 
 - Main fidelity map: `docs/nutcracker-song-source-map.md`
+- Project-wide route gate: `docs/source-atlas.md` and `docs/source-atlas.json`
 - Current implementation hotspots:
   - `app/src/app.ts`
   - `app/src/styles.css`
@@ -29,6 +30,7 @@ npm run assets:nutcracker-ui
 npm run assets:nutcracker-actors
 npm run assets:nutcracker-jpeg3
 npm run assets:certificates
+npm run assets:source-atlas
 ```
 
 The SWF pass writes ignored proof artifacts to `app/generated/nutcracker-source-extract/full-swf-pass/`:
@@ -50,6 +52,8 @@ The UI promotion pass currently copies source UI bitmap evidence such as `song1_
 
 ## Things Already Learned The Hard Way
 
+- A route existing in `app/src/routes.ts` is not implementation evidence. `npm run assets:source-atlas` validates all 22 registered routes against existing source/evidence paths and writes `app/generated/source-atlas/contact-sheet.html`; defects must retain Linear follow-ups and Marcus approval gates.
+- Do not regex-scan `routes.ts` or trust atlas-authored vocabulary/paths. The atlas gate parses route literals with the TypeScript AST, fixes the allowed classification schema in code, rejects repository/symlink escapes, enforces lifecycle and promoted-asset semantics, and requires exact `fallbackEvidence` for every `documented fallback` claim.
 - Do not treat the two certificate EXEs as opaque Windows-only launchers. Each has a valid compressed `CWS` appended at byte `860160`; use `app/scripts/lib/flash-projector.mjs` and `npm run assets:certificates` to validate/inflate the final embedded payload before inspecting it with the SWF tools.
 - Do not accept a zlib-valid byte stream as sufficient SWF proof or inflate beyond its declared size. The projector parser validates the RECT/frame header and complete top-level tag stream, bounds decompression to the declared body length, and the certificate pass locks the recovered projector/SWF hashes, offset, sprite placement, print/quit actions, and certificate text before promotion.
 - Strip generated PNG metadata during certificate promotion. ImageMagick otherwise embeds generation timestamps and creates byte churn from an unchanged source render; `npm run assets:certificates` must produce a byte-identical committed certificate on consecutive runs.

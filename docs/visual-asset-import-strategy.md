@@ -9,7 +9,7 @@ The remake should not wait for perfect SWF-to-canvas conversion. Use a hybrid im
 | Class | Import approach | Examples |
 | --- | --- | --- |
 | Bitmap stills | Extract with `swfextract`, store in ignored private generated assets, then promote selected files into the local bundle when an implementation issue needs them. | JPEG/PNG objects from `nutchooser.swf`, `tree.swf`, and activity page backgrounds. |
-| Simple vector shapes | Recreate as CSS/DOM or Canvas drawing primitives using the SWF catalog as reference. | Buttons, frames, simple decorative marks, color chips. |
+| Simple vector shapes | Extract/render the source shape or recoverable child layers first. Use CSS/DOM or Canvas drawing only when the exact symbol/frame/tool limitation is documented in the route source map and atlas. | Buttons, frames, simple decorative marks, color chips. |
 | Timeline movie clips | Recreate as explicit scene state, CSS transitions, or PixiJS/Canvas animation. | Intro/help/warning states, chooser door states, mini-game win sequences. |
 | ActionScript behavior | Reimplement as TypeScript route, game, progress, and audio logic. | `FSCommand:exec`, `_level1` loading, score/key updates, `StopSounds`. |
 | Fonts/text | Use modern font substitutions unless rights are clarified. Keep original text data private and parsed through typed helpers. | Trivia prompts, activity pages, labels. |
@@ -33,4 +33,4 @@ The fixture paths are recorded in `app/src/data/generated/visualImportSamples.ts
 
 ## Decision Rule
 
-For each future scene, import bitmap stills when they provide useful background or sprite fidelity. Recreate motion and interaction manually when the SWF catalog flags vector shapes, movie clips, ActionScript tags, or font dependencies. This keeps M04-M08 unblocked while still preserving source traceability.
+For each future scene, start with `docs/source-atlas.md` and its route-specific audit slice. Import bitmap stills and render recoverable vector/text/child layers before recreating anything manually. Recreate motion or interaction only when the source map identifies the exact timeline/tooling gap, and retain that limitation in repo docs and runtime provenance. The renderer choice is not permission to invent visible UI; Marcus manual approval remains the completion gate.

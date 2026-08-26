@@ -1,0 +1,435 @@
+{
+  "schemaVersion": 1,
+  "classificationVocabulary": [
+    "original asset",
+    "SWF-derived recreation",
+    "original source text",
+    "inferred behavior",
+    "documented fallback",
+    "defect"
+  ],
+  "entries": [
+    {
+      "id": "overture",
+      "title": "Overture / intro",
+      "routeIds": ["overture"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["inferred behavior", "defect"],
+      "sourceInputs": [
+        "analysis/setup/app/Nutcracker2.exe",
+        "analysis/setup/app/flute_intro.swf"
+      ],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/behavior-map.md", "docs/source-inventory.md"],
+      "followUpIssues": ["JIP-818"],
+      "manualApproval": "required",
+      "auditFinding": "The current stage-mark/title surface is generic remake UI; no recovered projector/intro display-list composition is represented."
+    },
+    {
+      "id": "main-menu",
+      "title": "Main menu",
+      "routeIds": ["main-menu"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["inferred behavior", "defect"],
+      "sourceInputs": [
+        "analysis/setup/app/Nutcracker2.exe",
+        "analysis/setup/app/flute_intro.swf",
+        "analysis/setup/app/fscommand"
+      ],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/behavior-map.md", "docs/remake-architecture-spec.md"],
+      "followUpIssues": ["JIP-818"],
+      "manualApproval": "required",
+      "auditFinding": "The current grouped route cards are functional routing scaffolding, not recovered main-menu art, text, controls, or placement."
+    },
+    {
+      "id": "story",
+      "title": "Nutcracker story reader",
+      "routeIds": ["story"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["original asset", "original source text", "inferred behavior", "defect"],
+      "sourceInputs": [
+        "analysis/setup/app/activities/story/story.swf",
+        "app/src/data/referenceContent.ts"
+      ],
+      "promotedAssets": ["app/public/local-media/visual/activities/story/5-alpha.png"],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/visual-asset-import-strategy.md"],
+      "followUpIssues": ["JIP-819"],
+      "manualApproval": "required",
+      "auditFinding": "Recovered art/audio/text are present, but the reader chrome, pagination, and scene composition are inferred rather than mapped to the SWF timeline."
+    },
+    {
+      "id": "composer-biography",
+      "title": "Tchaikovsky biography reader",
+      "routeIds": ["composer-biography"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["original asset", "original source text", "inferred behavior", "defect"],
+      "sourceInputs": [
+        "analysis/setup/app/activities/biography/biography.swf",
+        "app/src/data/referenceContent.ts"
+      ],
+      "promotedAssets": ["app/public/local-media/visual/activities/biography/18.jpg"],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/visual-asset-import-strategy.md"],
+      "followUpIssues": ["JIP-819"],
+      "manualApproval": "required",
+      "auditFinding": "Recovered media is used, but current page layout/navigation is an inferred modern reader without source placement/state proof."
+    },
+    {
+      "id": "ballet-history",
+      "title": "Ballet history reader",
+      "routeIds": ["ballet-history"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["original asset", "original source text", "inferred behavior", "defect"],
+      "sourceInputs": [
+        "analysis/setup/app/activities/ballet/ballet.swf",
+        "app/src/data/referenceContent.ts"
+      ],
+      "promotedAssets": ["app/public/local-media/visual/activities/ballet/18.jpg"],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/visual-asset-import-strategy.md"],
+      "followUpIssues": ["JIP-819"],
+      "manualApproval": "required",
+      "auditFinding": "Recovered media is used, but current page layout/navigation is an inferred modern reader without source placement/state proof."
+    },
+    {
+      "id": "music-dictionary",
+      "title": "Musictionary",
+      "routeIds": ["music-dictionary"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["original source text", "inferred behavior", "defect"],
+      "sourceInputs": [
+        "analysis/setup/app/activities/musictionary/musictionary.swf",
+        "app/src/data/referenceContent.ts",
+        "app/public/local-media/audio/activities/musictionary"
+      ],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "followUpIssues": ["JIP-820"],
+      "manualApproval": "required",
+      "auditFinding": "Instrument names/audio are recovered, but the visible encyclopedia browser and controls are generic DOM UI with no mapped source art or display-list states."
+    },
+    {
+      "id": "suite",
+      "title": "Nutcracker Suite gramophone player",
+      "routeIds": ["suite"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["original asset", "original source text", "inferred behavior", "defect"],
+      "sourceInputs": [
+        "analysis/setup/app/activities/originals/gramophone.swf",
+        "app/src/data/referenceContent.ts",
+        "app/public/local-media/audio/activities/originals"
+      ],
+      "promotedAssets": ["app/public/local-media/visual/activities/originals/gramophone/108.png"],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "followUpIssues": ["JIP-820"],
+      "manualApproval": "required",
+      "auditFinding": "Recovered themes and gramophone art are present, but labels/control states/layout remain an inferred modern player."
+    },
+    {
+      "id": "nutcracker-chooser",
+      "title": "Nutcracker song chooser",
+      "routeIds": ["nutcracker-chooser"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "SWF-derived recreation", "original source text", "documented fallback"],
+      "sourceInputs": [
+        "analysis/setup/app/games/nutcrackergame/nutchooser.swf",
+        "analysis/setup/app/games/data/nutdoors.txt"
+      ],
+      "promotedAssets": [
+        "app/src/assets/nutcracker-source/nutchooser-frame-source.png",
+        "app/src/assets/nutcracker-source/chooser-magic-key.png"
+      ],
+      "evidenceDocs": [
+        "docs/nutcracker-song-source-map.md",
+        "docs/agent-knowledge-base.md",
+        "docs/nutcracker-eight-song-approval.md"
+      ],
+      "followUpIssues": ["JIP-334", "JIP-347", "JIP-349", "JIP-357", "JIP-359"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/nutcrackergame/nutchooser.swf",
+          "sourceLocator": {
+            "kind": "sprite-timeline",
+            "identifier": "sprite id 0213; helpframe ratio 22; warningFrame ratio 24",
+            "frameOrState": "root help state ratio 22 and warning state ratio 24"
+          },
+          "toolLimitation": {
+            "capability": "interactive-timeline-flattening",
+            "tool": "SWFTools",
+            "observedFailure": "SWFTools cannot flatten the nested source timelines into one interactive runtime scene."
+          },
+          "runtimeFallback": {
+            "mechanism": "composed-promoted-layers",
+            "details": "The runtime composes promoted display-list layers with TypeScript state and explicit provenance.",
+            "retainedGap": "Interactive nested-timeline playback remains outside the reconstructed runtime."
+          },
+          "evidenceDoc": "docs/nutcracker-song-source-map.md"
+        }
+      ],
+      "manualApproval": "required",
+      "auditFinding": "Source-backed composition and behavior are implemented; full timeline playback and Marcus UI approval remain explicit gates."
+    },
+    {
+      "id": "nutcracker-songs",
+      "title": "Eight Nutcracker track-selection songs",
+      "routeIds": ["song-1", "song-2", "song-3", "song-4", "song-5", "song-6", "song-7", "song-8"],
+      "lifecycle": "implemented-review",
+      "classifications": ["original asset", "SWF-derived recreation", "original source text", "documented fallback"],
+      "sourceInputs": [
+        "analysis/setup/app/games/nutcrackergame",
+        "analysis/setup/app/games/data/nutdoors.txt"
+      ],
+      "promotedAssets": [
+        "app/src/assets/nutcracker-source/song-game-render.png",
+        "app/src/assets/nutcracker-source/song1-track1-actor.png",
+        "app/src/assets/nutcracker-source/song-keyframe-talker.png"
+      ],
+      "evidenceDocs": [
+        "docs/nutcracker-song-source-map.md",
+        "docs/agent-knowledge-base.md",
+        "docs/nutcracker-eight-song-approval.md"
+      ],
+      "followUpIssues": ["JIP-335", "JIP-347", "JIP-349", "JIP-357", "JIP-358", "JIP-359"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/games/nutcrackergame",
+          "sourceLocator": {
+            "kind": "actor-frame",
+            "identifier": "song1-song8 characters/anim1-anim8 actor timelines",
+            "frameOrState": "frame 1 and later-frame extraction states"
+          },
+          "toolLimitation": {
+            "capability": "arbitrary-frame-selection",
+            "tool": "local SWF frame renderer",
+            "observedFailure": "The renderer has no frame selector; full animations can render transparent at frame 1 and later-frame extraction can crash."
+          },
+          "runtimeFallback": {
+            "mechanism": "promoted-source-stills-with-typescript-state",
+            "details": "The runtime uses promoted source stills with TypeScript state and retains exact renderer provenance.",
+            "retainedGap": "Full actor animation and arbitrary later-frame motion remain unavailable."
+          },
+          "evidenceDoc": "docs/nutcracker-song-source-map.md"
+        }
+      ],
+      "manualApproval": "required",
+      "auditFinding": "All eight routes carry source classifications and per-track evidence; exact actor/timeline playback and Marcus approval remain open."
+    },
+    {
+      "id": "childrens-album",
+      "title": "Children's Album",
+      "routeIds": ["childrens-album"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["inferred behavior", "defect"],
+      "sourceInputs": [
+        "analysis/setup/app/games/childrensalbum",
+        "analysis/setup/app/games/data/childrensalbum.txt",
+        "analysis/setup/app/games/data/childrensdoors.txt"
+      ],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "followUpIssues": ["JIP-340", "JIP-836", "JIP-837", "JIP-838", "JIP-839", "JIP-840"],
+      "manualApproval": "required",
+      "auditFinding": "The route is a visible generic placeholder; source audit and all source-reconstruction slices are open."
+    },
+    {
+      "id": "tree-game",
+      "title": "Instrument tree game",
+      "routeIds": ["tree-game"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["inferred behavior", "defect"],
+      "sourceInputs": ["analysis/setup/app/games/tree"],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "followUpIssues": ["JIP-339", "JIP-831", "JIP-832", "JIP-833", "JIP-834", "JIP-835"],
+      "manualApproval": "required",
+      "auditFinding": "The route is a visible generic placeholder; no source scene composition or behavior is implemented."
+    },
+    {
+      "id": "trivia",
+      "title": "Trivia game",
+      "routeIds": ["trivia"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["inferred behavior", "defect"],
+      "sourceInputs": ["analysis/setup/app/games/trivia"],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "followUpIssues": ["JIP-337", "JIP-821", "JIP-822", "JIP-823", "JIP-824", "JIP-825"],
+      "manualApproval": "required",
+      "auditFinding": "The route is a visible generic placeholder; original question data alone is not source-fidelity UI or behavior."
+    },
+    {
+      "id": "melody",
+      "title": "Melody game",
+      "routeIds": ["melody"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["inferred behavior", "defect"],
+      "sourceInputs": ["analysis/setup/app/games/melody"],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "followUpIssues": ["JIP-338", "JIP-826", "JIP-827", "JIP-828", "JIP-829", "JIP-830"],
+      "manualApproval": "required",
+      "auditFinding": "The route is a visible generic placeholder; the copied Melody data/audio has not yet been reconstructed into source behavior or scene art."
+    },
+    {
+      "id": "memory",
+      "title": "Memory game",
+      "routeIds": ["memory"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["inferred behavior", "defect"],
+      "sourceInputs": ["analysis/setup/app/games/memorygame"],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "followUpIssues": ["JIP-338", "JIP-826", "JIP-827", "JIP-828", "JIP-829", "JIP-830"],
+      "manualApproval": "required",
+      "auditFinding": "The route is a visible generic placeholder; the copied sound set has not yet been reconstructed into the source card/state model."
+    },
+    {
+      "id": "puzzles",
+      "title": "Alice puzzles / Nut House rooms",
+      "routeIds": ["puzzles"],
+      "lifecycle": "implemented-defect",
+      "classifications": ["inferred behavior", "defect"],
+      "sourceInputs": [
+        "analysis/setup/app/games/aliceSWF",
+        "analysis/setup/app/games/nuthouse",
+        "analysis/setup/app/games/data/nuthouserooms.txt"
+      ],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "followUpIssues": ["JIP-342", "JIP-846", "JIP-847", "JIP-848", "JIP-849", "JIP-850"],
+      "manualApproval": "required",
+      "auditFinding": "The shared puzzles route is a generic placeholder and does not represent either recovered source family."
+    },
+    {
+      "id": "flying-instruments",
+      "title": "Flying Instruments",
+      "routeIds": [],
+      "lifecycle": "planned",
+      "classifications": ["defect"],
+      "sourceInputs": ["analysis/setup/app/games/flyinginstruments/flyinginstruments.swf"],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md"],
+      "followUpIssues": ["JIP-339", "JIP-831", "JIP-832", "JIP-833", "JIP-834", "JIP-835"],
+      "manualApproval": "required",
+      "auditFinding": "No dedicated runtime route exists; source-reconstruction slices must precede route creation."
+    },
+    {
+      "id": "loopy-tunes",
+      "title": "Loopy Tunes",
+      "routeIds": [],
+      "lifecycle": "planned",
+      "classifications": ["defect"],
+      "sourceInputs": ["analysis/setup/app/games/loopytunes"],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md"],
+      "followUpIssues": ["JIP-340", "JIP-836", "JIP-837", "JIP-838", "JIP-839", "JIP-840"],
+      "manualApproval": "required",
+      "auditFinding": "No dedicated runtime route exists; source-reconstruction slices must precede route creation."
+    },
+    {
+      "id": "orchestra",
+      "title": "Orchestra game",
+      "routeIds": [],
+      "lifecycle": "planned",
+      "classifications": ["defect"],
+      "sourceInputs": ["analysis/setup/app/games/orchestragame/orchestra.swf"],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md"],
+      "followUpIssues": ["JIP-341", "JIP-841", "JIP-842", "JIP-843", "JIP-844", "JIP-845"],
+      "manualApproval": "required",
+      "auditFinding": "No runtime route exists; source-reconstruction slices must precede route creation."
+    },
+    {
+      "id": "toy-soldiers",
+      "title": "Toy Soldiers game",
+      "routeIds": [],
+      "lifecycle": "planned",
+      "classifications": ["defect"],
+      "sourceInputs": ["analysis/setup/app/games/toysoldiersgame/toysoldiersgame.swf"],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md"],
+      "followUpIssues": ["JIP-341", "JIP-841", "JIP-842", "JIP-843", "JIP-844", "JIP-845"],
+      "manualApproval": "required",
+      "auditFinding": "No runtime route exists; source-reconstruction slices must precede route creation."
+    },
+    {
+      "id": "waltz",
+      "title": "Waltz game",
+      "routeIds": [],
+      "lifecycle": "planned",
+      "classifications": ["defect"],
+      "sourceInputs": ["analysis/setup/app/games/wedding/waltz.swf"],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md"],
+      "followUpIssues": ["JIP-341", "JIP-841", "JIP-842", "JIP-843", "JIP-844", "JIP-845"],
+      "manualApproval": "required",
+      "auditFinding": "No runtime route exists; source-reconstruction slices must precede route creation."
+    },
+    {
+      "id": "alice-puzzles",
+      "title": "Alice puzzle family",
+      "routeIds": [],
+      "lifecycle": "planned",
+      "classifications": ["defect"],
+      "sourceInputs": ["analysis/setup/app/games/aliceSWF"],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md"],
+      "followUpIssues": ["JIP-342", "JIP-846", "JIP-847", "JIP-848", "JIP-849", "JIP-850"],
+      "manualApproval": "required",
+      "auditFinding": "Only a generic shared puzzles placeholder exists; the 12 source puzzle movies require their source-first slices."
+    },
+    {
+      "id": "nut-house",
+      "title": "Nut House rooms",
+      "routeIds": [],
+      "lifecycle": "planned",
+      "classifications": ["defect"],
+      "sourceInputs": [
+        "analysis/setup/app/games/nuthouse",
+        "analysis/setup/app/games/data/nuthouserooms.txt"
+      ],
+      "promotedAssets": [],
+      "evidenceDocs": ["docs/source-inventory.md", "docs/behavior-map.md"],
+      "followUpIssues": ["JIP-342", "JIP-846", "JIP-847", "JIP-848", "JIP-849", "JIP-850"],
+      "manualApproval": "required",
+      "auditFinding": "Only a generic shared puzzles placeholder exists; room art, transitions, and saved door state require source reconstruction."
+    },
+    {
+      "id": "certificate-reward",
+      "title": "Key 1 certificate reward",
+      "routeIds": [],
+      "lifecycle": "auxiliary-review",
+      "classifications": ["original asset", "documented fallback"],
+      "sourceInputs": [
+        "analysis/setup/app/fscommand/n_certificate.exe",
+        "analysis/setup/app/fscommand/nc_certificate.exe"
+      ],
+      "promotedAssets": ["app/src/assets/nutcracker-source/nutcracker-club-certificate.png"],
+      "evidenceDocs": ["docs/nutcracker-song-source-map.md", "docs/agent-knowledge-base.md"],
+      "followUpIssues": ["JIP-336"],
+      "fallbackEvidence": [
+        {
+          "source": "analysis/setup/app/fscommand/nc_certificate.exe",
+          "sourceLocator": {
+            "kind": "projector-action",
+            "identifier": "certificate sprite id 0018 and frame 1",
+            "frameOrState": "frame 1 ActionScript print state",
+            "actionTarget": "GetURL print:#bmax"
+          },
+          "toolLimitation": {
+            "capability": "projector-action-bridge",
+            "tool": "browser runtime",
+            "observedFailure": "The native projector ActionScript bridge is not present in the browser runtime."
+          },
+          "runtimeFallback": {
+            "mechanism": "window-print-side-panel",
+            "details": "The side-panel Print / Save PDF action invokes window.print for the certificate-only print layout.",
+            "retainedGap": "Native desktop-shell print and PDF behavior remains a manual gate."
+          },
+          "evidenceDoc": "docs/nutcracker-song-source-map.md"
+        }
+      ],
+      "manualApproval": "required",
+      "auditFinding": "Recovered certificate art and print behavior are implemented; the window.print/native PDF path remains manual desktop evidence."
+    }
+  ]
+}

@@ -18,6 +18,8 @@ The command reads the local recovered installer output at `analysis/setup/app`, 
 - extracts two private visual sample fixtures into ignored `app/generated/private-assets/visual-samples`;
 - writes machine-readable mirrors under ignored `app/generated/catalog`.
 
+After catalog generation, run `npm run assets:source-atlas`. That gate validates every app route against `docs/source-atlas.json` and writes the ignored route/contact-sheet index at `app/generated/source-atlas/contact-sheet.html`.
+
 ## Boundaries
 
 The generated TypeScript manifests contain paths, object IDs, sizes, hashes, durations, parser assignments, and reconstruction notes. They do not embed original trivia/story/educational text or binary media.

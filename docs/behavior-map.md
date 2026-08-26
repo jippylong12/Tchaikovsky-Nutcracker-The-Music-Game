@@ -4,6 +4,8 @@ Linear issue: JIP-319
 
 This document maps representative Flash behavior to remake responsibilities. Evidence came from focused `swfdump -a` traces and helper-EXE string inspection.
 
+This behavior map is an input to `docs/source-atlas.md`; it does not authorize generic UI. A route must also satisfy the atlas asset/text/placement/fallback gate before visible implementation is accepted.
+
 ## Tooling
 
 Representative SWFs are inspectable with SWFTools:
