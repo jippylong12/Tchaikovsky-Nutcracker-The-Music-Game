@@ -1094,19 +1094,69 @@ describe("desktop app shell", () => {
 
     mount.querySelector<HTMLButtonElement>('[data-route="toy-soldiers"]')?.click();
     expect(mount.querySelectorAll("[data-toy-soldier]")).toHaveLength(8);
-    expect(mount.querySelector<HTMLElement>("[data-source-toy-board]")?.dataset.sourceFallback).toContain("button id 30");
+    expect(mount.querySelector<HTMLElement>("[data-source-toy-board]")?.dataset.sourceFallback).toContain("button id 0030");
+    expect(mount.querySelector<HTMLImageElement>(".m08-toy-field")?.src).toContain("toy-soldiers-field");
+    expect(mount.querySelector<HTMLImageElement>(".m08-toy-staff")?.src).toContain("toy-soldiers-staff");
+    expect(mount.querySelector<HTMLImageElement>(".m08-soldiers img")?.src).toContain("toy-soldiers-soldier");
+    expect(mount.querySelector<HTMLImageElement>(".m08-toy-play-label")?.src).toContain("toy-soldiers-play-button-label");
+    expect(mount.textContent).not.toContain("TOY SOLDIERS");
+    expect(mount.textContent).not.toContain("CHECK MARCH");
 
+    FakeAudioElement.playedSources = [];
     mount.querySelector<HTMLButtonElement>('[data-route="waltz"]')?.click();
     expect(mount.querySelector<HTMLElement>(".m08-waltz-scene")?.dataset.sourceFrame).toContain("785 frames");
     expect(mount.querySelector<HTMLElement>(".m08-waltz-scene")?.dataset.sourceAction).toContain("no recovered gameplay");
-    mount.querySelector<HTMLButtonElement>("[data-waltz-play]")?.click();
-    expect(mount.textContent).toContain("PLAYING THE BUNDLED SOURCE MUSIC");
+    expect(mount.querySelector<HTMLImageElement>(".m08-waltz-source")?.src).toContain("waltz-source-gradient");
+    expect(mount.querySelector("[data-waltz-play]")).toBeNull();
+    expect(mount.textContent).not.toContain("785-FRAME SOURCE TIMELINE");
+    expect(mount.textContent).not.toContain("PLAY WALTZ");
+    expect(lastPlayedSource()).toContain("MP3Wedding3");
 
     mount.querySelector<HTMLButtonElement>('[data-route="alice-puzzles"]')?.click();
     [0, 1, 2].forEach((dial) => mount.querySelector<HTMLButtonElement>(`[data-alice-dial="${dial}"]`)?.click());
     mount.querySelector<HTMLButtonElement>("[data-alice-check]")?.click();
     expect(mount.textContent).toContain("THE CLOCKWORK COMBINATION IS CORRECT");
     expect(mount.querySelector<HTMLImageElement>(".m08-alice-art")?.src).toContain("alice-puzzle-01-primary");
+  });
+
+  it("separates the recovered Toy Soldiers melody demo from the reposition check and cancels both", () => {
+    vi.useFakeTimers();
+    const mount = document.createElement("main");
+    document.body.append(mount);
+    try {
+      createTestShell(mount);
+      mount.querySelector<HTMLButtonElement>('[data-route="toy-soldiers"]')?.click();
+      FakeAudioElement.playedSources = [];
+
+      mount.querySelector<HTMLButtonElement>("[data-toy-check]")?.click();
+      expect(mount.querySelector<HTMLElement>("[data-source-toy-board]")?.getAttribute("aria-busy")).toBe("true");
+      expect(mount.querySelector(".m08-toy-feedback-flash")).toBeNull();
+      expect(lastPlayedSource()).toContain("sound-1");
+
+      vi.advanceTimersByTime(1000);
+      expect(lastPlayedSource()).toContain("sound-3");
+
+      mount.querySelector<HTMLButtonElement>('[data-toy-soldier="0"]')?.click();
+      expect(mount.querySelector(".m08-toy-wrong-flash")?.getAttribute("data-source-symbol")).toContain("0027");
+      expect(lastPlayedSource()).toContain("sound-15");
+      expect(document.activeElement).toBe(mount.querySelector('[data-toy-soldier="0"]'));
+
+      vi.advanceTimersByTime(1000);
+      expect(lastPlayedSource()).toContain("sound-7");
+      vi.advanceTimersByTime(7000);
+      expect(mount.querySelector<HTMLElement>('[role="status"]')?.textContent).toContain("not correct yet");
+      expect(mount.querySelector(".m08-toy-correct-label")).toBeNull();
+      expect(mount.querySelector<HTMLElement>("[data-source-toy-board]")?.getAttribute("aria-busy")).toBe("false");
+
+      mount.querySelector<HTMLButtonElement>("[data-toy-check]")?.click();
+      const playCountBeforeNavigation = FakeAudioElement.playedSources.length;
+      mount.querySelector<HTMLButtonElement>('[data-route="alice-puzzles"]')?.click();
+      vi.advanceTimersByTime(9000);
+      expect(FakeAudioElement.playedSources).toHaveLength(playCountBeforeNavigation);
+    } finally {
+      mount.remove();
+      vi.useRealTimers();
+    }
   });
 
   it("uses real local image assets for reading activities", () => {

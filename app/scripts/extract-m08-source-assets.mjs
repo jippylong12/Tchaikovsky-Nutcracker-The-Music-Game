@@ -304,6 +304,47 @@ function promoteAlias(sourceId, generatedName, promotedName) {
   );
 }
 
+function promoteRenderedSymbol({ sourceId, symbolId, promotedName, width, height, layout = "centered" }) {
+  const source = sources.find((candidate) => candidate.id === sourceId);
+  if (!source) throw new Error(`Unknown M08 source id for symbol promotion: ${sourceId}`);
+  const sourcePath = join(projectRoot, source.swf);
+  const helperRoot = join(generatedRoot, sourceId, "promoted-symbols");
+  const symbolSwf = join(helperRoot, `symbol-${symbolId}.swf`);
+  const wrappedSwf = join(helperRoot, `symbol-${symbolId}-wrapped.swf`);
+  const renderedPng = join(helperRoot, `symbol-${symbolId}-wrapped.png`);
+  const promotedPath = join(promotedRoot, promotedName);
+  const canvasWidth = layout === "wide" ? 1536 : 2048;
+  const canvasHeight = layout === "wide" ? 256 : 2048;
+  const x = layout === "wide" ? 0 : canvasWidth / 2;
+  const y = layout === "wide" ? 0 : canvasHeight / 2;
+
+  mkdirSync(helperRoot, { recursive: true });
+  execFileSync("swfextract", ["-i", String(symbolId), "-o", symbolSwf, sourcePath], { stdio: "pipe" });
+  execFileSync("swfcombine", [
+    "--stack1",
+    "-X", String(canvasWidth),
+    "-Y", String(canvasHeight),
+    "-x", String(x),
+    "-y", String(y),
+    "-o", wrappedSwf,
+    symbolSwf,
+  ], { stdio: "pipe" });
+  execFileSync("swfrender", ["-o", renderedPng, wrappedSwf], { stdio: "pipe" });
+  execFileSync("magick", [
+    renderedPng,
+    "-trim",
+    "+repage",
+    "-resize", `${width}x${height}!`,
+    "-depth", "8",
+    "-define", "png:color-type=6",
+    "-define", "png:exclude-chunks=date,time",
+    "-strip",
+    promotedPath,
+  ]);
+
+  return { sourceId, symbolId, promotedName, width, height, layout };
+}
+
 function promoteSemanticImages() {
   const aliases = [
     ["childrens-album", "jpeg3-279.png", "childrens-album-scene.png"],
@@ -319,6 +360,7 @@ function promoteSemanticImages() {
     ["orchestra", "lossless-730.png", "orchestra-stage.png"],
     ["alice-chooser", "jpeg3-67.png", "alice-chooser-jpeg3-67.png"],
     ["alice-chooser", "lossless-85.png", "alice-chooser-lossless-85.png"],
+    ["waltz", "root-probe.png", "waltz-source-gradient.png"],
   ];
   const loopyImageIds = [84, 102, 110, 106, 85, 70, 73, 62];
   const loopyStageIds = [88, 106, 114, 110, 89, 74, 77, 66];
@@ -368,7 +410,21 @@ function promoteSemanticImages() {
   for (const [sourceId, generatedName, promotedName] of aliases) {
     promoteAlias(sourceId, generatedName, promotedName);
   }
-  return aliases.map(([sourceId, generatedName, promotedName]) => ({ sourceId, generatedName, promotedName }));
+  const renderedSymbols = [
+    { sourceId: "toy-soldiers", symbolId: 20, promotedName: "toy-soldiers-field.png", width: 509, height: 272 },
+    { sourceId: "toy-soldiers", symbolId: 21, promotedName: "toy-soldiers-moving-note.png", width: 92, height: 124 },
+    { sourceId: "toy-soldiers", symbolId: 24, promotedName: "toy-soldiers-staff.png", width: 487, height: 176 },
+    { sourceId: "toy-soldiers", symbolId: 25, promotedName: "toy-soldiers-correct-flash.png", width: 79, height: 81 },
+    { sourceId: "toy-soldiers", symbolId: 27, promotedName: "toy-soldiers-wrong-flash.png", width: 85, height: 94 },
+    { sourceId: "toy-soldiers", symbolId: 29, promotedName: "toy-soldiers-soldier.png", width: 42, height: 42 },
+    { sourceId: "toy-soldiers", symbolId: 32, promotedName: "toy-soldiers-play-button-body.png", width: 177, height: 42 },
+    { sourceId: "toy-soldiers", symbolId: 34, promotedName: "toy-soldiers-play-button-label.png", width: 92, height: 15, layout: "wide" },
+    { sourceId: "toy-soldiers", symbolId: 37, promotedName: "toy-soldiers-correct-label.png", width: 288, height: 31, layout: "wide" },
+  ].map(promoteRenderedSymbol);
+  return [
+    ...aliases.map(([sourceId, generatedName, promotedName]) => ({ sourceId, generatedName, promotedName })),
+    ...renderedSymbols,
+  ];
 }
 
 preflightInputs();

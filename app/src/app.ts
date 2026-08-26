@@ -117,6 +117,9 @@ import {
   orchestraInstrumentSoundId,
   orchestraInstruments,
   orchestraWinSoundId,
+  toySoldierCorrectNotes,
+  toySoldierInitialNotes,
+  toySoldierSoundId,
   toySoldiersAreCorrect,
 } from "./data/m08Games";
 import { getRouteById, isRouteId, routes, type RouteDefinition, type RouteId } from "./routes";
@@ -170,6 +173,8 @@ type ShellState = {
   orchestraFeedback: "correct" | "wrong" | "win" | null;
   toySoldierNotes: number[];
   toyFeedback: "correct" | "wrong" | null;
+  toyMarchIndex: number | null;
+  toyPlaybackKind: "check" | "demo" | null;
   alicePuzzle: number;
   aliceDialValues: [number, number, number];
   aliceFeedback: "correct" | "wrong" | null;
@@ -313,8 +318,10 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     orchestraPromptId: null,
     orchestraCorrectIds: [],
     orchestraFeedback: null,
-    toySoldierNotes: [8, 7, 6, 5, 4, 3, 2, 1],
+    toySoldierNotes: [...toySoldierInitialNotes],
     toyFeedback: null,
+    toyMarchIndex: null,
+    toyPlaybackKind: null,
     alicePuzzle: 1,
     aliceDialValues: [0, 0, 0],
     aliceFeedback: null,
@@ -322,12 +329,20 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     nutHouseFeedback: null,
   };
   const melodyTimerIds = new Set<number>();
+  const toyTimerIds = new Set<number>();
   let suppressNextNutHouseFocusPreview = false;
 
   const stopMelodyPlayback = () => {
     melodyTimerIds.forEach((timerId) => window.clearTimeout(timerId));
     melodyTimerIds.clear();
     shellState.melodyDemoPlaying = false;
+  };
+
+  const stopToyMarchPlayback = () => {
+    toyTimerIds.forEach((timerId) => window.clearTimeout(timerId));
+    toyTimerIds.clear();
+    shellState.toyMarchIndex = null;
+    shellState.toyPlaybackKind = null;
   };
 
   const render = (focusSelector?: string, fallbackFocusSelector?: string) => {
@@ -1033,26 +1048,56 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       });
     });
 
+    const startToyPlayback = (
+      kind: "check" | "demo",
+      notes: readonly number[],
+      focusSelector: string,
+    ) => {
+      stopToyMarchPlayback();
+      audio.stopSceneAudio();
+      shellState.activeAudioId = null;
+      shellState.toyFeedback = null;
+      shellState.toyPlaybackKind = kind;
+      const playbackNotes = [...notes];
+      const playStep = (index: number) => {
+        shellState.toyMarchIndex = index;
+        audio.playOneShot(
+          getM08Asset(`/audio/embedded/toy-soldiers/sound-${toySoldierSoundId(playbackNotes[index])}.mp3`),
+        );
+        render(focusSelector, "[data-source-toy-board]");
+      };
+      playStep(0);
+      for (let index = 1; index < playbackNotes.length; index += 1) {
+        const timerId = window.setTimeout(() => {
+          toyTimerIds.delete(timerId);
+          playStep(index);
+        }, index * 1000);
+        toyTimerIds.add(timerId);
+      }
+      const completionTimerId = window.setTimeout(() => {
+        toyTimerIds.delete(completionTimerId);
+        shellState.toyMarchIndex = null;
+        shellState.toyPlaybackKind = null;
+        shellState.toyFeedback = kind === "check"
+          ? toySoldiersAreCorrect(playbackNotes) ? "correct" : "wrong"
+          : null;
+        render(focusSelector, "[data-source-toy-board]");
+      }, playbackNotes.length * 1000);
+      toyTimerIds.add(completionTimerId);
+    };
+
     mount.querySelectorAll<HTMLButtonElement>("[data-toy-soldier]").forEach((button) => {
       button.addEventListener("click", () => {
         const soldier = Number(button.dataset.toySoldier);
         if (soldier < 0 || soldier > 7) return;
-        const nextNote = (shellState.toySoldierNotes[soldier] % 8) + 1;
+        const nextNote = (shellState.toySoldierNotes[soldier] + 1) % 11;
         shellState.toySoldierNotes[soldier] = nextNote;
-        shellState.toyFeedback = null;
-        audio.playOneShot(getM08Asset(`/audio/embedded/toy-soldiers/sound-${nextNote * 2 - 1}.mp3`));
-        render("[data-toy-soldier]", "[data-source-toy-board]");
+        startToyPlayback("check", shellState.toySoldierNotes, `[data-toy-soldier="${soldier}"]`);
       });
     });
 
     mount.querySelector<HTMLButtonElement>("[data-toy-check]")?.addEventListener("click", () => {
-      shellState.toyFeedback = toySoldiersAreCorrect(shellState.toySoldierNotes) ? "correct" : "wrong";
-      render("[data-toy-check]", "[data-source-toy-board]");
-    });
-
-    mount.querySelector<HTMLButtonElement>("[data-waltz-play]")?.addEventListener("click", () => {
-      if (shellState.activeAudioId) stopSceneAudio();
-      else playSceneAudio(getM08Asset("/audio/waltz/MP3Wedding3.wav"), true);
+      startToyPlayback("demo", toySoldierCorrectNotes, "[data-toy-check]");
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-alice-puzzle]").forEach((button) => {
@@ -1188,14 +1233,19 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     shellState.pendingNutcrackerSongChange = null;
     shellState.pendingNutcrackerSongExit = null;
     stopMelodyPlayback();
+    stopToyMarchPlayback();
     audio.stopSceneAudio();
     shellState.activeAudioId = null;
     shellState.activeSuiteTrackId = null;
+    if (routeId === "waltz") {
+      audio.playOneShot(getM08Asset("/audio/waltz/MP3Wedding3.wav"));
+    }
     render();
   };
 
   const stopSceneAudio = () => {
     stopMelodyPlayback();
+    stopToyMarchPlayback();
     audio.stopSceneAudio();
     shellState.activeAudioId = null;
     shellState.activeSuiteTrackId = null;
@@ -1226,6 +1276,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.nutcrackerChooserWarningOpen = false;
       shellState.pendingNutcrackerSongChange = null;
       shellState.pendingNutcrackerSongExit = null;
+      stopToyMarchPlayback();
       audio.stopSceneAudio();
       shellState.activeAudioId = null;
       shellState.activeSuiteTrackId = null;
@@ -1272,6 +1323,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
 
     if (action === "reset-progress") {
       stopMelodyPlayback();
+      stopToyMarchPlayback();
       audio.stopSceneAudio();
       shellState.activeAudioId = null;
       shellState.activeSuiteTrackId = null;
@@ -1286,8 +1338,10 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.orchestraPromptId = null;
       shellState.orchestraCorrectIds = [];
       shellState.orchestraFeedback = null;
-      shellState.toySoldierNotes = [8, 7, 6, 5, 4, 3, 2, 1];
+      shellState.toySoldierNotes = [...toySoldierInitialNotes];
       shellState.toyFeedback = null;
+      shellState.toyMarchIndex = null;
+      shellState.toyPlaybackKind = null;
       shellState.alicePuzzle = 1;
       shellState.aliceDialValues = [0, 0, 0];
       shellState.aliceFeedback = null;
@@ -1489,7 +1543,7 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
   }
 
   if (route.id === "waltz") {
-    return renderWaltz(shellState.activeAudioId !== null);
+    return renderWaltz();
   }
 
   if (route.id === "alice-puzzles") {
@@ -2230,43 +2284,67 @@ function renderOrchestra(state: ShellState, unlocked: boolean): string {
   `;
 }
 
+const toySoldierSourceXs = [126.8, 178.95, 239.85, 287.85, 341.8, 398.8, 443.8, 491.3] as const;
+
 function renderToySoldiers(state: ShellState): string {
-  const feedback = state.toyFeedback === "correct"
-    ? "THE SOLDIERS ARE IN ASCENDING PITCH ORDER"
-    : state.toyFeedback === "wrong"
-      ? "THE MARCH IS NOT IN ORDER YET"
-      : "SET EACH SOLDIER'S NOTE FROM LOW TO HIGH";
+  const activeMarchIndex = state.toyMarchIndex;
+  const activeMarchNote = activeMarchIndex !== null ? state.toySoldierNotes[activeMarchIndex] : null;
+  const activeMarchX = activeMarchIndex !== null ? toySoldierSourceXs[activeMarchIndex] : null;
+  const activeMarchIsCorrect = activeMarchIndex !== null && activeMarchNote === activeMarchIndex + 1;
+  const showMarchFeedback = state.toyPlaybackKind === "check";
   return `
     <div class="scene-body m08-scene m08-toy-scene" data-source-toy-board tabindex="-1"
+      aria-busy="${state.toyPlaybackKind !== null}"
       data-source-swf="analysis/setup/app/games/toysoldiersgame/toysoldiersgame.swf"
       data-source-frame="640 x 480, one frame at 12 fps"
-      data-source-action="soldier_0..7 drag between y=85 and y=300 on 11 snap positions; correct_note=[1,2,3,4,5,6,7,8]; check then march"
-      data-source-fallback="button id 30 contains an unresolved child and renders incomplete; staff and keyboard-accessible soldier controls reproduce the recovered snap/check behavior">
-      <h1 class="m08-title">TOY SOLDIERS</h1>
-      <div class="m08-staff" aria-hidden="true">${Array.from({ length: 5 }, () => "<i></i>").join("")}</div>
-      <div class="m08-soldiers" role="group" aria-label="Soldier pitch positions" data-source-classification="documented fallback">
-        ${state.toySoldierNotes.map((note, index) => `<button type="button" data-toy-soldier="${index}" style="--note:${note}"
-          aria-label="Soldier ${index + 1}, note ${note}"><span>♞</span><strong>${note}</strong></button>`).join("")}
+      data-source-action="soldier_0..7 drag between y=85 and y=300 on y_coords[i]=300-(21.5*i), then run the march check; Play Music runs correct_note=[1,2,3,4,5,6,7,8]"
+      data-source-fallback="button id 0030 does not flatten locally; its recoverable child shape id 0029 is promoted for all eight keyboard-operable soldier controls">
+      <img class="m08-toy-field" src="${getM08Asset("/toy-soldiers-field.png")}" alt="" aria-hidden="true"
+        data-source-classification="original asset" data-source-symbol="shape id 0020" />
+      <img class="m08-toy-moving-note" src="${getM08Asset("/toy-soldiers-moving-note.png")}" alt="" aria-hidden="true"
+        data-source-classification="original asset" data-source-symbol="shape id 0021 in sprite id 0023 frames 1-20" />
+      <img class="m08-toy-staff" src="${getM08Asset("/toy-soldiers-staff.png")}" alt="" aria-hidden="true"
+        data-source-classification="original asset" data-source-symbol="shape id 0024" />
+      ${showMarchFeedback && activeMarchNote !== null && activeMarchX !== null ? `<img
+        class="m08-toy-feedback-flash ${activeMarchIsCorrect ? "m08-toy-correct-flash" : "m08-toy-wrong-flash"}"
+        src="${getM08Asset(activeMarchIsCorrect ? "/toy-soldiers-correct-flash.png" : "/toy-soldiers-wrong-flash.png")}" alt="" aria-hidden="true"
+        style="--source-x:${activeMarchX};--note:${activeMarchNote}"
+        data-source-classification="original asset"
+        data-source-symbol="${activeMarchIsCorrect ? "note_flash shape id 0025" : "wrong_note_flash shape id 0027"}" />` : ""}
+      <div class="m08-soldiers" role="group" aria-label="Soldier pitch positions" data-source-classification="swf-derived recreation">
+        ${state.toySoldierNotes.map((note, index) => `<button type="button" data-toy-soldier="${index}"
+          style="--source-x:${toySoldierSourceXs[index]};--note:${note}"
+          aria-label="Soldier ${index + 1}, pitch position ${note}, range 0 to 10">
+          <img src="${getM08Asset("/toy-soldiers-soldier.png")}" alt="" aria-hidden="true" />
+        </button>`).join("")}
       </div>
-      <button class="m08-source-button m08-check" type="button" data-toy-check>CHECK MARCH</button>
-      <p class="m08-feedback" aria-live="polite">${feedback}</p>
+      <button class="m08-toy-play" type="button" data-toy-check aria-label="Play Music: hear the correct melody">
+        <img class="m08-toy-play-body" src="${getM08Asset("/toy-soldiers-play-button-body.png")}" alt="" aria-hidden="true"
+          data-source-classification="original asset" data-source-symbol="shape id 0032" />
+        <img class="m08-toy-play-label" src="${getM08Asset("/toy-soldiers-play-button-label.png")}" alt="" aria-hidden="true"
+          data-source-classification="original asset" data-source-symbol="text id 0034" />
+      </button>
+      ${state.toyFeedback === "correct" ? `<img class="m08-toy-correct-label"
+        src="${getM08Asset("/toy-soldiers-correct-label.png")}" alt="CORRECT!!!!"
+        data-source-classification="original asset" data-source-symbol="text id 0037, march frame 98" />` : ""}
+      <p class="sr-only" role="status" aria-live="polite">${state.toyFeedback === "correct"
+        ? "The soldiers are correct."
+        : state.toyFeedback === "wrong"
+          ? "The soldiers are not correct yet."
+          : ""}</p>
     </div>
   `;
 }
 
-function renderWaltz(isPlaying: boolean): string {
+function renderWaltz(): string {
   return `
     <div class="scene-body m08-scene m08-waltz-scene"
       data-source-swf="analysis/setup/app/games/wedding/waltz.swf"
       data-source-frame="785 frames at 12 fps; approximately 65.4 seconds"
-      data-source-action="timeline and bundled MP3Wedding3.wav only; no recovered gameplay or game-key action"
-      data-source-fallback="the root renderer yields only the source gray gradient while timeline display objects remain unresolved; no invented visual sequence is claimed">
-      <div class="m08-waltz-gradient" data-source-classification="swf-derived recreation"></div>
-      <p class="m08-waltz-overline">785-FRAME SOURCE TIMELINE</p>
-      <h1>WALTZ</h1>
-      <p>12 frames per second · 01:05</p>
-      <button class="m08-source-button m08-waltz-play" type="button" data-waltz-play>${isPlaying ? "STOP" : "PLAY WALTZ"}</button>
-      <p class="m08-feedback">${isPlaying ? "PLAYING THE BUNDLED SOURCE MUSIC" : "READY"}</p>
+      data-source-action="the root timeline begins immediately with its sound stream; route entry plays bundled MP3Wedding3.wav once; no recovered gameplay or game-key action"
+      data-source-fallback="the local renderer resolves only this 550 x 400 gray source surface; later timeline display objects remain unresolved">
+      <img class="m08-waltz-source" src="${getM08Asset("/waltz-source-gradient.png")}" alt="" aria-hidden="true"
+        data-source-classification="swf-derived recreation" data-source-symbol="root frame probe" />
     </div>
   `;
 }

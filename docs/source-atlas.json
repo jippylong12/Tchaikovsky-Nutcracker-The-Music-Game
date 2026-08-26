@@ -691,9 +691,19 @@
       "title": "Toy Soldiers game",
       "routeIds": ["toy-soldiers"],
       "lifecycle": "implemented-review",
-      "classifications": ["original source text", "inferred behavior", "documented fallback"],
+      "classifications": ["original asset", "original source text", "SWF-derived recreation", "inferred behavior", "documented fallback"],
       "sourceInputs": ["analysis/setup/app/games/toysoldiersgame/toysoldiersgame.swf"],
-      "promotedAssets": [],
+      "promotedAssets": [
+        "app/src/assets/m08-source/toy-soldiers-field.png",
+        "app/src/assets/m08-source/toy-soldiers-moving-note.png",
+        "app/src/assets/m08-source/toy-soldiers-staff.png",
+        "app/src/assets/m08-source/toy-soldiers-correct-flash.png",
+        "app/src/assets/m08-source/toy-soldiers-wrong-flash.png",
+        "app/src/assets/m08-source/toy-soldiers-soldier.png",
+        "app/src/assets/m08-source/toy-soldiers-play-button-body.png",
+        "app/src/assets/m08-source/toy-soldiers-play-button-label.png",
+        "app/src/assets/m08-source/toy-soldiers-correct-label.png"
+      ],
       "evidenceDocs": ["docs/m08-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-341", "JIP-841", "JIP-842", "JIP-843", "JIP-844", "JIP-845"],
       "fallbackEvidence": [
@@ -707,27 +717,30 @@
           "toolLimitation": {
             "capability": "interactive-timeline-flattening",
             "tool": "SWFTools",
-            "observedFailure": "SWFTools cannot flatten the complete Toy Soldiers board because button id 30 has an unknown child; only staff primitives render."
+            "observedFailure": "SWFTools cannot flatten the interactive button timeline: the root probe exposes the field, cyan moving-shape frame, staff, and unhidded feedback shapes but omits every button-backed soldier/control; isolated sprite id 0031 renders transparent because button id 0030 is unresolved."
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes the recoverable source behavior and eight source note sounds with a documented keyboard-accessible staff layer.",
-            "retainedGap": "Full interactive Flash drag timeline playback and the original soldier artwork remain unavailable."
+            "details": "The runtime composes promoted field, moving-note, staff, soldier shape, Play Music control, correct/wrong flashes, and correct label at recovered source coordinates with the 11-slot sound map, the post-reposition march check, and the separate eight-step correct-note demo.",
+            "retainedGap": "Exact pointer-drag replay and the root usmus help/exit timeline remain unavailable; keyboard activation advances the recovered snap positions."
           },
           "evidenceDoc": "docs/m08-mini-games-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "The eight-soldier pitch order, 11 snap-position evidence, exact source note sounds, check behavior, no-key boundary, and unresolved source-button limitation are implemented; Marcus visual approval remains open."
+      "auditFinding": "The prior invented beige/knight surface is replaced by promoted source vector layers, exact authored positions, all 11 pitch slots, separate source demo/check sequences, timed feedback, and the no-key boundary; Marcus visual approval remains open."
     },
     {
       "id": "waltz",
       "title": "Waltz game",
       "routeIds": ["waltz"],
       "lifecycle": "implemented-review",
-      "classifications": ["original source text", "inferred behavior", "documented fallback"],
-      "sourceInputs": ["analysis/setup/app/games/wedding/waltz.swf"],
-      "promotedAssets": [],
+      "classifications": ["SWF-derived recreation", "inferred behavior", "documented fallback"],
+      "sourceInputs": [
+        "analysis/setup/app/games/wedding/waltz.swf",
+        "analysis/setup/app/games/wedding/MP3Wedding3.wav"
+      ],
+      "promotedAssets": ["app/src/assets/m08-source/waltz-source-gradient.png"],
       "evidenceDocs": ["docs/m08-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-341", "JIP-841", "JIP-842", "JIP-843", "JIP-844", "JIP-845"],
       "fallbackEvidence": [
@@ -745,14 +758,14 @@
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime retains the exact timeline facts and bundled source music with a limited source-derived gradient layer.",
+            "details": "The runtime centers the promoted 550 x 400 root probe at source size and starts bundled MP3Wedding3.wav once on route entry without adding viewport text or controls.",
             "retainedGap": "Full source timeline playback and unresolved animated display-list imagery remain unavailable."
           },
           "evidenceDoc": "docs/m08-mini-games-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "The exact 785-frame timeline, bundled source audio, and absence of recovered gameplay or key behavior are represented without invented mechanics; Marcus visual approval remains open."
+      "auditFinding": "The exact 785-frame timeline boundary, automatic one-pass bundled source audio, promoted root probe, and absence of recovered gameplay or key behavior are represented without invented viewport UI; Marcus visual approval remains open."
     },
     {
       "id": "alice-puzzles",

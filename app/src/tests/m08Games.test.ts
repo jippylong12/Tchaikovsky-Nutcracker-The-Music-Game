@@ -14,7 +14,9 @@ import {
   orchestraInstrumentSoundIds,
   orchestraWinSoundId,
   orchestraInstruments,
+  toySoldierInitialNotes,
   toySoldierCorrectNotes,
+  toySoldierSoundId,
   toySoldiersAreCorrect,
 } from "../data/m08Games";
 
@@ -42,7 +44,10 @@ describe("M08 recovered game rules", () => {
     expect(chooseOrchestraPrompt([1, 2, 3], 0)).toBe(4);
     expect(chooseOrchestraPrompt([18], 0.999999)).toBe(1);
     expect(chooseOrchestraPrompt(Array.from({ length: 18 }, (_, index) => index + 1), 0.5)).toBeNull();
+    expect(toySoldierInitialNotes).toEqual([7, 4, 1, 8, 5, 2, 8, 10]);
     expect(toySoldierCorrectNotes).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(Array.from({ length: 11 }, (_, note) => toySoldierSoundId(note))).toEqual([13, 1, 3, 5, 7, 9, 11, 13, 15, 3, 5]);
+    expect(() => toySoldierSoundId(11)).toThrow(RangeError);
     expect(toySoldiersAreCorrect([1, 2, 3, 4, 5, 6, 7, 8])).toBe(true);
     expect(toySoldiersAreCorrect([1, 2, 3, 4, 5, 6, 7, 8, 9])).toBe(false);
     expect(alicePuzzleIsCorrect([1, 1, 1])).toBe(true);

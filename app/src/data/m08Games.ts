@@ -127,7 +127,19 @@ export function chooseOrchestraPrompt(
   return null;
 }
 
+// Root placements snap to y_coords[i] = 300 - (21.5 * i). These are the
+// authored starting y positions translated to their nearest 0..10 slots.
+export const toySoldierInitialNotes = [7, 4, 1, 8, 5, 2, 8, 10] as const;
 export const toySoldierCorrectNotes = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+export const toySoldierSoundIds = [13, 1, 3, 5, 7, 9, 11, 13, 15, 3, 5] as const;
+
+export function toySoldierSoundId(note: number): number {
+  const soundId = toySoldierSoundIds[note];
+  if (!Number.isInteger(note) || soundId === undefined) {
+    throw new RangeError(`Toy Soldier note must be an integer from 0 through 10; received ${note}`);
+  }
+  return soundId;
+}
 
 export function toySoldiersAreCorrect(notes: readonly number[]): boolean {
   return notes.length === toySoldierCorrectNotes.length
