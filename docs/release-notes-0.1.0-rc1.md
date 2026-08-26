@@ -21,7 +21,7 @@ npm run package:mac
 
 Open the generated DMG under `app/src-tauri/target/release/bundle/dmg/`, drag **Tchaikovsky Nutcracker Music Game.app** to Applications, then use Finder's **Open** command from the app's context menu if Gatekeeper warns about the non-notarized private build.
 
-Verified ARM64 DMG for this candidate: `Tchaikovsky Nutcracker Music Game_0.1.0_aarch64.dmg`, 150,822,236 bytes, SHA-256 `54815df301c8a4bb525e5772658d47c959dd0922aaf652fc290f582294f48a52`.
+Verified ARM64 DMG for this candidate: `Tchaikovsky Nutcracker Music Game_0.1.0_aarch64.dmg`, 162,022,167 bytes, SHA-256 `4966dca0af4fe6da39c01ccb7253d4e72675188fa09ada7ef485847081817387`.
 
 The package is ad-hoc signed, not Developer ID signed, and not notarized. Do not bypass Gatekeeper for any copy whose hash/source you do not trust.
 

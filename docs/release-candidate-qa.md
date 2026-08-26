@@ -8,12 +8,12 @@ Automated/package QA may move M09 work to **In Review**, but the release candida
 
 ## Fresh automated package evidence — 2026-08-26
 
-- `npm run package:mac` passed after the production frontend built 678 modules and the source-local reader bundle validator confirmed distinct story/biography/ballet assets.
-- App bundle: 154,848,796 bytes; content-tree SHA-256 `da5b5764321b649fad41d290898a35ce64b5343fded37d843ab34b5581395996`.
-- DMG: 150,822,236 bytes; SHA-256 `54815df301c8a4bb525e5772658d47c959dd0922aaf652fc290f582294f48a52`.
+- `npm run package:mac` passed after the production frontend built 739 modules and the source-local reader bundle validator confirmed distinct story/biography/ballet assets.
+- App bundle: 166,044,508 bytes; content-tree SHA-256 `0318ecdab0ca586a023f9d16ebd69a3a0032cb7634fe549341ca6d70205018d9`.
+- DMG: 162,022,167 bytes; SHA-256 `4966dca0af4fe6da39c01ccb7253d4e72675188fa09ada7ef485847081817387`.
 - Package verifier confirmed ARM64 Mach-O, bundle identifier `com.jippylong12.nutcracker-music-game`, version `0.1.0`, a valid complete ad-hoc bundle signature with no signing team, DMG integrity, read-only DMG mount, an exact mounted-app match, and expected app metadata inside the mounted image.
-- Bundled frontend inventory: 767 files, including 645 MP3/WAV files and 99 PNG/JPEG files. The lower count than the earlier preflight is intentional: a destructive asset-pipeline audit removed 27 stale/unreferenced ignored audio outputs while restoring the three source-mapped Story/Biography/Ballet narrations.
-- The final automated baseline passed 13 test files / 85 tests, typecheck, lint, production build, the 28-route/22-entry source-atlas gate, and all mandated Nutcracker source extractors. Two consecutive pipeline runs produced 275 runtime audio files with tree SHA-256 `5cb6a0c9fa7aba519e09e45b9504f26a8884f779602b5f5efaf7c77659180878`.
+- Bundled frontend inventory: 828 files, including 645 MP3/WAV files and 160 PNG/JPEG files. The final image count includes the source-reconstructed Tree, Flying Instruments, Alice, and Nut House captures added after the first packaging pass.
+- The final automated baseline passed 13 test files / 92 tests, typecheck, lint, production build, the 28-route/22-entry source-atlas gate with 83 promoted visual samples, and all mandated Nutcracker source extractors. Two consecutive pipeline runs produced 275 runtime audio files with tree SHA-256 `5cb6a0c9fa7aba519e09e45b9504f26a8884f779602b5f5efaf7c77659180878`.
 - The packaged app launched as its own local process, remained running for 15 seconds, and the exact task-owned process was then stopped. This is a process smoke, not visual approval.
 - The ignored machine-readable manifest is `app/src-tauri/target/release/bundle/release-candidate-manifest.json`.
 
@@ -44,8 +44,8 @@ Automated/package QA may move M09 work to **In Review**, but the release candida
 | Orchestra | Exercise prompts, wrong/replay/completed controls, all 18 instruments, and key4 | JIP-845 |
 | Toy Soldiers | Exercise invalid snaps, exact eight-soldier order, reset, and no invented key | JIP-845 |
 | Waltz | Verify long-form audio/timeline controls and documented visual fallback boundary | JIP-845 |
-| Tree Game | Complete all three rounds with source prompts/options and confirm key8 | JIP-825 |
-| Flying Instruments | Exercise source instrument/family mappings through completion and confirm key3 | JIP-825 |
+| Tree Game | Complete all three rounds with source prompts/options and confirm key8 | JIP-835 |
+| Flying Instruments | Exercise source instrument/family mappings through completion and confirm key3 | JIP-835 |
 | Trivia | Check correct, wrong/AGAIN, score progression, completion, and key9 | JIP-825 |
 | Melody | Check all difficulties, timed demonstrations, input lock, continue/new game, and key5 | JIP-830 |
 | Memory | Check level sizes, shuffle, error limits, revealed faces, zero-error state, and key2 | JIP-830 |
