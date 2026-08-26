@@ -271,6 +271,36 @@ function renderTrimmedSymbol(sourcePath, id, generatedPath, promotedPath) {
   return { id, output: relative(appRoot, promotedPath), sha256: sha256(readFileSync(promotedPath)) };
 }
 
+function renderCroppedSymbol(sourcePath, id, generatedPath, promotedPath, crop, operations = []) {
+  const symbolPath = `${generatedPath}.swf`;
+  const wrappedPath = `${generatedPath}.wrapped.swf`;
+  const renderPath = `${generatedPath}.wrapped.png`;
+  execFileSync("swfextract", ["-i", String(id), "-o", symbolPath, sourcePath], { stdio: "pipe" });
+  execFileSync("swfcombine", [
+    "--stack1",
+    "-X", "2048",
+    "-Y", "2048",
+    "-x", "1024",
+    "-y", "1024",
+    "-o", wrappedPath,
+    symbolPath,
+  ], { stdio: "pipe" });
+  execFileSync("swfrender", ["-o", renderPath, wrappedPath], { stdio: "pipe" });
+  mkdirSync(dirname(promotedPath), { recursive: true });
+  execFileSync("magick", [
+    renderPath,
+    "-crop", crop,
+    "+repage",
+    ...operations,
+    "-depth", "8",
+    "-define", "png:color-type=6",
+    "-define", "png:exclude-chunks=date,time",
+    "-strip",
+    promotedPath,
+  ]);
+  return { id, crop, operations, output: relative(appRoot, promotedPath), sha256: sha256(readFileSync(promotedPath)) };
+}
+
 function promoteCompanionFiles() {
   const mappings = [
     ["analysis/setup/app/games/trivia/questions", "data/trivia"],
@@ -373,6 +403,25 @@ const flyingShapeEvidence = [
   ),
 ];
 
+const melodySourcePath = join(projectRoot, "analysis/setup/app/games/melody/melody.swf");
+const melodySpriteEvidence = [
+  renderCroppedSymbol(
+    melodySourcePath,
+    170,
+    join(generatedRoot, "melody/makaka-170"),
+    join(promotedRoot, "melody-monkey.png"),
+    "285x311+809+887",
+    ["-flop"],
+  ),
+  renderCroppedSymbol(
+    melodySourcePath,
+    290,
+    join(generatedRoot, "melody/keyboard-290"),
+    join(promotedRoot, "melody-keyboard.png"),
+    "252x96+896+976",
+  ),
+];
+
 promoteCompanionFiles();
 const triviaSourcePath = join(projectRoot, "analysis/setup/app/games/trivia/trivia.swf");
 extractEmbeddedSound(triviaSourcePath, 100, join(promotedRoot, "audio/trivia/intro.mp3"));
@@ -398,6 +447,7 @@ writeFileSync(manifestPath, `${JSON.stringify({
     memoryShapeEvidence,
     treeShapeEvidence,
     flyingShapeEvidence,
+    melodySpriteEvidence,
     triviaEmbeddedSounds: { 100: "intro", 135: "correct", 150: "wrong" },
     flyingSoundExports: Object.fromEntries(flyingSoundExports),
   },

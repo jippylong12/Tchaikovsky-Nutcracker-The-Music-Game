@@ -872,19 +872,37 @@ describe("desktop app shell", () => {
   });
 
   it("renders and accepts the first recovered Funky Monkey melody", () => {
+    vi.useFakeTimers();
     const mount = document.createElement("main");
-    createTestShell(mount);
+    document.body.append(mount);
+    try {
+      createTestShell(mount);
 
-    mount.querySelector<HTMLButtonElement>('[data-route="melody"]')?.click();
-    expect(mount.textContent).toContain("SELECT LEVEL");
-    expect(mount.querySelectorAll("[data-melody-note]")).toHaveLength(17);
-    [5, 8, 10].forEach((note) => mount.querySelector<HTMLButtonElement>(`[data-melody-note="${note}"]`)?.click());
+      mount.querySelector<HTMLButtonElement>('[data-route="melody"]')?.click();
+      expect(mount.textContent).toContain("Select level:");
+      expect(mount.querySelectorAll("[data-melody-note]")).toHaveLength(0);
+      mount.querySelector<HTMLButtonElement>('[data-melody-difficulty="beg"]')?.click();
+      expect(mount.querySelectorAll("[data-melody-note]")).toHaveLength(17);
+      expect(mount.querySelector<HTMLButtonElement>('[data-melody-note="5"]')?.disabled).toBe(true);
+      expect(mount.querySelector<HTMLImageElement>(".m07-melody-monkey")?.src).toContain("melody-monkey");
+      expect(mount.querySelector<HTMLImageElement>(".m07-melody-keyboard img")?.src).toContain("melody-keyboard");
+      expect(document.activeElement).toBe(mount.querySelector("[data-source-melody-board]"));
+      vi.runAllTimers();
+      expect(mount.querySelector<HTMLButtonElement>("[data-melody-start]")?.textContent).toBe("Begin the game");
+      expect(document.activeElement).toBe(mount.querySelector("[data-melody-start]"));
+      mount.querySelector<HTMLButtonElement>("[data-melody-start]")?.click();
+      [5, 8, 10].forEach((note) => mount.querySelector<HTMLButtonElement>(`[data-melody-note="${note}"]`)?.click());
 
-    expect(mount.textContent).toContain("CONGRATULATIONS!");
-    expect(mount.querySelector<HTMLElement>(".m07-melody-source-fallback")?.dataset.sourceFallback).toContain(
-      "INVALID GRADIENT",
-    );
-    expect(mount.querySelector<HTMLButtonElement>('[data-melody-note="5"]')?.disabled).toBe(true);
+      expect(mount.textContent).toContain("CONGRATULATIONS!");
+      expect(mount.querySelector<HTMLElement>(".m07-melody-sequence-count")?.textContent).toBe("1of8");
+      expect(mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.textContent).toBe("CONTINUE");
+      expect(document.activeElement).toBe(mount.querySelector("[data-melody-next]"));
+      expect(mount.querySelector(".m07-melody-source-fallback")).toBeNull();
+      expect(mount.querySelector<HTMLButtonElement>('[data-melody-note="5"]')?.disabled).toBe(true);
+    } finally {
+      mount.remove();
+      vi.useRealTimers();
+    }
   });
 
   it("blocks input during the melody demonstration and cancels its pending notes on navigation", () => {
@@ -895,7 +913,7 @@ describe("desktop app shell", () => {
       FakeAudioElement.playCount = 0;
 
       mount.querySelector<HTMLButtonElement>('[data-route="melody"]')?.click();
-      mount.querySelector<HTMLButtonElement>("[data-melody-listen]")?.click();
+      mount.querySelector<HTMLButtonElement>('[data-melody-difficulty="beg"]')?.click();
       expect(mount.querySelector<HTMLButtonElement>('[data-melody-note="5"]')?.disabled).toBe(true);
       mount.querySelector<HTMLButtonElement>('[data-route="trivia"]')?.click();
       vi.runAllTimers();
@@ -907,24 +925,80 @@ describe("desktop app shell", () => {
     }
   });
 
-  it("grants the source melody key after sequence three and resets after the final sequence", () => {
+  it("cancels the automatic melody demonstration when scene audio is stopped", () => {
+    vi.useFakeTimers();
     const mount = document.createElement("main");
-    const progress = createTestShell(mount);
-    const sequences = getMelodySequences("beg");
+    try {
+      createTestShell(mount);
+      FakeAudioElement.playCount = 0;
 
-    mount.querySelector<HTMLButtonElement>('[data-route="melody"]')?.click();
-    sequences.forEach((sequence, index) => {
-      sequence.tokens.forEach((token) => {
-        mount.querySelector<HTMLButtonElement>(`[data-melody-note="${token.note}"]`)?.click();
+      mount.querySelector<HTMLButtonElement>('[data-route="melody"]')?.click();
+      mount.querySelector<HTMLButtonElement>('[data-melody-difficulty="beg"]')?.click();
+      mount.querySelector<HTMLButtonElement>('[data-action="audio-stop"]')?.click();
+      vi.runAllTimers();
+
+      expect(mount.querySelector<HTMLButtonElement>("[data-melody-start]")?.textContent).toBe("Begin the game");
+      expect(FakeAudioElement.playCount).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("retries an incorrect melody note in place without inventing a feedback gate", () => {
+    vi.useFakeTimers();
+    const mount = document.createElement("main");
+    document.body.append(mount);
+    try {
+      createTestShell(mount);
+      mount.querySelector<HTMLButtonElement>('[data-route="melody"]')?.click();
+      mount.querySelector<HTMLButtonElement>('[data-melody-difficulty="beg"]')?.click();
+      vi.runAllTimers();
+      mount.querySelector<HTMLButtonElement>("[data-melody-start]")?.click();
+
+      mount.querySelector<HTMLButtonElement>('[data-melody-note="6"]')?.click();
+      expect(mount.querySelector("[data-melody-next]")).toBeNull();
+      expect(mount.textContent).not.toContain("TRY AGAIN");
+      expect(mount.querySelector<HTMLButtonElement>('[data-melody-note="6"]')?.disabled).toBe(false);
+      expect(document.activeElement).toBe(mount.querySelector('[data-melody-note="6"]'));
+
+      [5, 8, 10].forEach((note) => mount.querySelector<HTMLButtonElement>(`[data-melody-note="${note}"]`)?.click());
+      expect(mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.textContent).toBe("CONTINUE");
+    } finally {
+      mount.remove();
+      vi.useRealTimers();
+    }
+  });
+
+  it("grants the source melody key after sequence three and resets after the final sequence", () => {
+    vi.useFakeTimers();
+    const mount = document.createElement("main");
+    try {
+      const progress = createTestShell(mount);
+      const sequences = getMelodySequences("beg");
+
+      mount.querySelector<HTMLButtonElement>('[data-route="melody"]')?.click();
+      mount.querySelector<HTMLButtonElement>('[data-melody-difficulty="beg"]')?.click();
+      sequences.forEach((sequence, index) => {
+        vi.runAllTimers();
+        mount.querySelector<HTMLButtonElement>("[data-melody-start]")?.click();
+        sequence.tokens.forEach((token) => {
+          mount.querySelector<HTMLButtonElement>(`[data-melody-note="${token.note}"]`)?.click();
+        });
+        if (index === 2) expect(progress.getSnapshot().gameKeys[5]).toBe(true);
+        if (index < sequences.length - 1) {
+          mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.click();
+          expect(mount.querySelector<HTMLElement>(".m07-melody-sequence-count")?.textContent).toBe(`${index + 2}of8`);
+        }
       });
-      if (index === 2) expect(progress.getSnapshot().gameKeys[5]).toBe(true);
-      if (index < sequences.length - 1) mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.click();
-    });
 
-    expect(mount.querySelector<HTMLElement>(".m07-melody-progress")?.textContent).toBe("8 / 8");
-    expect(mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.textContent).toBe("NEW GAME");
-    mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.click();
-    expect(mount.querySelector<HTMLElement>(".m07-melody-progress")?.textContent).toBe("1 / 8");
+      expect(mount.querySelector<HTMLElement>(".m07-melody-sequence-count")?.textContent).toBe("8of8");
+      expect(mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.textContent).toBe("NEW GAME");
+      mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.click();
+      expect(mount.textContent).toContain("Select level:");
+      expect(mount.querySelectorAll("[data-melody-note]")).toHaveLength(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("uses promoted source card art for the deterministic memory deck", () => {

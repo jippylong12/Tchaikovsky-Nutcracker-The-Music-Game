@@ -93,7 +93,6 @@ import {
   getTriviaQuestion,
   isFlyingFamily,
   isMelodyDifficulty,
-  melodyInputIsCorrect,
   memoryErrorsForPairs,
   memoryPairsForLevel,
   type FlyingFamily,
@@ -143,9 +142,12 @@ type ShellState = {
   triviaWrongCount: number;
   triviaFeedback: "correct" | "wrong" | null;
   melodyDifficulty: MelodyDifficulty;
+  melodyStarted: boolean;
+  melodyInputEnabled: boolean;
   melodySequenceIndex: number;
   melodyInput: number[];
-  melodyFeedback: "correct" | "wrong" | null;
+  melodyFeedback: "correct" | null;
+  melodyInputMistake: boolean;
   melodyDemoPlaying: boolean;
   memoryLevel: number;
   memoryDeck: readonly MemoryCard[];
@@ -290,9 +292,12 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     triviaWrongCount: 0,
     triviaFeedback: null,
     melodyDifficulty: "beg",
+    melodyStarted: false,
+    melodyInputEnabled: false,
     melodySequenceIndex: 0,
     melodyInput: [],
     melodyFeedback: null,
+    melodyInputMistake: false,
     melodyDemoPlaying: false,
     memoryLevel: 1,
     memoryDeck: createMemoryDeck(memoryPairsForLevel(1)),
@@ -700,72 +705,67 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         const difficulty = button.dataset.melodyDifficulty;
         if (!difficulty || !isMelodyDifficulty(difficulty)) return;
         shellState.melodyDifficulty = difficulty;
+        shellState.melodyStarted = true;
+        shellState.melodyInputEnabled = false;
         shellState.melodySequenceIndex = 0;
         shellState.melodyInput = [];
         shellState.melodyFeedback = null;
+        shellState.melodyInputMistake = false;
         stopMelodyPlayback();
-        render("[data-melody-listen]", "[data-source-melody-levels]");
+        startMelodyDemonstration();
       });
     });
 
-    mount.querySelector<HTMLButtonElement>("[data-melody-listen]")?.addEventListener("click", () => {
-      const sequences = getMelodySequences(shellState.melodyDifficulty);
-      const sequence = sequences[shellState.melodySequenceIndex % sequences.length];
-      if (!sequence) return;
-      stopMelodyPlayback();
-      audio.stopSceneAudio();
-      shellState.melodyDemoPlaying = true;
-      let delay = 0;
-      sequence.tokens.forEach((token) => {
-        const timerId = window.setTimeout(() => {
-          melodyTimerIds.delete(timerId);
-          if (!shellState.melodyDemoPlaying || shellState.routeId !== "melody") return;
-          shellState.activeAudioId = audio.playOneShot(getMelodyNoteAudio(token.note, token.length)).id;
-        }, delay);
-        melodyTimerIds.add(timerId);
-        delay += token.delayMs;
-      });
-      const completionTimerId = window.setTimeout(() => {
-        melodyTimerIds.delete(completionTimerId);
-        if (!shellState.melodyDemoPlaying || shellState.routeId !== "melody") return;
-        shellState.melodyDemoPlaying = false;
-        render("[data-melody-listen]", "[data-source-melody-keyboard]");
-      }, delay);
-      melodyTimerIds.add(completionTimerId);
-      render("[data-melody-listen]", "[data-source-melody-keyboard]");
+    mount.querySelector<HTMLButtonElement>("[data-melody-start]")?.addEventListener("click", () => {
+      shellState.melodyInputEnabled = true;
+      render("[data-melody-note]", "[data-source-melody-keyboard]");
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-melody-note]").forEach((button) => {
       button.addEventListener("click", () => {
-        if (shellState.melodyFeedback || shellState.melodyDemoPlaying) return;
+        if (shellState.melodyFeedback || shellState.melodyDemoPlaying || !shellState.melodyInputEnabled) return;
         const note = Number(button.dataset.melodyNote);
         const sequences = getMelodySequences(shellState.melodyDifficulty);
         const sequence = sequences[shellState.melodySequenceIndex % sequences.length];
         if (!sequence || !Number.isInteger(note) || note < 1 || note > 17) return;
         audio.playOneShot(getMelodyNoteAudio(note, "m"));
-        shellState.melodyInput.push(note);
+        const expectedToken = sequence.tokens[shellState.melodyInput.length];
+        if (expectedToken?.note === note) {
+          shellState.melodyInput.push(note);
+          shellState.melodyInputMistake = false;
+        } else {
+          shellState.melodyInputMistake = true;
+        }
         if (shellState.melodyInput.length >= sequence.tokens.length) {
-          if (melodyInputIsCorrect(sequence, shellState.melodyInput)) {
-            shellState.melodyFeedback = "correct";
-            shellState.melodySequenceIndex += 1;
-            if (shellState.melodySequenceIndex >= 3) progress.markGameKey(5);
-          } else {
-            shellState.melodyFeedback = "wrong";
-          }
+          shellState.melodyFeedback = "correct";
+          if (shellState.melodySequenceIndex + 1 === 3) progress.markGameKey(5);
+          shellState.melodyInputEnabled = false;
           shellState.melodyInput = [];
         }
-        render("[data-melody-note]", "[data-source-melody-keyboard]");
+        render(
+          shellState.melodyFeedback ? "[data-melody-next]" : `[data-melody-note="${note}"]`,
+          "[data-source-melody-keyboard]",
+        );
       });
     });
 
     mount.querySelector<HTMLButtonElement>("[data-melody-next]")?.addEventListener("click", () => {
       const sequences = getMelodySequences(shellState.melodyDifficulty);
-      if (shellState.melodyFeedback === "correct" && shellState.melodySequenceIndex >= sequences.length) {
+      if (shellState.melodyFeedback === "correct" && shellState.melodySequenceIndex >= sequences.length - 1) {
         shellState.melodySequenceIndex = 0;
         shellState.melodyInput = [];
+        shellState.melodyFeedback = null;
+        shellState.melodyInputMistake = false;
+        shellState.melodyInputEnabled = false;
+        shellState.melodyStarted = false;
+        render("[data-melody-difficulty]", "[data-source-melody-levels]");
+        return;
       }
+      if (shellState.melodyFeedback === "correct") shellState.melodySequenceIndex += 1;
       shellState.melodyFeedback = null;
-      render("[data-melody-listen]", "[data-source-melody-keyboard]");
+      shellState.melodyInputMistake = false;
+      shellState.melodyInputEnabled = false;
+      startMelodyDemonstration();
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-memory-card]").forEach((button) => {
@@ -1186,6 +1186,35 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
   };
 
+  const startMelodyDemonstration = () => {
+    const sequences = getMelodySequences(shellState.melodyDifficulty);
+    const sequence = sequences[shellState.melodySequenceIndex % sequences.length];
+    if (!sequence) return;
+    stopMelodyPlayback();
+    audio.stopSceneAudio();
+    shellState.melodyInputEnabled = false;
+    shellState.melodyInputMistake = false;
+    shellState.melodyDemoPlaying = true;
+    let delay = 0;
+    sequence.tokens.forEach((token) => {
+      const timerId = window.setTimeout(() => {
+        melodyTimerIds.delete(timerId);
+        if (!shellState.melodyDemoPlaying || shellState.routeId !== "melody") return;
+        shellState.activeAudioId = audio.playOneShot(getMelodyNoteAudio(token.note, token.length)).id;
+      }, delay);
+      melodyTimerIds.add(timerId);
+      delay += token.delayMs;
+    });
+    const completionTimerId = window.setTimeout(() => {
+      melodyTimerIds.delete(completionTimerId);
+      if (!shellState.melodyDemoPlaying || shellState.routeId !== "melody") return;
+      shellState.melodyDemoPlaying = false;
+      render("[data-melody-start]", "[data-source-melody-board]");
+    }, delay);
+    melodyTimerIds.add(completionTimerId);
+    render("[data-source-melody-board]", "[data-source-melody-keyboard]");
+  };
+
   const showSourceFlyingHelp = (sourceHelpElement: HTMLElement, event?: PointerEvent) => {
     const label = sourceHelpElement.dataset.sourceHelp;
     const flyingHelp = mount.querySelector<HTMLElement>(".source-flying-help");
@@ -1224,8 +1253,16 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   };
 
   const navigate = (routeId: RouteId) => {
-    if (routeId !== shellState.routeId) {
+    const routeChanged = routeId !== shellState.routeId;
+    if (routeChanged) {
       shellState.routeStack.push(shellState.routeId);
+    }
+    if (routeChanged && routeId === "melody") {
+      shellState.melodyStarted = false;
+      shellState.melodyInputEnabled = false;
+      shellState.melodyInput = [];
+      shellState.melodyFeedback = null;
+      shellState.melodyInputMistake = false;
     }
     shellState.routeId = routeId;
     shellState.helpOpen = false;
@@ -1276,6 +1313,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.nutcrackerChooserWarningOpen = false;
       shellState.pendingNutcrackerSongChange = null;
       shellState.pendingNutcrackerSongExit = null;
+      stopMelodyPlayback();
       stopToyMarchPlayback();
       audio.stopSceneAudio();
       shellState.activeAudioId = null;
@@ -1995,52 +2033,103 @@ function renderTriviaGame(state: ShellState, unlocked: boolean): string {
   `;
 }
 
+const melodyKeyboardHitTargets = [
+  [1, 12.8, 14.6, 56.8, 133.1],
+  [2, 44.5, 10.1, 39.3, 73.1],
+  [3, 59, 11.8, 58.7, 126.4],
+  [4, 87.5, 10.4, 44.3, 70.3],
+  [5, 106.1, 10.1, 46.7, 123],
+  [6, 140.8, 10.3, 50.4, 116.7],
+  [7, 168.5, 8.9, 33.9, 66.2],
+  [8, 177.9, 10.2, 50.8, 112.7],
+  [9, 208, 8.4, 34, 75.7],
+  [10, 222.3, 9.2, 50.7, 107.7],
+  [11, 244.9, 9.5, 38.6, 58.7],
+  [12, 266.1, 8.6, 37, 103],
+  [13, 294.1, 7.7, 38, 101.2],
+  [14, 306.1, 11.3, 35.5, 53.5],
+  [15, 321.6, 6.6, 46.3, 100.5],
+  [16, 345.8, 8.6, 33.1, 54.6],
+  [17, 355.9, 6.6, 36.4, 98],
+] as const;
+
 function renderMelodyGame(state: ShellState, unlocked: boolean): string {
   const sequences = getMelodySequences(state.melodyDifficulty);
   const sequence = sequences[state.melodySequenceIndex % Math.max(sequences.length, 1)];
+  const finalSequence = state.melodySequenceIndex >= sequences.length - 1;
   const levelLabels: readonly [MelodyDifficulty, string][] = [
     ["beg", "Beginner"],
     ["easy", "Easy"],
     ["inter", "Intermediate"],
     ["adv", "Advanced"],
   ];
+  const selectedLevelLabel = levelLabels.find(([difficulty]) => difficulty === state.melodyDifficulty)?.[1] ?? "Beginner";
 
   return `
     <div class="scene-body m07-scene m07-melody-scene" data-source-swf="analysis/setup/app/games/melody/melody.swf"
-      data-source-frame="root frame 2 label init; new_seq frame 8; fin frame 13">
+      data-source-frame="${state.melodyStarted ? "root frame 2 label init; new_seq frame 8; fin frame 13" : "root frame 1 level chooser"}">
       ${renderM07SourceFrame("melody", "analysis/setup/app/games/melody/melody.swf")}
-      <section class="m07-melody-levels" data-source-melody-levels
-        data-source-placement="root frame 1 theStarter sprite id 0050 at x 333 y 153">
-        <p>SELECT LEVEL</p>
-        <div>
-          ${levelLabels
-            .map(
-              ([difficulty, label]) => `<button type="button" data-melody-difficulty="${difficulty}"
-                aria-pressed="${state.melodyDifficulty === difficulty}">${label}</button>`,
-            )
-            .join("")}
-        </div>
-      </section>
-      <section class="m07-melody-board" aria-label="Funky Monkey melody sequence">
-        <div class="m07-melody-source-fallback" data-source-classification="documented fallback"
-          data-source-placement="makaka sprite id 0170 scale -0.703/0.703 x 250.20 y 220.15"
-          data-source-fallback="full sprite render blocked by INVALID GRADIENT and unknown child IDs; recovered source stage and controls remain layered">
-          <span aria-hidden="true">♪</span>
-        </div>
-        <p class="m07-melody-progress">${Math.min(state.melodySequenceIndex + 1, sequences.length)} / ${sequences.length}</p>
-        <button class="m07-source-button m07-melody-listen" type="button" data-melody-listen ${state.melodyFeedback || state.melodyDemoPlaying ? "disabled" : ""}>LISTEN</button>
-        <div class="m07-melody-keyboard" data-source-melody-keyboard
-          data-source-placement="keyboard sprite id 0290 scale 1.583 x 317.95 y 370.35">
-          ${Array.from({ length: 17 }, (_item, index) => `<button type="button" data-melody-note="${index + 1}" ${state.melodyFeedback || state.melodyDemoPlaying ? "disabled" : ""}
-            aria-label="Note ${index + 1}"><span aria-hidden="true">${index + 1}</span></button>`).join("")}
-        </div>
-        <p class="m07-feedback" aria-live="polite">${
-          state.melodyFeedback === "correct" ? "CONGRATULATIONS!" : state.melodyFeedback === "wrong" ? "TRY AGAIN" : ""
-        }</p>
-        ${state.melodyFeedback ? `<button class="m07-source-button m07-melody-next" type="button" data-melody-next>${state.melodyFeedback === "correct" && state.melodySequenceIndex >= sequences.length ? "NEW GAME" : "CONTINUE"}</button>` : ""}
-        ${unlocked ? '<p class="m07-source-reward" data-source-key="gameKey5">NEW GAME</p>' : ""}
-        <span class="sr-only">${sequence ? `Sequence ${sequence.id} has ${sequence.tokens.length} notes.` : "No sequence loaded."}</span>
-      </section>
+      ${
+        state.melodyStarted
+          ? `<section class="m07-melody-board" tabindex="-1" data-source-melody-board aria-label="Funky Monkey melody sequence">
+              <img class="m07-melody-monkey" src="${getM07Asset("/melody-monkey.png")}" alt="" aria-hidden="true"
+                data-source-classification="swf-derived recreation"
+                data-source-image="makaka sprite id 0170 frame 1, cropped from a centered 2048 x 2048 SWFTools wrapper and mirrored by the root -0.703 x scale"
+                data-source-placement="makaka sprite id 0170 scale -0.703/0.703 x 250.20 y 220.15" />
+              <div class="m07-melody-progress" data-source-placement="LEVEL text id 0302 instance x 452.05 plus internal x 44.00; level value x 452.05 y 125; MELODY text id 0298 instance x 454.05 plus internal x 37.35; sequence x 484.95, of instance x 513.45 plus internal x 4.50, total x 535.95 y 194.10">
+                <span class="m07-melody-level-label">LEVEL</span>
+                <strong>${escapeHtml(selectedLevelLabel)}</strong>
+                <span class="m07-melody-sequence-label">MELODY</span>
+                <span class="m07-melody-sequence-count"><b class="m07-melody-current-sequence">${Math.min(state.melodySequenceIndex + 1, sequences.length)}</b><i>of</i><b class="m07-melody-total-sequences">${sequences.length}</b></span>
+              </div>
+              ${
+                !state.melodyFeedback && !state.melodyDemoPlaying && !state.melodyInputEnabled
+                  ? `<button class="m07-melody-start" type="button" data-melody-start
+                      data-source-classification="original source text"
+                      data-source-placement="start_btn sprite id 0297 at x 327.95 y 98.65; text id 0291">Begin the game</button>`
+                  : ""
+              }
+              <div class="m07-melody-keyboard" data-source-melody-keyboard
+                data-source-placement="keyboard sprite id 0290 scale 1.583 x 317.95 y 370.35"
+                data-source-fallback="source key hit sprites retain unavailable button/timeline states; transparent DOM hit targets preserve pointer and keyboard input over the promoted source keyboard art">
+                <img src="${getM07Asset("/melody-keyboard.png")}" alt="" aria-hidden="true"
+                  data-source-classification="swf-derived recreation"
+                  data-source-image="keyboard sprite id 0290 recovered from a centered wrapper crop; button-backed missing children remain interactive DOM hit targets" />
+                <div class="m07-melody-key-targets">
+                  ${melodyKeyboardHitTargets.map(([note, x, y, width, height]) => `<button type="button" data-melody-note="${note}"
+                    style="--melody-key-x:${x}px;--melody-key-y:${y}px;--melody-key-width:${width}px;--melody-key-height:${height}px"
+                    ${state.melodyFeedback || state.melodyDemoPlaying || !state.melodyInputEnabled ? "disabled" : ""}
+                    aria-label="Note ${note}"></button>`).join("")}
+                </div>
+              </div>
+              <p class="m07-feedback${finalSequence ? " is-final" : ""}" aria-live="polite">${state.melodyFeedback ? "CONGRATULATIONS!" : ""}</p>
+              ${state.melodyFeedback ? `<button class="m07-melody-next${finalSequence ? " is-final" : ""}" type="button" data-melody-next>${finalSequence ? "NEW GAME" : "CONTINUE"}</button>` : ""}
+              ${unlocked ? '<span class="sr-only" data-source-key="gameKey5">Game key 5 unlocked.</span>' : ""}
+              <span class="sr-only" aria-live="polite">${
+                state.melodyDemoPlaying
+                  ? "Melody demonstration playing."
+                  : state.melodyInputMistake
+                    ? "That note was not next. Try the same note again."
+                    : state.melodyFeedback
+                      ? "CONGRATULATIONS!"
+                      : state.melodyInputEnabled
+                        ? `Note ${state.melodyInput.length + 1} of ${sequence?.tokens.length ?? 0}.`
+                        : "Demonstration complete. Begin the game."
+              }</span>
+              <span class="sr-only">${sequence ? `Sequence ${sequence.id} has ${sequence.tokens.length} notes.` : "No sequence loaded."}</span>
+            </section>`
+          : `<section class="m07-melody-levels" data-source-melody-levels
+              data-source-placement="root frame 1 level sprite id 0021 at x 331.25 y 223.90; source text id 0004 and button ids 0008, 0012, 0016, 0020">
+              <p>Select level:</p>
+              <div>
+                ${levelLabels
+                  .map(
+                    ([difficulty, label]) => `<button type="button" data-melody-difficulty="${difficulty}">${label}</button>`,
+                  )
+                  .join("")}
+              </div>
+            </section>`
+      }
     </div>
   `;
 }

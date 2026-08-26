@@ -27,7 +27,7 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 | `tree-game` | Source-backed scene layers, exact 12 hotspots and 3-round audio/key flow; timeline fallback and manual review open | `games/tree/tree.swf`, `Snd_1`…`Snd_3` | JIP-831 → JIP-835 |
 | `flying-instruments` | Dedicated source-backed route with 16 instrument images, embedded sounds and 3 level states; grid-motion fallback and manual review open | `games/flyinginstruments/flyinginstruments.swf` | JIP-831 → JIP-835 |
 | `trivia` | Source book, 106 questions, exact controls/counters and embedded feedback/key flow; timeline fallback and manual review open | `games/trivia/trivia.swf`, `questions/trivia.txt` | JIP-821 → JIP-825 |
-| `melody` | Source stage, 35 sequences, exact note audio and keyboard state; nested-sprite fallback and manual review open | `games/melody/melody.swf`, `snd/Melody.txt` | JIP-826 → JIP-830 |
+| `melody` | Source stage, recovered monkey/xylophone and piano art, 36 sequences, exact selector/play split, note audio and keyboard state; nested animation fallback and manual review open | `games/melody/melody.swf`, `snd/Melody.txt` | JIP-826 → JIP-830 |
 | `memory` | Source card art/audio and 5-to-18-pair progression; card-timeline fallback and manual review open | `games/memorygame/memory.swf` | JIP-826 → JIP-830 |
 | `alice-puzzles` | Twelve source puzzle movies, puzzle-local art and exact three-dial solution; display-list fallback and manual review open | `games/aliceSWF/` | JIP-846 → JIP-850 |
 | `nut-house` | Eight source rooms, exact mirror sequence, persisted room state and key 7; display-list fallback and manual review open | `games/nuthouse/`, `games/data/nuthouserooms.txt` | JIP-846 → JIP-850 |

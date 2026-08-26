@@ -506,7 +506,9 @@
       "sourceInputs": ["analysis/setup/app/games/melody/melody.swf", "analysis/setup/app/games/melody/snd/Melody.txt"],
       "promotedAssets": [
         "app/src/assets/m07-source/melody-stage.png",
-        "app/src/assets/m07-source/melody-curtain.png"
+        "app/src/assets/m07-source/melody-curtain.png",
+        "app/src/assets/m07-source/melody-monkey.png",
+        "app/src/assets/m07-source/melody-keyboard.png"
       ],
       "evidenceDocs": ["docs/m07-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-338", "JIP-826", "JIP-827", "JIP-828", "JIP-829", "JIP-830"],
@@ -521,18 +523,18 @@
           "toolLimitation": {
             "capability": "interactive-timeline-flattening",
             "tool": "SWFTools",
-            "observedFailure": "SWFTools cannot flatten the interactive melody timeline; it reports INVALID GRADIENT and unknown child IDs and writes no root PNG."
+            "observedFailure": "SWFTools cannot flatten the complete interactive melody timeline; root probes report missing JPEG support, INVALID GRADIENT, and unknown child IDs. Centered child wrappers recover sprite 0170's monkey/xylophone frame and sprite 0290's visible piano, while the latter still reports missing button children."
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes source-local promoted stage/frame layers with a TypeScript sequence player and DOM keyboard at the recovered placement.",
-            "retainedGap": "Full interactive monkey and keyboard sprite timeline playback remain unavailable."
+            "details": "The runtime separates the source level-selector and play states, composes source-local stage/frame layers with promoted monkey/xylophone and piano crops, overlays transparent DOM note targets at recovered n_1 through n_17 placements, and preserves per-note retry plus CONTINUE-driven sequence advancement.",
+            "retainedGap": "Exact animated monkey, key, and button timeline playback plus the renderer's damaged horizontal gradient strokes remain unavailable."
           },
           "evidenceDoc": "docs/m07-mini-games-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "All four source difficulty sets, exact note audio/timing, source labels, promoted scene layers, key gate, and nested-sprite renderer gap are implemented; Marcus visual approval remains open."
+      "auditFinding": "All four source difficulty sets, exact note audio/timing, source selector/play split and labels, per-note retry and CONTINUE transitions, promoted monkey/xylophone and piano art, key gate, and remaining nested-animation renderer gap are implemented; Marcus visual approval remains open."
     },
     {
       "id": "memory",
