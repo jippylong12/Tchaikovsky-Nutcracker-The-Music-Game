@@ -17,6 +17,7 @@ import { fileURLToPath } from "node:url";
 
 class FakeAudioElement implements AudioElementLike {
   static playCount = 0;
+  static playedSources: string[] = [];
   src = "";
   loop = false;
   muted = false;
@@ -25,11 +26,16 @@ class FakeAudioElement implements AudioElementLike {
   currentTime = 0;
   play = () => {
     FakeAudioElement.playCount += 1;
+    FakeAudioElement.playedSources.push(this.src);
     return Promise.resolve();
   };
   pause = () => undefined;
   load = () => undefined;
   addEventListener = () => undefined;
+}
+
+function lastPlayedSource(): string | undefined {
+  return FakeAudioElement.playedSources[FakeAudioElement.playedSources.length - 1];
 }
 
 function createMemoryPersistence(): ProgressPersistence {
@@ -57,6 +63,7 @@ function createTestShell(
       createAudioElement: () => new FakeAudioElement(),
     }),
     previewAudioPath: "/local-media/audio/activities/originals/theme1.mp3",
+    random: () => 0,
   });
   return progress;
 }
@@ -957,9 +964,13 @@ describe("desktop app shell", () => {
   it("mixes the exact Loopy Tunes track set and advances to tune two", () => {
     const mount = document.createElement("main");
     const progress = createTestShell(mount);
+    FakeAudioElement.playedSources = [];
 
     mount.querySelector<HTMLButtonElement>('[data-route="loopy-tunes"]')?.click();
     expect(mount.querySelector<HTMLElement>("[data-source-loopy-board]")?.dataset.sourceAction).toContain("1,3,5,7");
+    mount.querySelector<HTMLButtonElement>('[data-loopy-track="1"]')?.click();
+    expect(lastPlayedSource()).toContain("sound-9.mp3");
+    mount.querySelector<HTMLButtonElement>('[data-loopy-track="1"]')?.click();
     [1, 3, 5, 7].forEach((track) => {
       mount.querySelector<HTMLButtonElement>(`[data-loopy-track="${track}"]`)?.click();
     });
@@ -986,20 +997,48 @@ describe("desktop app shell", () => {
   it("uses the exact Orchestra prompt order and NutHouse room sequence", () => {
     const mount = document.createElement("main");
     const progress = createTestShell(mount);
+    FakeAudioElement.playedSources = [];
 
     mount.querySelector<HTMLButtonElement>('[data-route="orchestra"]')?.click();
     expect(mount.querySelectorAll("[data-orchestra-instrument]")).toHaveLength(18);
+    expect(mount.querySelector<HTMLButtonElement>('[data-orchestra-instrument="1"]')?.disabled).toBe(true);
+    mount.querySelector<HTMLButtonElement>("[data-orchestra-listen]")?.click();
+    expect(lastPlayedSource()).toContain("sound-17.mp3");
     mount.querySelector<HTMLButtonElement>('[data-orchestra-instrument="1"]')?.click();
+    expect(lastPlayedSource()).toContain("sound-17.mp3");
     expect(mount.textContent).toContain("LISTEN 2 / 18");
+    mount.querySelector<HTMLButtonElement>("[data-orchestra-listen]")?.click();
+    expect(lastPlayedSource()).toContain("sound-11.mp3");
+    mount.querySelector<HTMLButtonElement>('[data-orchestra-instrument="3"]')?.click();
+    expect(lastPlayedSource()).toContain("sound-10.mp3");
 
     mount.querySelector<HTMLButtonElement>('[data-route="nut-house"]')?.click();
     expect(mount.querySelector<HTMLElement>("[data-source-nut-house-board]")?.dataset.sourceAction).toContain(
       "8,3,1,7,6,4,5,2",
     );
+    mount.querySelector<HTMLButtonElement>('[data-nut-house-mirror="1"]')?.dispatchEvent(new Event("pointerenter"));
+    expect(lastPlayedSource()).toContain("nut-house-11/sound-9.mp3");
+    mount.querySelector<HTMLButtonElement>('[data-nut-house-mirror="1"]')?.click();
+    expect(lastPlayedSource()).toContain("nut-house-11/sound-10.mp3");
     mount.querySelector<HTMLButtonElement>('[data-nut-house-mirror="8"]')?.click();
+    expect(lastPlayedSource()).toContain("nut-house-11/sound-1.mp3");
     expect(progress.getSnapshot().nutHouse.openDoor).toBe(1);
     expect(mount.textContent).toContain("ROOM 12");
     expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-art")?.src).toContain("room-12-scene");
+  });
+
+  it("resets persisted and transient Nut House progress to room 11", () => {
+    const mount = document.createElement("main");
+    const progress = createTestShell(mount, (store) => store.setNutHouseOpenDoor(4));
+
+    mount.querySelector<HTMLButtonElement>('[data-route="nut-house"]')?.click();
+    expect(mount.textContent).toContain("ROOM 15");
+
+    mount.querySelector<HTMLButtonElement>('[data-action="reset-progress"]')?.click();
+
+    expect(progress.getSnapshot().nutHouse.openDoor).toBe(0);
+    expect(mount.textContent).toContain("ROOM 11");
+    expect(mount.querySelector<HTMLImageElement>(".m08-nut-house-art")?.src).toContain("room-11-scene");
   });
 
   it("keeps Toy Soldiers, Waltz, and Alice faithful to their recovered source boundaries", () => {

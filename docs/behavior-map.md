@@ -196,14 +196,15 @@ The full source inventory, locked hashes, per-SWF dimensions, promoted child lay
 | Reversed source title array | NEAPOLITAN SONG, MAZURKA, POLKA, GERMAN SONG, FRENCH SONG, ITALIAN SONG, RUSSIAN SONG, WALTZ | exact runtime source titles |
 | `saveCADoor1.exe` through `saveCADoor8.exe`; all doors then save key 6 | Door completion persists and all eight grant key 6 | `markChildrensDoor()` then `markGameKey(6)` |
 | Every `loopN.swf` sets `totalLoops=8`, `goodLoops=4`, and `myTrack1/3/5/7=1` | Tracks 1, 3, 5, and 7 are correct in all eight tunes | `loopyTunes` and `isLoopySelectionCorrect()` |
+| Every loop exports `all` as sound 1, then `loop8..loop0` as sounds 2..10 | Visible tracks 1..8 play sound ids `9,8,7,6,5,4,3,2` | `loopyTrackSoundId()` |
 | Final Loopy source action saves key 3 | Legacy key overlap with Flying Instruments is real source behavior | `markGameKey(3)` after tune 8 |
 
 ### Orchestra, Toy Soldiers, and Waltz
 
 | Source evidence | Exact behavior | Modern method |
 | --- | --- | --- |
-| Orchestra `maxInst=18`, labels and sound ids 1-18 | One source prompt at a time in exact OBOE-through-FLUTE order; each counts once | `orchestraInstruments`, prompt index, completed-id set |
-| Orchestra sound id 19 and id 838; `goodInst == 18` | Wrong/win feedback; completion grants key 4 | extracted embedded sounds and `markGameKey(4)` |
+| Orchestra `maxInst=18`; melody chooser uses `RandomNumber + 1`, then scans/wraps past hidden completed instruments | One random remaining prompt at a time; each counts once | `chooseOrchestraPrompt()`, current prompt id, completed-id set |
+| Orchestra exports `s1..s18` under ids `17,11,14,19,8,13,9,3,15,7,16,18,1,2,5,6,12,4`; `badInst` is id 10; win timeline starts id 838 | Semantic prompt/correct, wrong, and win feedback | explicit sound-id maps and `markGameKey(4)` at `goodInst == 18` |
 | Toy instances `soldier_0..7`, `top_y=85`, `bottom_y=300`, 11 snaps, `correct_note=[1..8]` | Eight pitch positions must ascend before the march | `toySoldierCorrectNotes` and `toySoldiersAreCorrect()` |
 | Toy source contains no save-key action | Activity is supplementary | no invented progress key |
 | Waltz 785 frames at 12 fps plus `MP3Wedding3.wav` | Approximately 65.4-second source timeline/audio; no recovered win or gameplay action | audio/timeline route with no invented progress state |
@@ -216,6 +217,7 @@ The full source inventory, locked hashes, per-SWF dimensions, promoted child lay
 | All `gameCombination1..12` arrays equal `[1,1,1]` | Three dial values must each equal one | `alicePuzzleSolution` and `alicePuzzleIsCorrect()` |
 | Alice source contains no save-key action | Activity is supplementary | no invented progress key |
 | Nut House room11..18 correct mirrors `[8,3,1,7,6,4,5,2]` | Correct mirror loads the next room | `nutHouseCorrectMirror(room)` |
+| Mirror rollover calls `checkMirror(N)`; release plays room-local `badGuess` or `youWin`; raw ids differ from mirror numbers | Source preview and answer feedback use the exact room export maps | `nutHouseMirrorSoundId()` and `nutHouseSoundMaps` |
 | `openDoor` in `nuthouserooms.txt`; room18 saves key 7 | Room progress persists; final room grants key 7 | `setNutHouseOpenDoor(room - 10)` and `markGameKey(7)` |
 
 ## Save And Progress Files

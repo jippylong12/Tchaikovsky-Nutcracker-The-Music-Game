@@ -85,6 +85,18 @@ const expectedSourceHashes = {
 
 const sources = [...fixedSources, ...repeatedSources].map(([id, swf]) => ({ id, swf }));
 
+const companionMappings = [
+  ["analysis/setup/app/games/childrensalbum/preview", "audio/childrens-album/preview"],
+  ...Array.from({ length: 8 }, (_, index) => [
+    `analysis/setup/app/games/childrensalbum/song${index + 1}`,
+    `audio/childrens-album/song${index + 1}`,
+  ]),
+  ["analysis/setup/app/games/data/childrensalbum.txt", "data/childrensalbum.txt"],
+  ["analysis/setup/app/games/data/childrensdoors.txt", "data/childrensdoors.txt"],
+  ["analysis/setup/app/games/data/nuthouserooms.txt", "data/nuthouserooms.txt"],
+  ["analysis/setup/app/games/wedding/MP3Wedding3.wav", "audio/waltz/MP3Wedding3.wav"],
+];
+
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
 }
@@ -116,6 +128,18 @@ function readSwf(path) {
   const rectBitCount = readBits(body, 64, 5);
   const tagStart = 8 + Math.ceil((5 + 4 * rectBitCount) / 8) + 4;
   return { raw, body, tagStart };
+}
+
+function preflightInputs() {
+  for (const source of sources) {
+    const sourcePath = join(projectRoot, source.swf);
+    requirePath(sourcePath);
+    const swf = readSwf(sourcePath);
+    assertEqual(sha256(swf.raw), expectedSourceHashes[source.id], `${source.id} source SWF SHA-256`);
+  }
+  for (const [sourceRelative] of companionMappings) {
+    requirePath(join(projectRoot, sourceRelative));
+  }
 }
 
 function readTags(buffer, start) {
@@ -209,19 +233,8 @@ function walkFiles(path) {
 }
 
 function copyCompanions() {
-  const mappings = [
-    ["analysis/setup/app/games/childrensalbum/preview", "audio/childrens-album/preview"],
-    ...Array.from({ length: 8 }, (_, index) => [
-      `analysis/setup/app/games/childrensalbum/song${index + 1}`,
-      `audio/childrens-album/song${index + 1}`,
-    ]),
-    ["analysis/setup/app/games/data/childrensalbum.txt", "data/childrensalbum.txt"],
-    ["analysis/setup/app/games/data/childrensdoors.txt", "data/childrensdoors.txt"],
-    ["analysis/setup/app/games/data/nuthouserooms.txt", "data/nuthouserooms.txt"],
-    ["analysis/setup/app/games/wedding/MP3Wedding3.wav", "audio/waltz/MP3Wedding3.wav"],
-  ];
   const copied = [];
-  for (const [sourceRelative, targetRelative] of mappings) {
+  for (const [sourceRelative, targetRelative] of companionMappings) {
     const sourcePath = join(projectRoot, sourceRelative);
     requirePath(sourcePath);
     const sourceFiles = (statSync(sourcePath).isDirectory() ? walkFiles(sourcePath) : [sourcePath]).filter(
@@ -358,6 +371,7 @@ function promoteSemanticImages() {
   return aliases.map(([sourceId, generatedName, promotedName]) => ({ sourceId, generatedName, promotedName }));
 }
 
+preflightInputs();
 rmSync(generatedRoot, { recursive: true, force: true });
 rmSync(promotedRoot, { recursive: true, force: true });
 mkdirSync(generatedRoot, { recursive: true });

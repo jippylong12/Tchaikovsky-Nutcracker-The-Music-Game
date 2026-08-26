@@ -130,6 +130,9 @@ export function createAudioService(options: AudioServiceOptions = {}): AudioServ
       handle.element.load();
     }
     active.set(handle.id, handle);
+    handle.element.addEventListener("ended", () => {
+      if (active.delete(handle.id)) emit();
+    });
     handle.element
       .play()
       .then(() => {
@@ -140,6 +143,7 @@ export function createAudioService(options: AudioServiceOptions = {}): AudioServ
         });
       })
       .catch(() => {
+        active.delete(handle.id);
         addDiagnostic({
           level: "error",
           message: `Audio could not start: ${path}`,

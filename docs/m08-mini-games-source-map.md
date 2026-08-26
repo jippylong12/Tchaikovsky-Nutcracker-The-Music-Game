@@ -2,7 +2,7 @@
 
 This map is the source-of-truth record for the M08 recreation pass. The runtime inputs are the recovered Flash files under `analysis/setup/app/games/`; `app/scripts/extract-m08-source-assets.mjs` verifies their SHA-256 hashes before writing ignored evidence under `app/generated/m08-source-extract/` and promoted runtime files under `app/src/assets/m08-source/`.
 
-Run `npm run assets:m08` from `app/`. A valid pass reports 34 SWFs, 112 source images, 3 extracted root streams, 205 extracted `DefineSound` files, and 77 runtime companion files. The extractor excludes backup files and alternate Children's Album WAV copies while retaining the source MP3s and Waltz WAV, and removes only its owned generated and promoted M08 roots before rebuilding.
+Run `npm run assets:m08` from `app/`. A valid pass reports 34 SWFs, 112 source images, 3 extracted root streams, 205 extracted `DefineSound` files, and 77 runtime companion files. The extractor excludes backup files and alternate Children's Album WAV copies while retaining the source MP3s and Waltz WAV. It preflights every required source/companion and all 34 locked SWF hashes before removing only its owned generated and promoted M08 roots for the rebuild.
 
 ## Source inventory
 
@@ -30,9 +30,13 @@ Each song exposes eight instruments and requires the four indices whose bit is `
 
 All eight loop games set `totalLoops=8` and `goodLoops=4`. Each source game assigns `myTrack1=1`, `myTrack2=0`, `myTrack3=1`, `myTrack4=0`, `myTrack5=1`, `myTrack6=0`, `myTrack7=1`, and `myTrack8=0`; the exact correct set is therefore tracks 1, 3, 5, and 7 for every tune. Completing loop 8 calls the source `gameKey3` path. This overlaps the Flying Instruments key in the recovered program and is preserved rather than renumbered.
 
+The `EXPORTASSETS` table does not number audio by the visible track. Every loop SWF exports DefineSound id 1 as `all`, ids 2 through 9 as `loop8` through `loop1`, and id 10 as `loop0`. Therefore visible tracks 1 through 8 map to raw sound ids `[9,8,7,6,5,4,3,2]`; `loopyTrackSoundId()` owns that translation.
+
 ### Orchestra
 
-The source sets `maxInst=18` and presents one sound at a time. The exact label/sound order is OBOE, BASSOON, SAXOPHONE, HARP, PIANO, VIBRAPHONE, CYMBALS, TIMPANI, BASS, CELLO, VIOLIN, VIOLA, TRUMPET, TROMBONE, TUBA, FRENCH HORN, CLARINET, and FLUTE. `DefineSound` ids 1-18 are those prompts, id 19 is the wrong response, and id 838 is the win response. Each instrument counts once; `goodInst == 18` grants `gameKey4`.
+The source sets `maxInst=18` and presents one sound at a time. The exact semantic `inst1` through `inst18` label/sound order is OBOE, BASSOON, SAXOPHONE, HARP, PIANO, VIBRAPHONE, CYMBALS, TIMPANI, BASS, CELLO, VIOLIN, VIOLA, TRUMPET, TROMBONE, TUBA, FRENCH HORN, CLARINET, and FLUTE. Pressing the source melody chooser runs `RandomNumber(maxInst) + 1`; its `trigger` clip scans forward, wrapping from 18 to 1, until it reaches a still-visible/uncompleted instrument. The remake preserves that random-start/forward-scan rule and allows replaying the selected prompt until it is answered.
+
+The raw DefineSound ids are not semantic instrument numbers. The source attaches exports `s1` through `s18` to `inst1` through `inst18`; their raw id map is `[17,11,14,19,8,13,9,3,15,7,16,18,1,2,5,6,12,4]`. Export `badInst` is id 10. DefineSound id 838 is started by the source win timeline. Each instrument counts once; `goodInst == 18` grants `gameKey4`.
 
 ### Toy Soldiers
 
@@ -50,9 +54,18 @@ The chooser loads `games/aliceSWF/game_XX.swf`, exposes a clock/gear selector fo
 
 Rooms 11-18 each set `maxMir=8`. Their exact correct mirror sequence is `[8,3,1,7,6,4,5,2]`. A correct choice loads the next room, and room 18 grants `gameKey7`. The original `openDoor` value in `nuthouserooms.txt` is mapped to `progress.setNutHouseOpenDoor(room - 10)`.
 
+Each mirror's source rollover/focus action calls `checkMirror(N)` and previews semantic export `sN`; the correct mirror instead previews `goodGuess`. Release stops the preview and plays `badGuess` for a wrong mirror or `youWin` for the correct mirror. The exported raw ids are:
+
+| Room | Mirror 1..8 preview ids | `badGuess` | `youWin` |
+| --- | --- | --- | --- |
+| 11 | `9,8,7,6,5,4,3,2` | 10 | 1 |
+| 12-18 | `10,9,8,7,5,2,1,4` | 6 | 3 |
+
+The semantic export attached to the correct mirror changes by room even where the raw id sequence is repeated. Runtime pointer entry and keyboard focus use the preview map; activation uses the room-local feedback ids rather than assuming mirror number equals sound id.
+
 ## Asset promotion and renderer boundaries
 
-The deterministic pass extracts every top-level JPEG3 and lossless bitmap, all recoverable root streams, and every `DefineSound`. It also copies the Children's Album previews/instrument clips, the Waltz WAV, and the three original progress/data files. Correctly named source-local aliases are promoted for each family; raw per-source assets remain under `app/src/assets/m08-source/images/`.
+The deterministic pass extracts every top-level JPEG3 and lossless bitmap, all recoverable root streams, and every `DefineSound`. It also copies the Children's Album previews/instrument clips, the Waltz WAV, and the three original progress/data files. Correctly named source-local aliases are promoted for each family; raw per-source assets remain under `app/src/assets/m08-source/images/` as provenance. The application import glob intentionally includes only the semantic top-level image aliases and audio paths used by these routes, so the raw provenance images and unused source streams do not inflate the packaged runtime.
 
 Full root probes are not reliable with the installed SWFTools build:
 

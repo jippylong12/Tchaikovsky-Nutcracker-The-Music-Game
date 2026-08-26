@@ -75,6 +75,23 @@ describe("audio service", () => {
     expect(elements[0]?.volume).toBe(0.25);
   });
 
+  it("removes completed one-shot audio from active playback state", () => {
+    let element: FakeAudioElement | undefined;
+    const audio = createAudioService({
+      createAudioElement: () => {
+        element = new FakeAudioElement();
+        return element;
+      },
+    });
+
+    audio.playOneShot("/local-media/audio/click.mp3");
+    expect(audio.getState().activeTrackCount).toBe(1);
+
+    element?.dispatch("ended");
+
+    expect(audio.getState().activeTrackCount).toBe(0);
+  });
+
   it("starts track playback from a supplied offset", () => {
     const elements: FakeAudioElement[] = [];
     const audio = createAudioService({

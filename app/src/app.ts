@@ -103,13 +103,20 @@ import {
 import {
   alicePuzzleIds,
   alicePuzzleIsCorrect,
+  chooseOrchestraPrompt,
   childrensAlbumInstrumentLabels,
   childrensAlbumSongs,
+  getNutHouseSoundMap,
   isChildrensAlbumSelectionCorrect,
   isLoopySelectionCorrect,
+  loopyTrackSoundId,
   loopyTunes,
   nutHouseCorrectMirror,
+  nutHouseMirrorSoundId,
+  orchestraBadSoundId,
+  orchestraInstrumentSoundId,
   orchestraInstruments,
+  orchestraWinSoundId,
   toySoldiersAreCorrect,
 } from "./data/m08Games";
 import { getRouteById, isRouteId, routes, type RouteDefinition, type RouteId } from "./routes";
@@ -158,7 +165,7 @@ type ShellState = {
   loopySelections: number[];
   loopyCompleted: number[];
   loopyFeedback: "correct" | "wrong" | "win" | null;
-  orchestraPromptIndex: number;
+  orchestraPromptId: number | null;
   orchestraCorrectIds: number[];
   orchestraFeedback: "correct" | "wrong" | "win" | null;
   toySoldierNotes: number[];
@@ -219,8 +226,14 @@ const suiteRecordPlacements: readonly SuiteRecordPlacement[] = [
 ];
 
 const m08Assets = {
-  ...import.meta.glob<string>("./assets/m08-source/**/*.png", { eager: true, query: "?url", import: "default" }),
-  ...import.meta.glob<string>("./assets/m08-source/**/*.mp3", { eager: true, query: "?url", import: "default" }),
+  ...import.meta.glob<string>("./assets/m08-source/*.png", { eager: true, query: "?url", import: "default" }),
+  ...import.meta.glob<string>([
+    "./assets/m08-source/audio/childrens-album/**/*.mp3",
+    "./assets/m08-source/audio/embedded/loopy-*/sound-*.mp3",
+    "./assets/m08-source/audio/embedded/orchestra/sound-*.mp3",
+    "./assets/m08-source/audio/embedded/toy-soldiers/sound-*.mp3",
+    "./assets/m08-source/audio/embedded/nut-house-*/sound-*.mp3",
+  ], { eager: true, query: "?url", import: "default" }),
   ...import.meta.glob<string>("./assets/m08-source/audio/waltz/MP3Wedding3.wav", {
     eager: true,
     query: "?url",
@@ -237,6 +250,7 @@ export type AppShellOptions = {
   audio?: AudioService;
   previewAudioPath?: string;
   printCertificate?: () => void;
+  random?: () => number;
 };
 
 const defaultPreviewAudioPath = suiteTracks[0].audioPath;
@@ -246,6 +260,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   const audio = options.audio ?? createAudioService();
   const previewAudioPath = options.previewAudioPath ?? defaultPreviewAudioPath;
   const printCertificate = options.printCertificate ?? (() => window.print());
+  const random = options.random ?? Math.random;
   const shellState: ShellState = {
     routeId: "overture",
     routeStack: [],
@@ -293,7 +308,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     loopySelections: [],
     loopyCompleted: [],
     loopyFeedback: null,
-    orchestraPromptIndex: 0,
+    orchestraPromptId: null,
     orchestraCorrectIds: [],
     orchestraFeedback: null,
     toySoldierNotes: [8, 7, 6, 5, 4, 3, 2, 1],
@@ -305,6 +320,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     nutHouseFeedback: null,
   };
   const melodyTimerIds = new Set<number>();
+  let suppressNextNutHouseFocusPreview = false;
 
   const stopMelodyPlayback = () => {
     melodyTimerIds.forEach((timerId) => window.clearTimeout(timerId));
@@ -929,7 +945,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         else selected.add(track);
         shellState.loopySelections = [...selected].sort((left, right) => left - right);
         shellState.loopyFeedback = null;
-        audio.playOneShot(getM08Asset(`/audio/embedded/loopy-${shellState.loopyTune}/sound-${track}.mp3`));
+        audio.playOneShot(
+          getM08Asset(`/audio/embedded/loopy-${shellState.loopyTune}/sound-${loopyTrackSoundId(track)}.mp3`),
+        );
         render("[data-loopy-track]", "[data-source-loopy-board]");
       });
     });
@@ -960,33 +978,51 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     });
 
     mount.querySelector<HTMLButtonElement>("[data-orchestra-listen]")?.addEventListener("click", () => {
-      const prompt = shellState.orchestraPromptIndex + 1;
-      if (prompt <= orchestraInstruments.length) {
-        playSceneAudio(getM08Asset(`/audio/embedded/orchestra/sound-${prompt}.mp3`), false);
-      }
+      if (shellState.orchestraFeedback === "win") return;
+      shellState.orchestraPromptId ??= chooseOrchestraPrompt(shellState.orchestraCorrectIds, random());
+      const prompt = shellState.orchestraPromptId;
+      if (prompt === null) return;
+      shellState.orchestraFeedback = null;
+      audio.stopSceneAudio();
+      audio.playOneShot(
+        getM08Asset(`/audio/embedded/orchestra/sound-${orchestraInstrumentSoundId(prompt)}.mp3`),
+      );
+      render("[data-orchestra-listen]", "[data-source-orchestra-board]");
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-orchestra-instrument]").forEach((button) => {
       button.addEventListener("click", () => {
         const instrument = Number(button.dataset.orchestraInstrument);
-        const prompt = shellState.orchestraPromptIndex + 1;
-        if (instrument < 1 || instrument > orchestraInstruments.length || shellState.orchestraFeedback === "win") return;
+        const prompt = shellState.orchestraPromptId;
+        if (
+          instrument < 1
+          || instrument > orchestraInstruments.length
+          || prompt === null
+          || shellState.orchestraFeedback === "win"
+        ) return;
+        audio.stopSceneAudio();
+        shellState.activeAudioId = null;
         if (instrument === prompt && !shellState.orchestraCorrectIds.includes(instrument)) {
           shellState.orchestraCorrectIds.push(instrument);
-          shellState.orchestraPromptIndex += 1;
+          shellState.orchestraPromptId = null;
           if (shellState.orchestraCorrectIds.length === orchestraInstruments.length) {
             progress.markGameKey(4);
             shellState.orchestraFeedback = "win";
-            audio.playOneShot(getM08Asset("/audio/embedded/orchestra/sound-838.mp3"));
+            audio.playOneShot(getM08Asset(`/audio/embedded/orchestra/sound-${orchestraWinSoundId}.mp3`));
           } else {
             shellState.orchestraFeedback = "correct";
-            audio.playOneShot(getM08Asset(`/audio/embedded/orchestra/sound-${instrument}.mp3`));
+            audio.playOneShot(
+              getM08Asset(`/audio/embedded/orchestra/sound-${orchestraInstrumentSoundId(instrument)}.mp3`),
+            );
           }
         } else {
           shellState.orchestraFeedback = "wrong";
-          audio.playOneShot(getM08Asset("/audio/embedded/orchestra/sound-19.mp3"));
+          audio.playOneShot(getM08Asset(`/audio/embedded/orchestra/sound-${orchestraBadSoundId}.mp3`));
         }
-        render("[data-orchestra-instrument]", "[data-source-orchestra-board]");
+        render(
+          shellState.orchestraFeedback === "correct" ? "[data-orchestra-listen]" : `[data-orchestra-instrument="${instrument}"]`,
+          "[data-source-orchestra-board]",
+        );
       });
     });
 
@@ -1039,24 +1075,51 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-nut-house-mirror]").forEach((button) => {
+      const playMirrorPreview = () => {
+        const mirror = Number(button.dataset.nutHouseMirror);
+        if (mirror < 1 || mirror > 8 || shellState.nutHouseFeedback === "win") return;
+        audio.stopSceneAudio();
+        audio.playOneShot(
+          getM08Asset(
+            `/audio/embedded/nut-house-${shellState.nutHouseRoom}/sound-${nutHouseMirrorSoundId(shellState.nutHouseRoom, mirror)}.mp3`,
+          ),
+        );
+      };
+      button.addEventListener("pointerenter", playMirrorPreview);
+      button.addEventListener("focus", () => {
+        if (suppressNextNutHouseFocusPreview) {
+          suppressNextNutHouseFocusPreview = false;
+          return;
+        }
+        playMirrorPreview();
+      });
       button.addEventListener("click", () => {
         const mirror = Number(button.dataset.nutHouseMirror);
         if (mirror < 1 || mirror > 8 || shellState.nutHouseFeedback === "win") return;
-        audio.playOneShot(getM08Asset(`/audio/embedded/nut-house-${shellState.nutHouseRoom}/sound-${mirror}.mp3`));
-        if (mirror === nutHouseCorrectMirror(shellState.nutHouseRoom)) {
-          const roomProgress = shellState.nutHouseRoom - 10;
+        const room = shellState.nutHouseRoom;
+        const correct = mirror === nutHouseCorrectMirror(room);
+        const soundMap = getNutHouseSoundMap(room);
+        audio.stopSceneAudio();
+        audio.playOneShot(
+          getM08Asset(
+            `/audio/embedded/nut-house-${room}/sound-${correct ? soundMap.youWinSoundId : soundMap.badGuessSoundId}.mp3`,
+          ),
+        );
+        if (correct) {
+          const roomProgress = room - 10;
           progress.setNutHouseOpenDoor(roomProgress);
-          if (shellState.nutHouseRoom === 18) {
+          if (room === 18) {
             progress.markGameKey(7);
             shellState.nutHouseFeedback = "win";
           } else {
-            shellState.nutHouseRoom += 1;
+            shellState.nutHouseRoom = room + 1;
             shellState.nutHouseFeedback = "correct";
           }
         } else {
           shellState.nutHouseFeedback = "wrong";
         }
-        render("[data-nut-house-mirror]", "[data-source-nut-house-board]");
+        suppressNextNutHouseFocusPreview = true;
+        render(`[data-nut-house-mirror="${mirror}"]`, "[data-source-nut-house-board]");
       });
     });
 
@@ -1201,7 +1264,28 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
 
     if (action === "reset-progress") {
+      stopMelodyPlayback();
+      audio.stopSceneAudio();
+      shellState.activeAudioId = null;
+      shellState.activeSuiteTrackId = null;
       progress.resetAll();
+      shellState.childrensAlbumSong = 1;
+      shellState.childrensAlbumSelections = [];
+      shellState.childrensAlbumFeedback = null;
+      shellState.loopyTune = 1;
+      shellState.loopySelections = [];
+      shellState.loopyCompleted = [];
+      shellState.loopyFeedback = null;
+      shellState.orchestraPromptId = null;
+      shellState.orchestraCorrectIds = [];
+      shellState.orchestraFeedback = null;
+      shellState.toySoldierNotes = [8, 7, 6, 5, 4, 3, 2, 1];
+      shellState.toyFeedback = null;
+      shellState.alicePuzzle = 1;
+      shellState.aliceDialValues = [0, 0, 0];
+      shellState.aliceFeedback = null;
+      shellState.nutHouseRoom = 11;
+      shellState.nutHouseFeedback = null;
       render();
       return;
     }
@@ -2028,9 +2112,12 @@ function renderM08Frame(prefix: "childrens-album" | "orchestra", sourceSwf: stri
       data-source-classification="original asset" data-source-swf="${sourceSwf}" />
     <img class="m08-curtain" src="${getM08Asset(`/${prefix}-curtain.png`)}" alt="" aria-hidden="true"
       data-source-classification="original asset" data-source-swf="${sourceSwf}" />
-    <img class="m08-frame-top" src="${getM08Asset(`/${prefix}-frame-top.png`)}" alt="" aria-hidden="true" />
-    <img class="m08-frame-medallion" src="${getM08Asset(`/${prefix}-frame-medallion.png`)}" alt="" aria-hidden="true" />
-    <img class="m08-frame-bottom" src="${getM08Asset(`/${prefix}-frame-bottom.png`)}" alt="" aria-hidden="true" />
+    <img class="m08-frame-top" src="${getM08Asset(`/${prefix}-frame-top.png`)}" alt="" aria-hidden="true"
+      data-source-classification="original asset" data-source-swf="${sourceSwf}" />
+    <img class="m08-frame-medallion" src="${getM08Asset(`/${prefix}-frame-medallion.png`)}" alt="" aria-hidden="true"
+      data-source-classification="original asset" data-source-swf="${sourceSwf}" />
+    <img class="m08-frame-bottom" src="${getM08Asset(`/${prefix}-frame-bottom.png`)}" alt="" aria-hidden="true"
+      data-source-classification="original asset" data-source-swf="${sourceSwf}" />
   `;
 }
 
@@ -2109,7 +2196,7 @@ function renderLoopyTunes(state: ShellState, unlocked: boolean): string {
 }
 
 function renderOrchestra(state: ShellState, unlocked: boolean): string {
-  const prompt = state.orchestraPromptIndex + 1;
+  const completedCount = state.orchestraCorrectIds.length;
   const feedback = state.orchestraFeedback === "win"
     ? "THE WHOLE ORCHESTRA — GAME KEY 4"
     : state.orchestraFeedback === "correct"
@@ -2121,15 +2208,15 @@ function renderOrchestra(state: ShellState, unlocked: boolean): string {
     <div class="scene-body m08-scene m08-orchestra-scene" data-source-orchestra-board tabindex="-1"
       data-source-swf="analysis/setup/app/games/orchestragame/orchestra.swf"
       data-source-frame="640 x 480, 2095 frames at 15 fps"
-      data-source-action="maxInst=18; one prompt at a time; each correct instrument counts once; goodInst==18 grants gameKey4"
+      data-source-action="maxInst=18; RandomNumber chooses one remaining prompt and scans forward past completed instruments; each correct instrument counts once; goodInst==18 grants gameKey4"
       data-source-fallback="root render crashes after unresolved JPEG children; recoverable stage/frame layers, all 18 source labels, and DefineSound prompts are composed here">
       ${renderM08Frame("orchestra", "analysis/setup/app/games/orchestragame/orchestra.swf")}
       <h1 class="m08-title">THE ORCHESTRA GAME</h1>
-      <button class="m08-source-button m08-listen" type="button" data-orchestra-listen ${prompt > 18 ? "disabled" : ""}>LISTEN ${Math.min(prompt, 18)} / 18</button>
+      <button class="m08-source-button m08-listen" type="button" data-orchestra-listen ${completedCount >= 18 ? "disabled" : ""}>LISTEN ${Math.min(completedCount + 1, 18)} / 18</button>
       <div class="m08-choice-grid m08-orchestra-grid" role="group" aria-label="Orchestra instruments"
         data-source-classification="source text">
         ${orchestraInstruments.map((label, index) => `<button type="button" data-orchestra-instrument="${index + 1}"
-          ${state.orchestraCorrectIds.includes(index + 1) ? "disabled" : ""}>${label}</button>`).join("")}
+          ${state.orchestraPromptId === null || state.orchestraCorrectIds.includes(index + 1) ? "disabled" : ""}>${label}</button>`).join("")}
       </div>
       <p class="m08-feedback" aria-live="polite">${feedback}${unlocked ? " · KEY SAVED" : ""}</p>
     </div>
