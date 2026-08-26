@@ -29,7 +29,7 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 | `trivia` | Source book, 106 questions, exact controls/counters and embedded feedback/key flow; timeline fallback and manual review open | `games/trivia/trivia.swf`, `questions/trivia.txt` | JIP-821 → JIP-825 |
 | `melody` | Source stage, recovered monkey/xylophone and piano art, 36 sequences, exact selector/play split, note audio and keyboard state; nested animation fallback and manual review open | `games/melody/melody.swf`, `snd/Melody.txt` | JIP-826 → JIP-830 |
 | `memory` | Source card art/audio and 5-to-18-pair progression; card-timeline fallback and manual review open | `games/memorygame/memory.swf` | JIP-826 → JIP-830 |
-| `alice-puzzles` | Twelve source puzzle movies, puzzle-local art and exact three-dial solution; display-list fallback and manual review open | `games/aliceSWF/` | JIP-846 → JIP-850 |
+| `alice-puzzles` | Original post-intro clock chooser, twelve complete source-runtime puzzle stages, recovered gear/dial controls, and exact automatic three-clock solution check; random angle mapping, live toy/character motion, timeline-motion fallback, and manual review open | `games/aliceswf/` | JIP-846 → JIP-850 |
 | `nut-house` | Eight source rooms, exact mirror sequence, persisted room state and key 7; display-list fallback and manual review open | `games/nuthouse/`, `games/data/nuthouserooms.txt` | JIP-846 → JIP-850 |
 
 ## Auxiliary source families

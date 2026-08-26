@@ -35,10 +35,10 @@ const repeatedSources = [
     `loopy-${index + 1}`,
     `analysis/setup/app/games/loopytunes/loop${index + 1}.swf`,
   ]),
-  ["alice-chooser", "analysis/setup/app/games/aliceSWF/alice.swf"],
+  ["alice-chooser", "analysis/setup/app/games/aliceswf/alice.swf"],
   ...Array.from({ length: 12 }, (_, index) => [
     `alice-${String(index + 1).padStart(2, "0")}`,
-    `analysis/setup/app/games/aliceSWF/game_${String(index + 1).padStart(2, "0")}.swf`,
+    `analysis/setup/app/games/aliceswf/game_${String(index + 1).padStart(2, "0")}.swf`,
   ]),
   ...Array.from({ length: 8 }, (_, index) => [
     `nut-house-${index + 11}`,
@@ -82,6 +82,22 @@ const expectedSourceHashes = {
   "nut-house-17": "ef49384201d2cced281b35840726b1858f066c8ef28d1a0fc259f96f4f1ab023",
   "nut-house-18": "781b2ac4e88c98473616dcbca6a4544b59066c9d44bb7f4b944523274ecf5d6c",
 };
+
+const aliceRecoveredRenders = [
+  ["alice-chooser-main.png", "b3ddfd74fc0eb020abe7f4e3309477115aa183cc7fb382ddeeb0d719669b54f0"],
+  ["alice-stage-01.png", "08e216da02b41f6666686bc88371058dd7e227a2fc680403201fd9c58a18a718"],
+  ["alice-stage-02.png", "4e826030eb79ba40d9903ef3551277a7adaf5e113b1a9524d99607c571f2b489"],
+  ["alice-stage-03.png", "9bb67cd348a25b799b3b4673c244e6d27f20618ecf90b11a1dd1e243399bed19"],
+  ["alice-stage-04.png", "af480c176408cbbaf429dadcdd7a8f8eb61de53e96978c1d4647a38858f9de39"],
+  ["alice-stage-05.png", "af480c176408cbbaf429dadcdd7a8f8eb61de53e96978c1d4647a38858f9de39"],
+  ["alice-stage-06.png", "af480c176408cbbaf429dadcdd7a8f8eb61de53e96978c1d4647a38858f9de39"],
+  ["alice-stage-07.png", "6e4824e267313fd05c6c06e46b89eb6159d46c9c115f69091aa7ce807376832e"],
+  ["alice-stage-08.png", "6e4824e267313fd05c6c06e46b89eb6159d46c9c115f69091aa7ce807376832e"],
+  ["alice-stage-09.png", "6e4824e267313fd05c6c06e46b89eb6159d46c9c115f69091aa7ce807376832e"],
+  ["alice-stage-10.png", "f4729bdf1095d4d24e04065239bd4cfbb6b3759887343a6fc99e0047d42f117f"],
+  ["alice-stage-11.png", "76346eb438a32d2c909fa5b12c5064d191f8a08d179cdc8efdda10083be82b93"],
+  ["alice-stage-12.png", "ebda39ff6ef2c1026abd76c5c8f42dee08e95eab26e58fcc12b37a888ee3aab8"],
+];
 
 const sources = [...fixedSources, ...repeatedSources].map(([id, swf]) => ({ id, swf }));
 
@@ -139,6 +155,11 @@ function preflightInputs() {
   }
   for (const [sourceRelative] of companionMappings) {
     requirePath(join(projectRoot, sourceRelative));
+  }
+  for (const [name, expectedHash] of aliceRecoveredRenders) {
+    const sourcePath = join(projectRoot, "analysis/setup/app/games/aliceswf/recovered-renders", name);
+    requirePath(sourcePath);
+    assertEqual(sha256(readFileSync(sourcePath)), expectedHash, `${name} recovered render SHA-256`);
   }
 }
 
@@ -304,7 +325,7 @@ function promoteAlias(sourceId, generatedName, promotedName) {
   );
 }
 
-function promoteRenderedSymbol({ sourceId, symbolId, promotedName, width, height, layout = "centered" }) {
+function promoteRenderedSymbol({ sourceId, symbolId, promotedName, width, height, layout = "centered", trimCrop }) {
   const source = sources.find((candidate) => candidate.id === sourceId);
   if (!source) throw new Error(`Unknown M08 source id for symbol promotion: ${sourceId}`);
   const sourcePath = join(projectRoot, source.swf);
@@ -334,6 +355,7 @@ function promoteRenderedSymbol({ sourceId, symbolId, promotedName, width, height
     renderedPng,
     "-trim",
     "+repage",
+    ...(trimCrop ? ["-crop", trimCrop, "+repage"] : []),
     "-resize", `${width}x${height}!`,
     "-depth", "8",
     "-define", "png:color-type=6",
@@ -410,6 +432,12 @@ function promoteSemanticImages() {
   for (const [sourceId, generatedName, promotedName] of aliases) {
     promoteAlias(sourceId, generatedName, promotedName);
   }
+  for (const [name] of aliceRecoveredRenders) {
+    copySourceFile(
+      join(projectRoot, "analysis/setup/app/games/aliceswf/recovered-renders", name),
+      join(promotedRoot, name),
+    );
+  }
   const renderedSymbols = [
     { sourceId: "toy-soldiers", symbolId: 20, promotedName: "toy-soldiers-field.png", width: 509, height: 272 },
     { sourceId: "toy-soldiers", symbolId: 21, promotedName: "toy-soldiers-moving-note.png", width: 92, height: 124 },
@@ -420,9 +448,16 @@ function promoteSemanticImages() {
     { sourceId: "toy-soldiers", symbolId: 32, promotedName: "toy-soldiers-play-button-body.png", width: 177, height: 42 },
     { sourceId: "toy-soldiers", symbolId: 34, promotedName: "toy-soldiers-play-button-label.png", width: 92, height: 15, layout: "wide" },
     { sourceId: "toy-soldiers", symbolId: 37, promotedName: "toy-soldiers-correct-label.png", width: 288, height: 31, layout: "wide" },
+    { sourceId: "alice-chooser", symbolId: 98, promotedName: "alice-clock-gear.png", width: 182, height: 182 },
+    { sourceId: "alice-chooser", symbolId: 151, promotedName: "alice-puzzle-dial.png", width: 132, height: 131, trimCrop: "132x131+960+960" },
   ].map(promoteRenderedSymbol);
   return [
     ...aliases.map(([sourceId, generatedName, promotedName]) => ({ sourceId, generatedName, promotedName })),
+    ...aliceRecoveredRenders.map(([name]) => ({
+      sourceId: "alice-ruffle-capture",
+      generatedName: `analysis/setup/app/games/aliceswf/recovered-renders/${name}`,
+      promotedName: name,
+    })),
     ...renderedSymbols,
   ];
 }
@@ -509,4 +544,4 @@ const soundCount = manifest.reduce(
   (total, source) => total + source.embeddedSounds.filter((sound) => sound.status === "extracted").length,
   0,
 );
-console.log(`M08 source audit extracted ${manifest.length} SWFs, ${imageCount} source images, ${streamCount} embedded streams, ${soundCount} embedded sounds, and ${companions.length} companion files.`);
+console.log(`M08 source audit extracted ${manifest.length} SWFs, ${imageCount} source images, ${streamCount} embedded streams, ${soundCount} embedded sounds, and ${companions.length} companion files; verified ${aliceRecoveredRenders.length} Alice Ruffle renders.`);

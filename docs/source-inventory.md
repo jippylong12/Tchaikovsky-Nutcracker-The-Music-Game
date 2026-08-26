@@ -96,7 +96,7 @@ Most game and activity content is 640x480 Flash 6 content. The remake should use
 | `games/memorygame/memory.swf` | Memory game |
 | `games/childrensalbum/childrensalbum.swf` | Children's Album game |
 | `games/loopytunes/loopChooser.swf`, `loop1.swf` through `loop8.swf` | Loopy Tunes selection/game flow |
-| `games/aliceSWF/alice.swf`, `game_01.swf` through `game_12.swf` | Alice puzzle flow |
+| `games/aliceswf/alice.swf`, `game_01.swf` through `game_12.swf` | Alice puzzle flow |
 | `games/nuthouse/room11.swf` through `room18.swf` | Nut House room flow |
 | `games/orchestragame/orchestra.swf` | Orchestra game |
 | `games/toysoldiersgame/toysoldiersgame.swf` | Toy soldiers game |
@@ -108,7 +108,7 @@ Top-level SWF/media distribution:
 | Area | SWF | MP3 | WAV |
 | --- | ---: | ---: | ---: |
 | `activities/originals` | 1 | 8 | 0 |
-| `games/aliceSWF` | 13 | 0 | 0 |
+| `games/aliceswf` | 13 | 0 | 0 |
 | `games/childrensalbum` | 1 | 72 | 2 |
 | `games/loopytunes` | 9 | 0 | 0 |
 | `games/melody` | 1 | 53 | 0 |

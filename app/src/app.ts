@@ -182,6 +182,7 @@ type ShellState = {
   toyFeedback: "correct" | "wrong" | null;
   toyMarchIndex: number | null;
   toyPlaybackKind: "check" | "demo" | null;
+  aliceChooserOpen: boolean;
   alicePuzzle: number;
   aliceDialValues: [number, number, number];
   aliceFeedback: "correct" | "wrong" | null;
@@ -252,6 +253,21 @@ const m08Assets = {
     import: "default",
   }),
 };
+
+const aliceChooserButtonPositions = [
+  { puzzle: 1, x: 436, y: 47 },
+  { puzzle: 2, x: 515, y: 129 },
+  { puzzle: 3, x: 542, y: 240 },
+  { puzzle: 4, x: 506, y: 352 },
+  { puzzle: 5, x: 431, y: 433 },
+  { puzzle: 6, x: 320, y: 465 },
+  { puzzle: 7, x: 209, y: 433 },
+  { puzzle: 8, x: 130, y: 350 },
+  { puzzle: 9, x: 98, y: 240 },
+  { puzzle: 10, x: 128, y: 128 },
+  { puzzle: 11, x: 210, y: 46 },
+  { puzzle: 12, x: 320, y: 17 },
+] as const;
 
 function getM08Asset(path: string): string {
   return m08Assets[`./assets/m08-source${path}`] ?? "";
@@ -339,8 +355,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     toyFeedback: null,
     toyMarchIndex: null,
     toyPlaybackKind: null,
+    aliceChooserOpen: true,
     alicePuzzle: 1,
-    aliceDialValues: [0, 0, 0],
+    aliceDialValues: [4, 4, 4],
     aliceFeedback: null,
     nutHouseRoom: 11 + Math.min(progress.getSnapshot().nutHouse.openDoor, 7),
     nutHouseFeedback: null,
@@ -1193,8 +1210,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       button.addEventListener("click", () => {
         const puzzle = Number(button.dataset.alicePuzzle);
         if (!alicePuzzleIds.includes(puzzle)) return;
+        shellState.aliceChooserOpen = false;
         shellState.alicePuzzle = puzzle;
-        shellState.aliceDialValues = [0, 0, 0];
+        shellState.aliceDialValues = [4, 4, 4];
         shellState.aliceFeedback = null;
         render("[data-alice-dial]", "[data-source-alice-board]");
       });
@@ -1204,15 +1222,10 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       button.addEventListener("click", () => {
         const dial = Number(button.dataset.aliceDial);
         if (dial < 0 || dial > 2) return;
-        shellState.aliceDialValues[dial] = (shellState.aliceDialValues[dial] + 1) % 4;
-        shellState.aliceFeedback = null;
-        render("[data-alice-dial]", "[data-source-alice-board]");
+        shellState.aliceDialValues[dial] = (shellState.aliceDialValues[dial] % 4) + 1;
+        shellState.aliceFeedback = alicePuzzleIsCorrect(shellState.aliceDialValues) ? "correct" : "wrong";
+        render(`[data-alice-dial="${dial}"]`, "[data-source-alice-board]");
       });
-    });
-
-    mount.querySelector<HTMLButtonElement>("[data-alice-check]")?.addEventListener("click", () => {
-      shellState.aliceFeedback = alicePuzzleIsCorrect(shellState.aliceDialValues) ? "correct" : "wrong";
-      render("[data-alice-check]", "[data-source-alice-board]");
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-nut-house-mirror]").forEach((button) => {
@@ -1369,6 +1382,12 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.flyingRow = 0;
       shellState.flyingGrid = Array<number | null>(28).fill(null);
       shellState.flyingFeedback = null;
+    }
+    if (routeChanged && routeId === "alice-puzzles") {
+      shellState.aliceChooserOpen = true;
+      shellState.alicePuzzle = 1;
+      shellState.aliceDialValues = [4, 4, 4];
+      shellState.aliceFeedback = null;
     }
     shellState.routeId = routeId;
     shellState.helpOpen = false;
@@ -1667,8 +1686,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.flyingRow = 0;
       shellState.flyingGrid = Array<number | null>(28).fill(null);
       shellState.flyingFeedback = null;
+      shellState.aliceChooserOpen = true;
       shellState.alicePuzzle = 1;
-      shellState.aliceDialValues = [0, 0, 0];
+      shellState.aliceDialValues = [4, 4, 4];
       shellState.aliceFeedback = null;
       shellState.nutHouseRoom = 11;
       shellState.nutHouseFeedback = null;
@@ -2863,28 +2883,44 @@ function renderWaltz(): string {
 }
 
 function renderAlicePuzzles(state: ShellState): string {
-  const feedback = state.aliceFeedback === "correct"
-    ? "THE CLOCKWORK COMBINATION IS CORRECT"
-    : state.aliceFeedback === "wrong"
-      ? "THE GEARS DO NOT ALIGN"
-      : "SET THE THREE DIALS";
+  if (state.aliceChooserOpen) {
+    return `
+      <div class="scene-body m08-scene m08-alice-scene m08-alice-chooser" data-source-alice-board tabindex="-1"
+        data-source-swf="analysis/setup/app/games/aliceswf/alice.swf"
+        data-source-frame="post-intro stable mainDialer state; chooser root has 641 frames at 15 fps"
+        data-source-action="mainDialer exposes BTNgame_1 through BTNgame_12 around the clock; selecting a number sets nextGame and loads game_01.swf through game_12.swf"
+        data-source-fallback="the stable chooser frame is an original SWF rendered through Ruffle 0.5.0; transparent accessible buttons preserve the recovered source hit regions">
+        <img class="m08-alice-stage" src="${getM08Asset("/alice-chooser-main.png")}" alt="" aria-hidden="true"
+        data-source-classification="source-runtime capture" data-source-symbol="alice.swf post-intro mainDialer" />
+        <nav class="m08-alice-picker" aria-label="Alice clock puzzle selector">
+          ${aliceChooserButtonPositions.map(({ puzzle, x, y }) => `<button type="button" data-alice-puzzle="${puzzle}"
+            aria-label="Open Alice puzzle ${puzzle}" style="--alice-source-x:${x};--alice-source-y:${y}"><span>${puzzle}</span></button>`).join("")}
+        </nav>
+      </div>
+    `;
+  }
+
   return `
     <div class="scene-body m08-scene m08-alice-scene" data-source-alice-board tabindex="-1"
-      data-source-swf="analysis/setup/app/games/aliceSWF/alice.swf + game_${String(state.alicePuzzle).padStart(2, "0")}.swf"
+      data-source-swf="analysis/setup/app/games/aliceswf/alice.swf + game_${String(state.alicePuzzle).padStart(2, "0")}.swf"
       data-source-frame="chooser 800 x 600, 641 frames at 15 fps; puzzle boards 800 x 600, one frame"
-      data-source-action="chooser loads game_01..12; three toy dial values call checkSolution; all 12 gameCombination arrays are [1,1,1]"
-      data-source-fallback="root puzzle renders crash on missing JPEG children; recovered source art is scaled from 800 x 600 and the source dial logic is keyboard-accessible DOM">
-      <img class="m08-alice-art" src="${getM08Asset(`/alice-puzzle-${String(state.alicePuzzle).padStart(2, "0")}-primary.png`)}" alt="" aria-hidden="true"
-        data-source-classification="original asset" />
-      <nav class="m08-alice-picker" aria-label="Alice puzzles">
-        ${alicePuzzleIds.map((puzzle) => `<button type="button" data-alice-puzzle="${puzzle}" aria-pressed="${puzzle === state.alicePuzzle}">${puzzle}</button>`).join("")}
-      </nav>
-      <h1 class="m08-title">ALICE PUZZLE ${String(state.alicePuzzle).padStart(2, "0")}</h1>
-      <div class="m08-alice-dials" role="group" aria-label="Clockwork dials" data-source-classification="documented fallback">
-        ${state.aliceDialValues.map((value, index) => `<button type="button" data-alice-dial="${index}" aria-label="Dial ${index + 1}, value ${value}"><span>${value}</span></button>`).join("")}
+      data-source-action="the chosen game supplies toy1, toy2, toy3, character1, and character2; clock_1..3 randomize toy frames 1 through 4 and call checkSolution on release; every gameCombination array is [1,1,1]"
+      data-source-fallback="the complete source display list is captured through Ruffle 0.5.0 because SWFTools crashes on every puzzle root; the three source clock controls use recovered sprite id 0151 and keyboard-accessible whole-control activation that cycles frames 1 through 4 instead of replaying the source random angle mapping and pointer gesture">
+      <img class="m08-alice-stage" src="${getM08Asset(`/alice-stage-${String(state.alicePuzzle).padStart(2, "0")}.png`)}" alt="" aria-hidden="true"
+        data-source-classification="source-runtime capture" data-source-symbol="game_${String(state.alicePuzzle).padStart(2, "0")}.swf root frame 1 with child timelines active at capture" />
+      <div class="m08-alice-dials" role="group" aria-label="Alice puzzle clocks" data-source-classification="composed source child assets">
+        ${state.aliceDialValues.map((value, index) => `<button class="m08-alice-dial m08-alice-dial-${index + 1}" type="button"
+          data-alice-dial="${index}" aria-label="Clock ${index + 1}, source toy frame ${value} of 4">
+          <img class="m08-alice-dial-gear" src="${getM08Asset("/alice-clock-gear.png")}" alt="" aria-hidden="true" />
+          <img class="m08-alice-dial-face" src="${getM08Asset("/alice-puzzle-dial.png")}" alt="" aria-hidden="true"
+            style="--alice-dial-turn:${(value % 4) * 90}deg" />
+        </button>`).join("")}
       </div>
-      <button class="m08-source-button m08-check" type="button" data-alice-check>CHECK SOLUTION</button>
-      <p class="m08-feedback" aria-live="polite">${feedback}</p>
+      <p class="sr-only" aria-live="polite">${state.aliceFeedback === "correct"
+        ? "The three Alice puzzle clocks are correct."
+        : state.aliceFeedback === "wrong"
+          ? "The Alice puzzle clocks are not correct yet."
+          : ""}</p>
     </div>
   `;
 }

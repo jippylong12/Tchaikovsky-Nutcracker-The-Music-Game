@@ -216,8 +216,9 @@ The full source inventory, locked hashes, per-SWF dimensions, promoted child lay
 
 | Source evidence | Exact behavior | Modern method |
 | --- | --- | --- |
-| Alice chooser loads `game_01.swf` through `game_12.swf` | Twelve selectable puzzles | `alicePuzzleIds` and puzzle-local source image selection |
-| All `gameCombination1..12` arrays equal `[1,1,1]` | Three dial values must each equal one | `alicePuzzleSolution` and `alicePuzzleIsCorrect()` |
+| Alice post-intro `mainDialer` places `BTNgame_1..12` around the source clock and loads `game_01.swf` through `game_12.swf` | Twelve clock-ring puzzle choices; selecting one reveals its complete source-runtime stage | `aliceChooserButtonPositions`, puzzle-local `alice-stage-XX.png` captures, and transparent source-aligned hit regions |
+| Each puzzle root names `toy1..3` and `character1..2`; chooser clocks `0152..0154` use `bodyAndHand` sprite `0151` and gear `0098`; each clock randomizes toy frames 1..4 against snap angles `[−90,0,−270,−180]` | Three source-styled clocks manipulate the three toys; each release checks the state | puzzle-local stable stage plus three rotated `alice-puzzle-dial.png` controls that cycle all valid source frames; random mapping and live toy animation remain documented fallbacks |
+| All `gameCombination1..12` arrays equal `[1,1,1]` | Three dial values must each equal one; no separate check button exists | `alicePuzzleSolution` and automatic `alicePuzzleIsCorrect()` after each clock activation |
 | Alice source contains no save-key action | Activity is supplementary | no invented progress key |
 | Nut House room11..18 correct mirrors `[8,3,1,7,6,4,5,2]` | Correct mirror loads the next room | `nutHouseCorrectMirror(room)` |
 | Mirror rollover calls `checkMirror(N)`; release plays room-local `badGuess` or `youWin`; raw ids differ from mirror numbers | Source preview and answer feedback use the exact room export maps | `nutHouseMirrorSoundId()` and `nutHouseSoundMaps` |

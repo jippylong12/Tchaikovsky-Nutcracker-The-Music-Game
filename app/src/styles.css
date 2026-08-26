@@ -1092,8 +1092,7 @@ button {
   text-shadow: 0 2px 3px #000;
 }
 
-.m08-door-strip,
-.m08-alice-picker {
+.m08-door-strip {
   position: absolute;
   z-index: 6;
   left: 20px;
@@ -1102,8 +1101,7 @@ button {
   gap: 5px;
 }
 
-.m08-door-strip button,
-.m08-alice-picker button {
+.m08-door-strip button {
   width: 28px;
   height: 28px;
   padding: 0;
@@ -1114,8 +1112,7 @@ button {
   font-weight: 700;
 }
 
-.m08-door-strip button[aria-pressed="true"],
-.m08-alice-picker button[aria-pressed="true"] {
+.m08-door-strip button[aria-pressed="true"] {
   color: #17365e;
   background: #ffdf5a;
 }
@@ -1400,47 +1397,116 @@ button {
 }
 
 .m08-alice-scene {
-  background: #d3ddd0;
+  overflow: hidden;
+  background: #fff;
 }
 
 .m08-alice-picker {
-  left: 118px;
-  top: 17px;
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  pointer-events: none;
 }
 
 .m08-alice-picker button {
-  width: 27px;
-  height: 27px;
-  font-size: 10px;
+  position: absolute;
+  left: calc(var(--alice-source-x) * 0.8px);
+  top: calc(var(--alice-source-y) * 0.8px);
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: 50%;
+  color: transparent;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
-.m08-alice-art {
+.m08-alice-picker button:focus-visible {
+  outline: 3px solid #0066ff;
+  outline-offset: 2px;
+}
+
+.m08-alice-picker button span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.m08-alice-stage {
   position: absolute;
   z-index: 1;
-  left: 75px;
-  top: 75px;
-  width: 490px;
-  height: 320px;
-  object-fit: contain;
+  inset: 0;
+  display: block;
+  width: 640px;
+  height: 480px;
+  object-fit: fill;
+  pointer-events: none;
 }
 
 .m08-alice-dials {
-  position: absolute;
-  z-index: 5;
-  left: 210px;
-  top: 245px;
-  display: flex;
-  gap: 25px;
+  display: contents;
 }
 
-.m08-alice-dials button {
-  width: 58px;
-  height: 58px;
-  border: 8px double #8f6b28;
+.m08-alice-dial {
+  position: absolute;
+  z-index: 5;
+  width: 106px;
+  height: 105px;
+  padding: 0;
+  border: 0;
   border-radius: 50%;
-  color: #fff;
-  background: #263951;
-  font-size: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.m08-alice-dial-1 {
+  left: 502px;
+  top: 53px;
+}
+
+.m08-alice-dial-2 {
+  left: 494px;
+  top: 351px;
+}
+
+.m08-alice-dial-3 {
+  left: 16px;
+  top: 358px;
+}
+
+.m08-alice-dial:focus-visible {
+  outline: 3px solid #0066ff;
+  outline-offset: 3px;
+}
+
+.m08-alice-dial-gear,
+.m08-alice-dial-face {
+  position: absolute;
+  pointer-events: none;
+}
+
+.m08-alice-dial-gear {
+  z-index: 1;
+  left: -19px;
+  top: -20px;
+  width: 145px;
+  height: 145px;
+  opacity: 0.88;
+}
+
+.m08-alice-dial-face {
+  z-index: 2;
+  inset: 0;
+  width: 106px;
+  height: 105px;
+  transform: rotate(var(--alice-dial-turn));
+  transition: transform 160ms ease-out;
 }
 
 .m08-nut-house-scene {

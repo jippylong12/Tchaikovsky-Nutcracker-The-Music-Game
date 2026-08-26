@@ -1307,6 +1307,7 @@ describe("desktop app shell", () => {
 
   it("keeps Toy Soldiers, Waltz, and Alice faithful to their recovered source boundaries", () => {
     const mount = document.createElement("main");
+    document.body.append(mount);
     createTestShell(mount);
 
     mount.querySelector<HTMLButtonElement>('[data-route="toy-soldiers"]')?.click();
@@ -1330,10 +1331,24 @@ describe("desktop app shell", () => {
     expect(lastPlayedSource()).toContain("MP3Wedding3");
 
     mount.querySelector<HTMLButtonElement>('[data-route="alice-puzzles"]')?.click();
-    [0, 1, 2].forEach((dial) => mount.querySelector<HTMLButtonElement>(`[data-alice-dial="${dial}"]`)?.click());
-    mount.querySelector<HTMLButtonElement>("[data-alice-check]")?.click();
-    expect(mount.textContent).toContain("THE CLOCKWORK COMBINATION IS CORRECT");
-    expect(mount.querySelector<HTMLImageElement>(".m08-alice-art")?.src).toContain("alice-puzzle-01-primary");
+    expect(mount.querySelector<HTMLImageElement>(".m08-alice-stage")?.src).toContain("alice-chooser-main");
+    expect(mount.querySelectorAll("[data-alice-puzzle]")).toHaveLength(12);
+    expect(mount.textContent).not.toContain("ALICE PUZZLE");
+    expect(mount.textContent).not.toContain("SET THE THREE DIALS");
+    mount.querySelector<HTMLButtonElement>('[data-alice-puzzle="1"]')?.click();
+    expect(mount.querySelector<HTMLImageElement>(".m08-alice-stage")?.src).toContain("alice-stage-01");
+    expect(mount.querySelectorAll("[data-alice-dial]")).toHaveLength(3);
+    expect(mount.querySelectorAll(".m08-alice-dial-face")).toHaveLength(3);
+    expect(mount.querySelector("[data-alice-check]")).toBeNull();
+    expect(mount.querySelector<HTMLButtonElement>('[data-alice-dial="0"]')?.getAttribute("aria-label")).toContain("frame 4 of 4");
+    [0, 1, 2].forEach((dial) => {
+      mount.querySelector<HTMLButtonElement>(`[data-alice-dial="${dial}"]`)?.click();
+      expect(document.activeElement).toBe(mount.querySelector(`[data-alice-dial="${dial}"]`));
+    });
+    expect(mount.querySelector<HTMLButtonElement>('[data-alice-dial="0"]')?.getAttribute("aria-label")).toContain("frame 1 of 4");
+    expect(mount.textContent).toContain("The three Alice puzzle clocks are correct.");
+    expect(mount.querySelector<HTMLElement>("[data-source-alice-board]")?.dataset.sourceFallback).toContain("Ruffle 0.5.0");
+    mount.remove();
   });
 
   it("separates the recovered Toy Soldiers melody demo from the reposition check and cancels both", () => {

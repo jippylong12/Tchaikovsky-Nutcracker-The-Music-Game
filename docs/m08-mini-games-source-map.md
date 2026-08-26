@@ -2,7 +2,7 @@
 
 This map is the source-of-truth record for the M08 recreation pass. The runtime inputs are the recovered Flash files under `analysis/setup/app/games/`; `app/scripts/extract-m08-source-assets.mjs` verifies their SHA-256 hashes before writing ignored evidence under `app/generated/m08-source-extract/` and promoted runtime files under `app/src/assets/m08-source/`.
 
-Run `npm run assets:m08` from `app/`. A valid pass reports 34 SWFs, 112 source images, 3 extracted root streams, 205 extracted `DefineSound` files, and 77 runtime companion files. The extractor excludes backup files and alternate Children's Album WAV copies while retaining the source MP3s and Waltz WAV. It preflights every required source/companion and all 34 locked SWF hashes before removing only its owned generated and promoted M08 roots for the rebuild.
+Run `npm run assets:m08` from `app/`. A valid pass reports 34 SWFs, 112 source images, 3 extracted root streams, 205 extracted `DefineSound` files, 77 runtime companion files, and 13 verified Alice Ruffle renders. The extractor excludes backup files and alternate Children's Album WAV copies while retaining the source MP3s and Waltz WAV. It preflights every required source/companion, all 34 locked SWF hashes, and the 13 source-runtime capture hashes before removing only its owned generated and promoted M08 roots for the rebuild.
 
 ## Source inventory
 
@@ -13,7 +13,7 @@ Run `npm run assets:m08` from `app/`. A valid pass reports 34 SWFs, 112 source i
 | Orchestra | `games/orchestragame/orchestra.swf` | 640 x 480 | 2,095 frames at 15 fps | `orchestra` |
 | Toy Soldiers | `games/toysoldiersgame/toysoldiersgame.swf` | 640 x 480 | 1 frame at 12 fps | `toy-soldiers` |
 | Waltz | `games/wedding/waltz.swf`, `games/wedding/MP3Wedding3.wav` | 550 x 400 | 785 frames at 12 fps, about 65.4 seconds | `waltz` |
-| Alice | `games/aliceSWF/alice.swf`, `game_01.swf` … `game_12.swf` | 800 x 600 | chooser 641 frames at 15 fps; games 1 frame at 15 fps | `alice-puzzles` |
+| Alice | `games/aliceswf/alice.swf`, `game_01.swf` … `game_12.swf` | 800 x 600 | chooser 641 frames at 15 fps; games 1 frame at 15 fps with nested animated sprites | `alice-puzzles` |
 | Nut House | `games/nuthouse/room11.swf` … `room18.swf`, `games/data/nuthouserooms.txt` | 640 x 480 | 32-43 frames at 15 fps | `nut-house` |
 
 The manifest locks every individual SWF hash. Alice puzzle files form four byte-identical source groups: 01-03, 04-06, 07-09, and 10-12. Runtime assets retain puzzle-local names even when their source hashes are identical so provenance is not obscured.
@@ -52,7 +52,13 @@ The Waltz is a 785-frame source timeline with an embedded stream and bundled `MP
 
 ### Alice puzzles
 
-The chooser loads `games/aliceSWF/game_XX.swf`, exposes a clock/gear selector for 12 games, stores three toy values, and calls `checkSolution`. Every recovered `gameCombination1` through `gameCombination12` array equals `[1,1,1]`. Puzzles 01-06 contain meadow source backgrounds, 07-09 contain object art, and 10-12 contain storm imagery. No game-key action was recovered; Alice stays a supplementary puzzle family.
+The chooser loads `games/aliceSWF/game_XX.swf` at runtime (the recovered filesystem directory is lowercase `games/aliceswf/`), exposes `BTNgame_1` through `BTNgame_12` around the post-intro `mainDialer`, stores three toy values, and calls `checkSolution` after each clock release. The root placement is centered at x `400.00`, y `300.05`; the twelve selector buttons form the source clock ring. The route now opens on an 800 x 600 Ruffle capture of that stable clock state and overlays transparent, keyboard-accessible hit regions on the source numbers instead of showing a generic numbered strip.
+
+Each loaded puzzle root contains named `toy1`, `toy2`, `toy3`, `character1`, and `character2` instances. Direct playback in Ruffle 0.5.0 resolves the display lists that crash SWFTools: puzzles 01-03 are the White Rabbit and Alice in a winter landscape; 04-06 are the Caterpillar and Alice in a vivid garden; 07-09 are the tea-party scene; and 10-12 are the storm/castle scene. The committed source-runtime captures remain puzzle-local even where source SWFs or captured pixels are identical. They are promoted as `alice-stage-01.png` through `alice-stage-12.png` and scaled uniformly from 800 x 600 to the preserved 640 x 480 viewport.
+
+Chooser sprites `clock_1`, `clock_2`, and `clock_3` are ids `0152`, `0153`, and `0154`, initially placed at `(693.35,131.65)`, `(683.35,505.40)`, and `(86.10,513.40)`. Their recovered `bodyAndHand` child is sprite id `0151`; a centered 2048 wrapper leaves false distant fragments, so the deterministic promotion trims and then crops the actual `132x131+960+960` clock component. Gear sprite id `0098` renders intact at 182 x 182. Sprite `0151` builds a fresh random `angleToFrame` permutation of toy frames 1 through 4, picks a random `firstPos`, and exposes four snap angles `[−90, 0, −270, −180]`. The runtime uses those source children for the three interactive clocks and keeps all four valid toy-frame states; its accessible whole-control activation cycles frames `4 → 1 → 2 → 3 → 4` rather than replaying the four internal hit regions, per-clock random permutation, or pointer gesture. It does not retain the invented `ALICE PUZZLE`, `SET THE THREE DIALS`, `CHECK SOLUTION`, or visible correctness banners.
+
+Every recovered `gameCombination1` through `gameCombination12` array equals `[1,1,1]`. No game-key action was recovered; Alice stays a supplementary puzzle family.
 
 ### Nut House
 
@@ -75,7 +81,7 @@ Full root probes are not reliable with the installed SWFTools build:
 
 - Children's Album and Orchestra terminate with `SIGSEGV` after unresolved JPEG/display-list children.
 - Each Loopy board terminates with `SIGSEGV`.
-- Alice puzzle boards terminate with `SIGSEGV`; the chooser's successful output contains only an incomplete pale ring.
+- Alice puzzle boards terminate with `SIGSEGV`; the chooser's SWFTools output contains only an incomplete pale ring. Direct playback through the official Ruffle 0.5.0 self-hosted runtime resolves the complete 800 x 600 puzzle display lists and the post-intro chooser. Those source-runtime captures are now hash-locked inputs under `analysis/setup/app/games/aliceswf/recovered-renders/`; SWFTools remains the deterministic child-asset path for gear id `0098` and cropped dial id `0151`. The stable puzzle captures do not change with the runtime clock state, replay the randomized `angleToFrame` mapping, or animate the correct-state character/gear sequence; those remain manual-review gaps.
 - Nut House rooms terminate with `SIGSEGV`.
 - Toy Soldiers exits successfully and exposes the green field, the first frame of the cyan moving shape, staff lines, and feedback flashes, but it omits the button-backed soldiers and controls; isolated sprite id `0031` renders transparent because button id `0030` is unresolved even though child shape id `0029` is recoverable.
 - Waltz exits successfully but only exposes a gray gradient.

@@ -786,17 +786,20 @@
       "routeIds": ["alice-puzzles"],
       "lifecycle": "implemented-review",
       "classifications": ["original asset", "original source text", "inferred behavior", "documented fallback"],
-      "sourceInputs": ["analysis/setup/app/games/aliceSWF"],
+      "sourceInputs": ["analysis/setup/app/games/aliceswf"],
       "promotedAssets": [
-        "app/src/assets/m08-source/alice-puzzle-01-primary.png",
-        "app/src/assets/m08-source/alice-puzzle-07-primary.png",
-        "app/src/assets/m08-source/alice-puzzle-10-primary.png"
+        "app/src/assets/m08-source/alice-chooser-main.png",
+        "app/src/assets/m08-source/alice-stage-01.png",
+        "app/src/assets/m08-source/alice-stage-07.png",
+        "app/src/assets/m08-source/alice-stage-12.png",
+        "app/src/assets/m08-source/alice-clock-gear.png",
+        "app/src/assets/m08-source/alice-puzzle-dial.png"
       ],
       "evidenceDocs": ["docs/m08-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-342", "JIP-846", "JIP-847", "JIP-848", "JIP-849", "JIP-850"],
       "fallbackEvidence": [
         {
-          "source": "analysis/setup/app/games/aliceSWF/game_01.swf",
+          "source": "analysis/setup/app/games/aliceswf/game_01.swf",
           "sourceLocator": {
             "kind": "sprite-timeline",
             "identifier": "root frame 1; JPEG3 id 0003; chooser gameCombination1 through gameCombination12",
@@ -805,18 +808,18 @@
           "toolLimitation": {
             "capability": "interactive-timeline-flattening",
             "tool": "SWFTools",
-            "observedFailure": "SWFTools cannot flatten the Alice puzzle display lists; all 12 puzzle root probes terminate with SIGSEGV and the chooser output is incomplete."
+            "observedFailure": "SWFTools cannot flatten the Alice puzzle display lists; all 12 puzzle root probes terminate with SIGSEGV and the chooser output is incomplete. Ruffle 0.5.0 resolves both surfaces, while sprite 0151 still needs a bounded crop after SWFTools extraction."
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes puzzle-local promoted source art with the exact 12-game selector and three-value ActionScript solution state.",
-            "retainedGap": "Full interactive Flash chooser timeline playback, original gear animation, and complete puzzle display lists remain unavailable."
+            "details": "The runtime composes promoted hash-locked, puzzle-local Ruffle captures for the complete stages and chooser with promoted source gear 0098 and cropped dial 0151 for the three clock controls.",
+            "retainedGap": "The authored 641-frame chooser introduction, per-clock random angle-to-frame permutation, live toy-frame changes, tweened clock reveal/hide motion, pointer-drag gesture, and exact nested character timing are represented by stable captures and keyboard-accessible four-frame cycling rather than replayed timelines."
           },
           "evidenceDoc": "docs/m08-mini-games-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "A dedicated route represents all 12 source puzzle movies, four byte-identical source groups, exact three-dial solution behavior, puzzle-local art, no-key boundary, and renderer limitation; Marcus visual approval remains open."
+      "auditFinding": "A dedicated route now opens on the recovered clock chooser, represents all 12 complete source-runtime puzzle stages, uses source child art for the three clocks, keeps toy state within source frames 1 through 4, checks the exact [1,1,1] state on each activation, documents the remaining random-mapping and live-animation gaps, removes invented viewport copy and controls, preserves the no-key boundary, and keeps Marcus visual approval open."
     },
     {
       "id": "nut-house",
