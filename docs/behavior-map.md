@@ -178,11 +178,14 @@ File: `games/flyinginstruments/flyinginstruments.swf`
 | Source text `CHOOSE A GAME TO PLAY`, `START`, `RESUME`, `HELP` | Visible control vocabulary comes from source | exact source strings in preserved viewport |
 | JPEG3 ids 74 through 120, viola child shape 48, and star id 123 | Seventeen recoverable instrument images plus reward star | correctly named per-instrument source promotions |
 | Embedded exports map instrument and family sounds | No external companion directory is required | extracted `audio/flying/*.mp3` promotions |
-| Four-by-seven grid and family/instrument actions | Tetris-like instrument-to-family classification | pointer/keyboard family targets with exact behavior and documented motion fallback |
+| Grid sprites 320/324/325 contain 4 columns x 7 rows at 60-unit spacing; `placeFlyingINST` starts column 2 row 0 | Source falling-instrument board | promoted source grid art with 4 x 7 typed occupancy state |
+| `moveINST` accepts left/right/down and the source controller binds matching arrow keys | Player steers the active falling instrument | source controller art with pointer hit regions and arrow-key input |
+| `checkSolution` compares the landed family with the cell directly below and delays 1000 ms before clearing matches | Vertical same-family pairs score and disappear | lock, match animation, exact level-scaled score, and two-cell clear after 1000 ms |
 | `maxInst = 17` for level 1, `8` for levels 2/3; four source `instSet` arrays per shorter level | Full-set first level and source-defined shorter sets | all 17 source instruments for level 1; deterministic first recovered eight-instrument set for levels 2/3 |
-| Completion calls `saveKey3.exe` | Persists game key 3 | `progress.markGameKey(3)` |
+| Each matched cell calls `addSeconds(0.5, 1)`; `addSeconds` applies `2 * amount * level * 4` | A cleared pair scores `8 * level` | cumulative score uses the exact level multiplier |
+| Score sprite id 170 initializes `requiredScore = 300`; only `updateHighest` calls `saveKey3.exe` after reaching it | Ordinary `endGame`/`playAgain` completion is separate from earning key 3 | source `TRY AGAIN` replay at set end; `progress.markGameKey(3)` only at 300 points |
 
-The full root probe produces a transparent 640 x 480, 406-byte PNG while reporting missing JPEG and unknown child IDs. The runtime therefore composes promoted source instrument/stage imagery and embedded sounds with the typed grid substitute. Exact falling/grid animation remains a documented renderer gap.
+The full root probe produces a transparent 640 x 480, 406-byte PNG while reporting missing JPEG and unknown child IDs. Child extraction nevertheless recovers the source room, all three grid sprites, level buttons, arrow controller, score label, magic key, pause body, normal `TRY AGAIN` body/label, instruments, and audio. The runtime composes those layers with the recovered falling, locking, vertical-match, scoring, pause, replay, and keyboard behavior. The retained gap is exact sub-row Flash interpolation, legacy external score persistence beyond the app session, and the unresolved cat/exit/help timelines and pause dynamic text, not the grid game itself.
 
 ## M08 Mini-Game Batch 2
 

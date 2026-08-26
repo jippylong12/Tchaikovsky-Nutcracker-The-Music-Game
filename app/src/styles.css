@@ -304,32 +304,6 @@ button {
   inset: 0;
 }
 
-.m07-flying-heading {
-  margin: 0 0 6px;
-  font-weight: 700;
-}
-
-.m07-flying-levels {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-}
-
-.m07-flying-levels button {
-  min-height: 24px;
-  border: 1px solid #fff;
-  color: #fff;
-  background: #172b73;
-  font-family: Arial, sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.m07-flying-levels button[aria-pressed="true"] {
-  color: #121943;
-  background: #f4de14;
-}
-
 .m07-melody-levels button {
   position: absolute;
   min-height: 34px;
@@ -754,70 +728,266 @@ button {
 
 .m07-flying-board {
   position: absolute;
-  z-index: 4;
-  inset: 72px 36px 55px;
-  display: grid;
-  justify-items: center;
-  color: #fff;
+  z-index: 5;
+  inset: 0;
   font-family: Arial, sans-serif;
-  text-shadow: 0 1px 2px #000;
+}
+
+.m07-flying-room {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 640px;
+  height: 480px;
+  pointer-events: none;
+}
+
+.m07-flying-scene .m07-frame-top,
+.m07-flying-scene .m07-frame-medallion {
+  z-index: 9;
+}
+
+.m07-flying-scene .m07-frame-bottom,
+.m07-flying-scene .m07-curtain {
+  z-index: 3;
+}
+
+.m07-flying-chooser {
+  position: absolute;
+  inset: 0;
 }
 
 .m07-flying-heading {
-  align-self: start;
-  font-size: 14px;
+  position: absolute;
+  left: 235px;
+  top: 107px;
+  width: 170px;
+  height: 48px;
+}
+
+.m07-flying-heading img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.m07-flying-heading img:first-child {
+  transform: translate(2px, 2px);
 }
 
 .m07-flying-levels {
   position: absolute;
-  top: 26px;
+  left: 246px;
+  top: 176px;
+  display: flex;
+  gap: 16px;
 }
 
-.m07-flying-instrument {
-  position: absolute;
-  left: 50%;
-  top: 70px;
-  width: 170px;
-  height: 200px;
-  transform: translateX(-50%);
-  object-fit: contain;
-}
-
-.m07-flying-listen {
-  left: 250px;
-  top: 275px;
-}
-
-.m07-flying-families {
-  position: absolute;
-  left: 120px;
-  top: 310px;
-  display: grid;
-  grid-template-columns: repeat(4, 52px);
-  gap: 8px;
-}
-
-.m07-flying-families button {
-  width: 52px;
-  height: 28px;
-  border: 2px solid #fff;
+.m07-flying-levels button {
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
   border-radius: 50%;
-  color: #f4de14;
-  background: #172b73;
+  background: transparent;
+}
+
+.m07-flying-levels img {
+  display: block;
+  width: 46px;
+  height: 46px;
+}
+
+.m07-flying-grid-art {
+  position: absolute;
+  left: 204.95px;
+  top: 20.05px;
+  width: 220.08px;
+  height: 385.14px;
+  pointer-events: none;
+}
+
+.m07-flying-grid-pieces {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+}
+
+.m07-flying-cell-instrument {
+  --flying-cell: 55.02px;
+  position: absolute;
+  left: calc(207px + var(--flying-column) * var(--flying-cell));
+  top: calc(22px + var(--flying-row) * var(--flying-cell));
+  width: 51px;
+  height: 51px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 35%));
+}
+
+.m07-flying-cell-instrument.is-falling {
+  animation: m07-flying-hover 345ms ease-in-out infinite alternate;
+}
+
+.m07-flying-cell-instrument.is-matching {
+  animation: m07-flying-match 180ms steps(2, jump-none) infinite;
+}
+
+@keyframes m07-flying-hover {
+  to { transform: translateY(2px); }
+}
+
+@keyframes m07-flying-match {
+  to { opacity: 0.28; }
+}
+
+.m07-flying-score {
+  position: absolute;
+  left: 467px;
+  top: 172px;
+  width: 76px;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 1px #001042;
+}
+
+.m07-flying-score img {
+  display: block;
+  width: 69px;
+  height: 18px;
+}
+
+.m07-flying-score span {
+  display: block;
+  margin-top: 3px;
+  color: #63d2ff;
+  font-size: 18px;
   font-weight: 700;
 }
 
-.m07-flying-progress {
+.m07-flying-controller {
   position: absolute;
-  right: 46px;
-  top: 280px;
-  margin: 0;
+  left: 218px;
+  top: 409px;
+  width: 164px;
+  height: 50px;
 }
 
-.m07-flying-board .m07-feedback {
-  left: 154px;
-  top: 282px;
-  width: 130px;
+.m07-flying-controller > img {
+  position: absolute;
+  inset: 0;
+  width: 164px;
+  height: 50px;
+  pointer-events: none;
+}
+
+.m07-flying-controller button {
+  position: absolute;
+  top: 0;
+  width: 53px;
+  height: 50px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.m07-flying-controller [data-flying-left] { left: 0; }
+.m07-flying-controller [data-flying-down] { left: 55px; }
+.m07-flying-controller [data-flying-right] { right: 0; }
+
+.m07-flying-source-control {
+  position: absolute;
+  width: 102px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.m07-flying-source-control img {
+  position: absolute;
+  pointer-events: none;
+}
+
+.m07-flying-control-body {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.m07-flying-control-label {
+  left: 14px;
+  top: 12px;
+  width: 74px;
+  height: 25px;
+  object-fit: fill;
+}
+
+.m07-flying-start {
+  left: 449px;
+  top: 277px;
+}
+
+.m07-flying-resume {
+  left: 447px;
+  top: 277px;
+}
+
+.m07-flying-pause {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  top: 6px;
+  width: 39px;
+  height: 45px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  color: #fff;
+  background: transparent;
+  font-size: 9px;
+  font-weight: 700;
+  text-shadow: 0 1px 1px #000;
+}
+
+.m07-flying-pause img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.m07-flying-pause span {
+  position: relative;
+  z-index: 1;
+}
+
+.m07-flying-restart {
+  left: 452px;
+  top: 278px;
+  height: 41px;
+}
+
+.m07-flying-restart .m07-flying-control-label {
+  left: 9px;
+  top: 14px;
+  width: 84px;
+  height: 14px;
+}
+
+.m07-flying-magic-key {
+  position: absolute;
+  z-index: 5;
+  left: 496px;
+  top: 58px;
+  width: 31px;
+  height: 49px;
+  object-fit: contain;
+  transform: scaleX(-1);
 }
 
 .m08-scene {

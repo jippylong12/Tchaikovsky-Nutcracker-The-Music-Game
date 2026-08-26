@@ -182,6 +182,12 @@ export function getFlyingInstrumentSequence(level: 1 | 2 | 3): readonly FlyingIn
   });
 }
 
+export function getFlyingInstrumentById(id: number): FlyingInstrument {
+  const instrument = flyingInstruments.find((candidate) => candidate.id === id);
+  if (!instrument) throw new Error(`Missing recovered flying instrument ${id}`);
+  return instrument;
+}
+
 export function isMelodyDifficulty(value: string): value is MelodyDifficulty {
   return value === "beg" || value === "easy" || value === "inter" || value === "adv";
 }

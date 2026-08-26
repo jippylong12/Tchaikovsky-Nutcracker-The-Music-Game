@@ -583,12 +583,19 @@
       "title": "Flying Instruments",
       "routeIds": ["flying-instruments"],
       "lifecycle": "implemented-review",
-      "classifications": ["original asset", "original source text", "inferred behavior", "documented fallback"],
+      "classifications": ["original asset", "SWF-derived recreation", "original source text", "inferred behavior", "documented fallback"],
       "sourceInputs": ["analysis/setup/app/games/flyinginstruments/flyinginstruments.swf"],
       "promotedAssets": [
         "app/src/assets/m07-source/flying-flute.png",
         "app/src/assets/m07-source/flying-viola.png",
-        "app/src/assets/m07-source/flying-star.png"
+        "app/src/assets/m07-source/flying-room-background.png",
+        "app/src/assets/m07-source/flying-grid-level-1.png",
+        "app/src/assets/m07-source/flying-controller-arrows.png",
+        "app/src/assets/m07-source/flying-points-label.png",
+        "app/src/assets/m07-source/flying-pause-button-body.png",
+        "app/src/assets/m07-source/flying-try-again-button-body.png",
+        "app/src/assets/m07-source/flying-try-again-label.png",
+        "app/src/assets/m07-source/flying-magic-key.png"
       ],
       "evidenceDocs": ["docs/m07-mini-games-source-map.md", "docs/behavior-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-339", "JIP-831", "JIP-832", "JIP-833", "JIP-834", "JIP-835"],
@@ -607,14 +614,14 @@
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes promoted source instrument/stage layers and embedded audio with TypeScript level state and pointer/keyboard family targets.",
-            "retainedGap": "Full interactive Tetris-like sprite-grid timeline animation and motion remain unavailable."
+            "details": "The runtime composes the promoted source room, three grid sprites, controller, score, pause and TRY AGAIN child layers, magic key, instrument layers, and embedded audio with the recovered falling, locking, vertical-family matching, level-scaled scoring, replay, pause, pointer, and keyboard state.",
+            "retainedGap": "Exact sub-row Flash interpolation, randomized shorter-level array choice, legacy external score persistence beyond the app session, cat narration, unresolved exit/help timelines, and pause dynamic text remain unavailable."
           },
           "evidenceDoc": "docs/m07-mini-games-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "A dedicated source-backed route now exposes all seventeen source instruments in their logical ID, sound, and family mapping, embedded sounds, three level states, family classification, key gate, and the exact transparent-render limitation; Marcus visual approval remains open."
+      "auditFinding": "The dedicated source-backed route separates chooser and play frames, uses the recovered room and 4 x 7 grid art, runs the recovered falling/locking/vertical-match controls and timing, exposes all seventeen instruments in their logical ID/sound/family mapping, scores each pair as 8 times the selected level, keeps ordinary TRY AGAIN completion separate from the 300-point game-key gate, and keeps Marcus visual approval open."
     },
     {
       "id": "loopy-tunes",

@@ -329,6 +329,54 @@ function renderWrappedTrimmedSymbol(sourcePath, id, generatedPath, promotedPath)
   return { id, output: relative(appRoot, promotedPath), sha256: sha256(readFileSync(promotedPath)) };
 }
 
+function renderDirectCroppedSymbol(sourcePath, id, generatedPath, promotedPath, crop) {
+  const symbolPath = `${generatedPath}.swf`;
+  const renderPath = `${generatedPath}.png`;
+  execFileSync("swfextract", ["-i", String(id), "-o", symbolPath, sourcePath], { stdio: "pipe" });
+  execFileSync("swfrender", ["-o", renderPath, symbolPath], { stdio: "pipe" });
+  mkdirSync(dirname(promotedPath), { recursive: true });
+  execFileSync("magick", [
+    renderPath,
+    "-crop", crop,
+    "+repage",
+    "-depth", "8",
+    "-define", "png:color-type=6",
+    "-define", "png:exclude-chunks=date,time",
+    "-strip",
+    promotedPath,
+  ]);
+  return { id, crop, output: relative(appRoot, promotedPath), sha256: sha256(readFileSync(promotedPath)) };
+}
+
+function renderStagePlacedSymbol(sourcePath, id, generatedPath, promotedPath, { x, y, scale, operations = [] }) {
+  const symbolPath = `${generatedPath}.swf`;
+  const wrappedPath = `${generatedPath}.wrapped.swf`;
+  const renderPath = `${generatedPath}.wrapped.png`;
+  execFileSync("swfextract", ["-i", String(id), "-o", symbolPath, sourcePath], { stdio: "pipe" });
+  execFileSync("swfcombine", [
+    "--stack1",
+    "-X", "640",
+    "-Y", "480",
+    "-x", String(x),
+    "-y", String(y),
+    "-s", String(scale),
+    "-o", wrappedPath,
+    symbolPath,
+  ], { stdio: "pipe" });
+  execFileSync("swfrender", ["-o", renderPath, wrappedPath], { stdio: "pipe" });
+  mkdirSync(dirname(promotedPath), { recursive: true });
+  execFileSync("magick", [
+    renderPath,
+    ...operations,
+    "-depth", "8",
+    "-define", "png:color-type=6",
+    "-define", "png:exclude-chunks=date,time",
+    "-strip",
+    promotedPath,
+  ]);
+  return { id, x, y, scale, operations, output: relative(appRoot, promotedPath), sha256: sha256(readFileSync(promotedPath)) };
+}
+
 function promoteCompanionFiles() {
   const mappings = [
     ["analysis/setup/app/games/trivia/questions", "data/trivia"],
@@ -441,6 +489,76 @@ const flyingShapeEvidence = [
     join(promotedRoot, "flying-viola.png"),
   ),
 ];
+const flyingSpriteEvidence = [
+  renderStagePlacedSymbol(
+    flyingSourcePath,
+    172,
+    join(generatedRoot, "flying-instruments/room-background-172"),
+    join(promotedRoot, "flying-room-background.png"),
+    {
+      x: 326.25,
+      y: 252,
+      scale: 46.9,
+      operations: ["-channel", "G", "-evaluate", "multiply", "0.6", "+channel", "-channel", "B", "-evaluate", "multiply", "0.9", "+channel"],
+    },
+  ),
+  ...[
+    [320, "flying-grid-level-1.png"],
+    [324, "flying-grid-level-2.png"],
+    [325, "flying-grid-level-3.png"],
+  ].map(([id, name]) => renderDirectCroppedSymbol(
+    flyingSourcePath,
+    id,
+    join(generatedRoot, `flying-instruments/grid-${id}`),
+    join(promotedRoot, name),
+    "240x420+0+0",
+  )),
+  ...[
+    [203, "flying-level-1.png"],
+    [207, "flying-level-2.png"],
+    [211, "flying-level-3.png"],
+  ].map(([id, name]) => renderTrimmedSymbol(
+    flyingSourcePath,
+    id,
+    join(generatedRoot, `flying-instruments/sprite-${id}`),
+    join(promotedRoot, name),
+  )),
+  ...[
+    [165, "flying-controller-arrows.png"],
+    [170, "flying-points-label.png"],
+    [318, "flying-magic-key.png"],
+  ].map(([id, name]) => renderWrappedTrimmedSymbol(
+    flyingSourcePath,
+    id,
+    join(generatedRoot, `flying-instruments/sprite-${id}`),
+    join(promotedRoot, name),
+  )),
+  ...[
+    [275, "flying-choose-heading-shadow.png"],
+    [276, "flying-choose-heading.png"],
+    [145, "flying-pause-button-body.png"],
+    [228, "flying-try-again-button-body.png"],
+    [282, "flying-start-button-body.png"],
+    [294, "flying-resume-button-body.png"],
+    [299, "flying-help-button-body.png"],
+  ].map(([id, name]) => renderTrimmedSymbol(
+    flyingSourcePath,
+    id,
+    join(generatedRoot, `flying-instruments/control-${id}`),
+    join(promotedRoot, name),
+  )),
+  ...[
+    [229, "flying-try-again-label.png"],
+    [283, "flying-start-label.png"],
+    [296, "flying-resume-label.png"],
+    [300, "flying-help-label.png"],
+  ].map(([id, name]) => renderWrappedTrimmedSymbol(
+    flyingSourcePath,
+    id,
+    join(generatedRoot, `flying-instruments/control-${id}`),
+    join(promotedRoot, name),
+  )),
+];
 
 const melodySourcePath = join(projectRoot, "analysis/setup/app/games/melody/melody.swf");
 const melodySpriteEvidence = [
@@ -487,6 +605,7 @@ writeFileSync(manifestPath, `${JSON.stringify({
     treeShapeEvidence,
     treeSpriteEvidence,
     flyingShapeEvidence,
+    flyingSpriteEvidence,
     melodySpriteEvidence,
     triviaEmbeddedSounds: { 100: "intro", 135: "correct", 150: "wrong" },
     flyingSoundExports: Object.fromEntries(flyingSoundExports),

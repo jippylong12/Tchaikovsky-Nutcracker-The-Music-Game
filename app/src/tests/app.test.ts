@@ -1121,22 +1121,92 @@ describe("desktop app shell", () => {
     }
   });
 
-  it("opens the recovered Flying Instruments route with source images and sounds", () => {
-    const mount = document.createElement("main");
-    createTestShell(mount);
+  it("runs the recovered Flying Instruments chooser, falling grid, controls, and vertical family match", () => {
+    vi.useFakeTimers();
+    try {
+      const mount = document.createElement("main");
+      createTestShell(mount);
 
-    mount.querySelector<HTMLButtonElement>('[data-route="flying-instruments"]')?.click();
-    expect(mount.querySelector<HTMLElement>(".m07-flying-scene")?.dataset.sourceFrame).toContain("playLevel1 frame 3");
-    expect(mount.querySelector<HTMLImageElement>(".m07-flying-instrument")?.src).toContain("flying-flute");
-    expect(mount.querySelectorAll("[data-flying-family]")).toHaveLength(4);
-    expect(mount.querySelector<HTMLElement>("[data-source-flying-grid]")?.dataset.sourceFallback).toContain(
-      "transparent",
-    );
+      mount.querySelector<HTMLButtonElement>('[data-route="flying-instruments"]')?.click();
+      expect(mount.querySelector<HTMLElement>(".m07-flying-scene")?.dataset.sourceFrame).toBe("chooseLevel frame 2");
+      expect(mount.querySelectorAll("[data-flying-level]")).toHaveLength(3);
+      expect(mount.querySelector(".m07-flying-grid-art")).toBeNull();
 
-    mount.querySelector<HTMLButtonElement>('[data-flying-level="2"]')?.click();
-    expect(mount.querySelector<HTMLImageElement>(".m07-flying-instrument")?.src).toContain("flying-tuba");
-    mount.querySelector<HTMLButtonElement>('[data-flying-family="brass"]')?.click();
-    expect(mount.querySelector<HTMLImageElement>(".m07-flying-instrument")?.src).toContain("flying-grand-piano-blue");
+      mount.querySelector<HTMLButtonElement>('[data-flying-level="1"]')?.click();
+      expect(mount.querySelector<HTMLElement>(".m07-flying-scene")?.dataset.sourceFrame).toBe("playLevel1 frame 3");
+      expect(mount.querySelector<HTMLImageElement>(".m07-flying-grid-art")?.src).toContain("flying-grid-level-1");
+      expect(mount.querySelector("[data-flying-start]")).not.toBeNull();
+
+      mount.querySelector<HTMLButtonElement>("[data-flying-start]")?.click();
+      expect(mount.querySelector<HTMLImageElement>(".is-falling")?.src).toContain("flying-flute");
+      expect(mount.querySelector<HTMLImageElement>(".is-falling")?.getAttribute("style")).toContain("--flying-column:1");
+      expect(mount.querySelector("[data-flying-family]")).toBeNull();
+
+      for (let step = 0; step < 7; step += 1) {
+        mount.querySelector<HTMLButtonElement>("[data-flying-down]")?.click();
+      }
+      expect(mount.querySelector<HTMLImageElement>(".is-falling")?.src).toContain("flying-clarinet");
+
+      for (let step = 0; step < 6; step += 1) {
+        mount.querySelector<HTMLButtonElement>("[data-flying-down]")?.click();
+      }
+      expect(mount.querySelectorAll(".is-matching")).toHaveLength(2);
+      expect(mount.querySelector<HTMLElement>(".m07-flying-score")?.textContent).toContain("8");
+
+      mount.querySelector<HTMLButtonElement>('[data-action="audio-stop"]')?.click();
+      expect(mount.querySelector<HTMLElement>(".m07-flying-scene")?.dataset.flyingPhase).toBe("matching");
+
+      vi.advanceTimersByTime(1000);
+      expect(mount.querySelector<HTMLImageElement>(".is-falling")?.src).toContain("flying-oboe");
+      expect(mount.querySelectorAll('[data-source-instrument="1"], [data-source-instrument="2"]')).toHaveLength(0);
+
+      mount.querySelector<HTMLButtonElement>("[data-flying-pause]")?.click();
+      expect(mount.querySelector<HTMLElement>(".m07-flying-scene")?.dataset.flyingPhase).toBe("paused");
+      expect(mount.querySelectorAll("[data-flying-pause]")).toHaveLength(1);
+      expect(mount.querySelector<HTMLImageElement>(".m07-flying-resume img")?.src).toContain("flying-resume-button-body");
+
+      mount.querySelector<HTMLButtonElement>("[data-flying-pause]")?.click();
+      expect(mount.querySelector<HTMLElement>(".m07-flying-scene")?.dataset.flyingPhase).toBe("playing");
+      mount.querySelector<HTMLButtonElement>('[data-action="audio-stop"]')?.click();
+      expect(mount.querySelector<HTMLElement>(".m07-flying-scene")?.dataset.flyingPhase).toBe("paused");
+    } finally {
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps Flying Instruments round completion separate from the 300-point key gate", async () => {
+    vi.useFakeTimers();
+    try {
+      const mount = document.createElement("main");
+      const progress = createTestShell(mount);
+
+      mount.querySelector<HTMLButtonElement>('[data-route="flying-instruments"]')?.click();
+      mount.querySelector<HTMLButtonElement>('[data-flying-level="1"]')?.click();
+      mount.querySelector<HTMLButtonElement>("[data-flying-start]")?.click();
+      await vi.runAllTimersAsync();
+
+      expect(progress.getSnapshot().gameKeys[3]).toBe(false);
+      expect(mount.querySelector<HTMLElement>(".m07-flying-scene")?.dataset.flyingPhase).toBe("complete");
+      expect(mount.querySelector<HTMLElement>(".m07-flying-score span")?.textContent).toBe("64");
+      expect(mount.querySelector<HTMLImageElement>(".m07-flying-magic-key")).toBeNull();
+      expect(mount.querySelector<HTMLImageElement>(".m07-flying-restart img")?.src).toContain("flying-try-again-button-body");
+
+      let replayCount = 0;
+      while (!progress.getSnapshot().gameKeys[3] && replayCount < 10) {
+        mount.querySelector<HTMLButtonElement>("[data-flying-restart]")?.click();
+        await vi.runAllTimersAsync();
+        replayCount += 1;
+      }
+
+      expect(replayCount).toBeGreaterThan(0);
+      expect(mount.querySelector<HTMLElement>(".m07-flying-score span")?.textContent).toBe("304");
+      expect(progress.getSnapshot().gameKeys[3]).toBe(true);
+      expect(mount.querySelector<HTMLImageElement>(".m07-flying-magic-key")?.src).toContain("flying-magic-key");
+    } finally {
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    }
   });
 
   it("completes a Children's Album door from the recovered binary pattern", () => {

@@ -85,17 +85,15 @@ import {
 import {
   createMemoryDeck,
   createTreeRounds,
-  flyingFamilies,
+  getFlyingInstrumentById,
   getFlyingInstrumentSequence,
   getM07Asset,
   getMelodyNoteAudio,
   getMelodySequences,
   getTriviaQuestion,
-  isFlyingFamily,
   isMelodyDifficulty,
   memoryErrorsForPairs,
   memoryPairsForLevel,
-  type FlyingFamily,
   type MelodyDifficulty,
   type MemoryCard,
 } from "./data/m07Games";
@@ -162,9 +160,14 @@ type ShellState = {
   treeSelectedOption: number | null;
   treeFeedback: "correct" | "wrong" | "win" | null;
   flyingLevel: 1 | 2 | 3;
+  flyingPhase: "choosing" | "ready" | "playing" | "paused" | "matching" | "blocked" | "complete";
   flyingInstrumentIndex: number;
   flyingCorrectCount: number;
-  flyingFeedback: "correct" | "wrong" | "win" | null;
+  flyingScore: number;
+  flyingColumn: 1 | 2 | 3 | 4;
+  flyingRow: number;
+  flyingGrid: (number | null)[];
+  flyingFeedback: "match" | "blocked" | "round-complete" | "win" | null;
   childrensAlbumSong: DoorKey;
   childrensAlbumSelections: number[];
   childrensAlbumFeedback: "correct" | "wrong" | "win" | null;
@@ -314,8 +317,13 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     treeSelectedOption: null,
     treeFeedback: null,
     flyingLevel: 1,
+    flyingPhase: "choosing",
     flyingInstrumentIndex: 0,
     flyingCorrectCount: 0,
+    flyingScore: 0,
+    flyingColumn: 2,
+    flyingRow: 0,
+    flyingGrid: Array<number | null>(28).fill(null),
     flyingFeedback: null,
     childrensAlbumSong: 1,
     childrensAlbumSelections: [],
@@ -339,6 +347,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   };
   const melodyTimerIds = new Set<number>();
   const treeTimerIds = new Set<number>();
+  const flyingTimerIds = new Set<number>();
   const toyTimerIds = new Set<number>();
   let suppressNextNutHouseFocusPreview = false;
 
@@ -351,6 +360,11 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   const stopTreePlayback = () => {
     treeTimerIds.forEach((timerId) => window.clearTimeout(timerId));
     treeTimerIds.clear();
+  };
+
+  const stopFlyingPlayback = () => {
+    flyingTimerIds.forEach((timerId) => window.clearTimeout(timerId));
+    flyingTimerIds.clear();
   };
 
   const stopToyMarchPlayback = () => {
@@ -918,38 +932,61 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       button.addEventListener("click", () => {
         const level = Number(button.dataset.flyingLevel);
         if (level !== 1 && level !== 2 && level !== 3) return;
+        stopFlyingPlayback();
+        audio.stopSceneAudio();
+        shellState.activeAudioId = null;
         shellState.flyingLevel = level;
+        shellState.flyingPhase = "ready";
         shellState.flyingInstrumentIndex = 0;
         shellState.flyingCorrectCount = 0;
+        shellState.flyingColumn = 2;
+        shellState.flyingRow = 0;
+        shellState.flyingGrid = Array<number | null>(28).fill(null);
         shellState.flyingFeedback = null;
-        render("[data-flying-family]", "[data-source-flying-grid]");
+        render("[data-flying-start]", "[data-source-flying-grid]");
       });
     });
 
-    mount.querySelector<HTMLButtonElement>("[data-flying-listen]")?.addEventListener("click", () => {
-      const sequence = getFlyingInstrumentSequence(shellState.flyingLevel);
-      const instrument = sequence[shellState.flyingInstrumentIndex % sequence.length];
-      if (instrument) playSceneAudio(instrument.soundUrl, false);
+    mount.querySelector<HTMLButtonElement>("[data-flying-start]")?.addEventListener("click", () => {
+      startFlyingGame();
     });
 
-    mount.querySelectorAll<HTMLButtonElement>("[data-flying-family]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const family = button.dataset.flyingFamily;
-        const sequence = getFlyingInstrumentSequence(shellState.flyingLevel);
-        const instrument = sequence[shellState.flyingInstrumentIndex % sequence.length];
-        if (!family || !isFlyingFamily(family) || !instrument) return;
-        if (family === instrument.family) {
-          shellState.flyingCorrectCount += 1;
-          shellState.flyingInstrumentIndex += 1;
-          const targetCount = sequence.length;
-          shellState.flyingFeedback = shellState.flyingCorrectCount >= targetCount ? "win" : "correct";
-          if (shellState.flyingCorrectCount >= targetCount) progress.markGameKey(3);
-        } else {
-          shellState.flyingFeedback = "wrong";
-        }
-        render("[data-flying-family]", "[data-source-flying-grid]");
-      });
+    mount.querySelector<HTMLButtonElement>("[data-flying-left]")?.addEventListener("click", () => {
+      if (shellState.flyingPhase !== "playing" || shellState.flyingColumn <= 1) return;
+      const nextColumn = shellState.flyingColumn - 1;
+      if (shellState.flyingGrid[flyingGridIndex(nextColumn, shellState.flyingRow)] !== null) return;
+      shellState.flyingColumn = nextColumn as 1 | 2 | 3 | 4;
+      render("[data-flying-left]", "[data-source-flying-grid]");
     });
+
+    mount.querySelector<HTMLButtonElement>("[data-flying-right]")?.addEventListener("click", () => {
+      if (shellState.flyingPhase !== "playing" || shellState.flyingColumn >= 4) return;
+      const nextColumn = shellState.flyingColumn + 1;
+      if (shellState.flyingGrid[flyingGridIndex(nextColumn, shellState.flyingRow)] !== null) return;
+      shellState.flyingColumn = nextColumn as 1 | 2 | 3 | 4;
+      render("[data-flying-right]", "[data-source-flying-grid]");
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-flying-down]")?.addEventListener("click", tickFlyingInstrument);
+
+    mount.querySelector<HTMLButtonElement>("[data-flying-pause]")?.addEventListener("click", () => {
+      if (shellState.flyingPhase === "playing") {
+        stopFlyingPlayback();
+        audio.stopSceneAudio();
+        shellState.activeAudioId = null;
+        shellState.flyingPhase = "paused";
+        render("[data-flying-pause]", "[data-source-flying-grid]");
+        return;
+      }
+      if (shellState.flyingPhase === "paused") {
+        shellState.flyingPhase = "playing";
+        playCurrentFlyingInstrument();
+        render("[data-flying-pause]", "[data-source-flying-grid]");
+        scheduleFlyingTick();
+      }
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-flying-restart]")?.addEventListener("click", startFlyingGame);
 
     mount.querySelectorAll<HTMLButtonElement>("[data-childrens-song]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -1324,6 +1361,15 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.treeSelectedOption = null;
       shellState.treeFeedback = null;
     }
+    if (routeChanged && routeId === "flying-instruments") {
+      shellState.flyingPhase = "choosing";
+      shellState.flyingInstrumentIndex = 0;
+      shellState.flyingCorrectCount = 0;
+      shellState.flyingColumn = 2;
+      shellState.flyingRow = 0;
+      shellState.flyingGrid = Array<number | null>(28).fill(null);
+      shellState.flyingFeedback = null;
+    }
     shellState.routeId = routeId;
     shellState.helpOpen = false;
     shellState.nutcrackerChooserWarningOpen = false;
@@ -1331,6 +1377,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     shellState.pendingNutcrackerSongExit = null;
     stopMelodyPlayback();
     stopTreePlayback();
+    stopFlyingPlayback();
     stopToyMarchPlayback();
     audio.stopSceneAudio();
     shellState.activeAudioId = null;
@@ -1344,6 +1391,12 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   const stopSceneAudio = () => {
     stopMelodyPlayback();
     stopTreePlayback();
+    if (shellState.routeId === "flying-instruments" && shellState.flyingPhase === "playing") {
+      stopFlyingPlayback();
+      shellState.flyingPhase = "paused";
+    } else if (shellState.routeId !== "flying-instruments" || shellState.flyingPhase !== "matching") {
+      stopFlyingPlayback();
+    }
     if (shellState.routeId === "tree-game" && (shellState.treePhase === "prompting" || shellState.treePhase === "answering")) {
       shellState.treePhase = "ready";
       shellState.treeSelectedOption = null;
@@ -1366,6 +1419,132 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     audio.stopSceneAudio();
     shellState.activeAudioId = loop ? audio.playTrack(audioPath, startTimeSeconds).id : audio.playOneShot(audioPath).id;
     render();
+  };
+
+  const flyingGridIndex = (column: number, row: number) => row * 4 + (column - 1);
+
+  const playCurrentFlyingInstrument = () => {
+    const sequence = getFlyingInstrumentSequence(shellState.flyingLevel);
+    const instrument = sequence[shellState.flyingInstrumentIndex];
+    audio.stopSceneAudio();
+    shellState.activeAudioId = instrument ? audio.playOneShot(instrument.soundUrl).id : null;
+  };
+
+  const finishFlyingGame = () => {
+    stopFlyingPlayback();
+    audio.stopSceneAudio();
+    shellState.activeAudioId = null;
+    shellState.flyingPhase = "complete";
+    const keyEarned = shellState.flyingScore >= 300 || progress.getSnapshot().gameKeys[3];
+    shellState.flyingFeedback = keyEarned ? "win" : "round-complete";
+    if (shellState.flyingScore >= 300) progress.markGameKey(3);
+    render("[data-flying-restart]", "[data-source-flying-grid]");
+  };
+
+  const spawnFlyingInstrument = () => {
+    const sequence = getFlyingInstrumentSequence(shellState.flyingLevel);
+    if (shellState.flyingInstrumentIndex >= sequence.length) {
+      finishFlyingGame();
+      return;
+    }
+    shellState.flyingColumn = 2;
+    shellState.flyingRow = 0;
+    if (shellState.flyingGrid[flyingGridIndex(2, 0)] !== null) {
+      stopFlyingPlayback();
+      audio.stopSceneAudio();
+      shellState.activeAudioId = null;
+      shellState.flyingPhase = "blocked";
+      shellState.flyingFeedback = "blocked";
+      render("[data-flying-restart]", "[data-source-flying-grid]");
+      return;
+    }
+    shellState.flyingPhase = "playing";
+    shellState.flyingFeedback = null;
+    playCurrentFlyingInstrument();
+    render("[data-flying-down]", "[data-source-flying-grid]");
+    scheduleFlyingTick();
+  };
+
+  const settleFlyingInstrument = () => {
+    const sequence = getFlyingInstrumentSequence(shellState.flyingLevel);
+    const instrument = sequence[shellState.flyingInstrumentIndex];
+    if (!instrument) {
+      finishFlyingGame();
+      return;
+    }
+    const cellIndex = flyingGridIndex(shellState.flyingColumn, shellState.flyingRow);
+    shellState.flyingGrid[cellIndex] = instrument.id;
+    shellState.flyingCorrectCount += 1;
+    shellState.flyingInstrumentIndex += 1;
+    audio.stopSceneAudio();
+    shellState.activeAudioId = null;
+
+    const belowRow = shellState.flyingRow + 1;
+    const belowIndex = belowRow <= 6 ? flyingGridIndex(shellState.flyingColumn, belowRow) : -1;
+    const belowId = belowIndex >= 0 ? shellState.flyingGrid[belowIndex] : null;
+    const matched = belowId !== null && getFlyingInstrumentById(belowId).family === instrument.family;
+    if (!matched) {
+      if (shellState.flyingInstrumentIndex >= sequence.length) {
+        finishFlyingGame();
+      } else {
+        spawnFlyingInstrument();
+      }
+      return;
+    }
+
+    shellState.flyingPhase = "matching";
+    shellState.flyingFeedback = "match";
+    shellState.flyingScore += 8 * shellState.flyingLevel;
+    render("[data-source-flying-grid]", "[data-source-flying-grid]");
+    if (shellState.flyingScore >= 300) {
+      finishFlyingGame();
+      return;
+    }
+    const timerId = window.setTimeout(() => {
+      flyingTimerIds.delete(timerId);
+      if (shellState.routeId !== "flying-instruments" || shellState.flyingPhase !== "matching") return;
+      shellState.flyingGrid[cellIndex] = null;
+      shellState.flyingGrid[belowIndex] = null;
+      if (shellState.flyingInstrumentIndex >= sequence.length) {
+        finishFlyingGame();
+      } else {
+        spawnFlyingInstrument();
+      }
+    }, 1000);
+    flyingTimerIds.add(timerId);
+  };
+
+  const tickFlyingInstrument = () => {
+    stopFlyingPlayback();
+    if (shellState.routeId !== "flying-instruments" || shellState.flyingPhase !== "playing") return;
+    const nextRow = shellState.flyingRow + 1;
+    if (nextRow <= 6 && shellState.flyingGrid[flyingGridIndex(shellState.flyingColumn, nextRow)] === null) {
+      shellState.flyingRow = nextRow;
+      render("[data-flying-down]", "[data-source-flying-grid]");
+      scheduleFlyingTick();
+      return;
+    }
+    settleFlyingInstrument();
+  };
+
+  function scheduleFlyingTick() {
+    if (shellState.routeId !== "flying-instruments" || shellState.flyingPhase !== "playing") return;
+    const timerId = window.setTimeout(() => {
+      flyingTimerIds.delete(timerId);
+      tickFlyingInstrument();
+    }, 345);
+    flyingTimerIds.add(timerId);
+  }
+
+  const startFlyingGame = () => {
+    stopFlyingPlayback();
+    shellState.flyingInstrumentIndex = 0;
+    shellState.flyingCorrectCount = 0;
+    shellState.flyingColumn = 2;
+    shellState.flyingRow = 0;
+    shellState.flyingGrid = Array<number | null>(28).fill(null);
+    shellState.flyingFeedback = null;
+    spawnFlyingInstrument();
   };
 
   const startTreePrompt = () => {
@@ -1405,6 +1584,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.pendingNutcrackerSongExit = null;
       stopMelodyPlayback();
       stopTreePlayback();
+      stopFlyingPlayback();
       stopToyMarchPlayback();
       audio.stopSceneAudio();
       shellState.activeAudioId = null;
@@ -1453,6 +1633,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     if (action === "reset-progress") {
       stopMelodyPlayback();
       stopTreePlayback();
+      stopFlyingPlayback();
       stopToyMarchPlayback();
       audio.stopSceneAudio();
       shellState.activeAudioId = null;
@@ -1478,6 +1659,14 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.treePhase = "ready";
       shellState.treeSelectedOption = null;
       shellState.treeFeedback = null;
+      shellState.flyingPhase = "choosing";
+      shellState.flyingInstrumentIndex = 0;
+      shellState.flyingCorrectCount = 0;
+      shellState.flyingScore = 0;
+      shellState.flyingColumn = 2;
+      shellState.flyingRow = 0;
+      shellState.flyingGrid = Array<number | null>(28).fill(null);
+      shellState.flyingFeedback = null;
       shellState.alicePuzzle = 1;
       shellState.aliceDialValues = [0, 0, 0];
       shellState.aliceFeedback = null;
@@ -1613,6 +1802,20 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       render();
     }
   };
+
+  mount.addEventListener("keydown", (event) => {
+    if (shellState.routeId !== "flying-instruments" || shellState.flyingPhase !== "playing") return;
+    const selector = event.key === "ArrowLeft"
+      ? "[data-flying-left]"
+      : event.key === "ArrowRight"
+        ? "[data-flying-right]"
+        : event.key === "ArrowDown"
+          ? "[data-flying-down]"
+          : null;
+    if (!selector) return;
+    event.preventDefault();
+    mount.querySelector<HTMLButtonElement>(selector)?.click();
+  });
 
   render();
 }
@@ -2358,31 +2561,120 @@ function renderTreeGame(state: ShellState, unlocked: boolean): string {
 function renderFlyingInstruments(state: ShellState, unlocked: boolean): string {
   const sequence = getFlyingInstrumentSequence(state.flyingLevel);
   const targetCount = sequence.length;
-  const instrument = sequence[state.flyingInstrumentIndex % sequence.length];
-  const imageUrl = state.flyingFeedback === "win" ? getM07Asset("/flying-star.png") : instrument.imageUrl;
+  const instrument = sequence[state.flyingInstrumentIndex] ?? null;
+  const choosing = state.flyingPhase === "choosing";
+  const gridAsset = getM07Asset(`/flying-grid-level-${state.flyingLevel}.png`);
+  const controlButton = (
+    className: string,
+    attribute: string,
+    bodyAsset: string,
+    labelAsset: string,
+    accessibleLabel: string,
+  ) => `<button class="m07-flying-source-control ${className}" type="button" ${attribute}
+      aria-label="${accessibleLabel}" data-source-classification="source child-layer composition">
+        <img class="m07-flying-control-body" src="${getM07Asset(bodyAsset)}" alt="" aria-hidden="true" />
+        <img class="m07-flying-control-label" src="${getM07Asset(labelAsset)}" alt="" aria-hidden="true" />
+      </button>`;
+  const cells = state.flyingGrid
+    .map((instrumentId, index) => {
+      if (instrumentId === null) return "";
+      const cellInstrument = getFlyingInstrumentById(instrumentId);
+      const column = index % 4;
+      const row = Math.floor(index / 4);
+      const matching = state.flyingPhase === "matching"
+        && column + 1 === state.flyingColumn
+        && (row === state.flyingRow || row === state.flyingRow + 1);
+      return `<img class="m07-flying-cell-instrument${matching ? " is-matching" : ""}" src="${cellInstrument.imageUrl}" alt=""
+        aria-hidden="true" style="--flying-column:${column};--flying-row:${row}"
+        data-source-instrument="${instrumentId}" data-source-family="${cellInstrument.family}" />`;
+    })
+    .join("");
+  const currentPiece = instrument && (state.flyingPhase === "playing" || state.flyingPhase === "paused")
+    ? `<img class="m07-flying-cell-instrument is-falling" src="${instrument.imageUrl}" alt="" aria-hidden="true"
+        style="--flying-column:${state.flyingColumn - 1};--flying-row:${state.flyingRow}"
+        data-source-instrument="${instrument.id}" data-source-family="${instrument.family}" />`
+    : "";
 
   return `
     <div class="scene-body m07-scene m07-flying-scene" data-source-swf="analysis/setup/app/games/flyinginstruments/flyinginstruments.swf"
-      data-source-frame="chooseLevel frame 2; playLevel1 frame 3; playLevel2 frame 4; playLevel3 frame 5; bye frame 6">
+      data-source-frame="${choosing ? "chooseLevel frame 2" : `playLevel${state.flyingLevel} frame ${state.flyingLevel + 2}`}"
+      data-flying-phase="${state.flyingPhase}">
+      <img class="m07-flying-room" src="${getM07Asset("/flying-room-background.png")}" alt="" aria-hidden="true"
+        data-source-classification="swf-derived recreation" data-source-sprite="id 0172 root x326.25 y252 scale0.469 with source root CXForm green0.6 blue0.9 applied" />
       ${renderM07SourceFrame("flying", "analysis/setup/app/games/flyinginstruments/flyinginstruments.swf")}
       <section class="m07-flying-board" data-source-flying-grid
-        data-source-classification="documented fallback"
-        data-source-fallback="full root render is transparent because local renderer reports missing JPEG and unknown child IDs; source instrument JPEG3s and embedded sounds are promoted individually">
-        <p class="m07-flying-heading">CHOOSE A GAME TO PLAY</p>
-        <div class="m07-flying-levels" aria-label="Level">
-          ${([1, 2, 3] as const).map((level) => `<button type="button" data-flying-level="${level}" aria-pressed="${state.flyingLevel === level}">${level}</button>`).join("")}
-        </div>
-        <img class="m07-flying-instrument" src="${imageUrl}" alt="" aria-hidden="true" data-source-classification="original asset" />
-        <button class="m07-source-button m07-flying-listen" type="button" data-flying-listen>START</button>
-        <div class="m07-flying-families" aria-label="Instrument families">
-          ${flyingFamilies.map((family: FlyingFamily) => `<button type="button" data-flying-family="${family}" aria-label="${family}" title="${family}">?</button>`).join("")}
-        </div>
-        <p class="m07-flying-progress">${Math.min(state.flyingCorrectCount, targetCount)} / ${targetCount}</p>
-        <p class="m07-feedback" aria-live="polite">${
-          state.flyingFeedback === "correct" ? "CORRECT" : state.flyingFeedback === "wrong" ? "TRY AGAIN" : state.flyingFeedback === "win" ? "CONGRATULATIONS!" : ""
+        data-source-classification="source-backed display-list reconstruction"
+        data-source-action="placeFlyingINST starts column 2 row 0; 4 columns x 7 rows at 60-unit spacing; left/right/down controls; checkSolution compares the landed family with the cell below and clears matches after 1000ms">
+        ${
+          choosing
+            ? `<div class="m07-flying-chooser" data-source-state="chooseLevel frame 2">
+                <div class="m07-flying-heading" aria-label="CHOOSE A GAME TO PLAY" data-source-text="ids 0275 and 0276">
+                  <img src="${getM07Asset("/flying-choose-heading-shadow.png")}" alt="" aria-hidden="true" />
+                  <img src="${getM07Asset("/flying-choose-heading.png")}" alt="" aria-hidden="true" />
+                </div>
+                <div class="m07-flying-levels" aria-label="Choose a level" data-source-sprite="chooser id 0214; L1/L2/L3 sprites 0205/0209/0213">
+                  ${([1, 2, 3] as const).map((level) => `<button type="button" data-flying-level="${level}" aria-label="Level ${level}">
+                    <img src="${getM07Asset(`/flying-level-${level}.png`)}" alt="" aria-hidden="true" />
+                  </button>`).join("")}
+                </div>
+              </div>`
+            : `<img class="m07-flying-grid-art" src="${gridAsset}" alt="" aria-hidden="true"
+                data-source-classification="swf-derived recreation" data-source-sprite="id ${state.flyingLevel === 1 ? "0320" : state.flyingLevel === 2 ? "0324" : "0325"} root x204.9 y20.05 scale0.917" />
+              <div class="m07-flying-grid-pieces" aria-label="Flying instrument play grid">
+                ${cells}${currentPiece}
+              </div>
+              <div class="m07-flying-score" aria-label="Points ${state.flyingScore}" data-source-sprite="score id 0170 root x467.20 y172.50">
+                <img src="${getM07Asset("/flying-points-label.png")}" alt="" aria-hidden="true" />
+                <span>${state.flyingScore}</span>
+              </div>
+              ${
+                state.flyingPhase === "ready"
+                  ? controlButton("m07-flying-start", "data-flying-start", "/flying-start-button-body.png", "/flying-start-label.png", "Start")
+                  : ""
+              }
+              ${
+                state.flyingPhase === "playing"
+                  ? `<div class="m07-flying-controller" data-source-sprite="controller id 0165 root x265.70 y415.05">
+                      <img src="${getM07Asset("/flying-controller-arrows.png")}" alt="" aria-hidden="true" />
+                      <button type="button" data-flying-left aria-label="Move left"></button>
+                      <button type="button" data-flying-down aria-label="Move down"></button>
+                      <button type="button" data-flying-right aria-label="Move right"></button>
+                    </div>
+                    <button class="m07-flying-pause" type="button" data-flying-pause aria-label="Pause"
+                      data-source-control="pause_btn id 0146; source body shape id 0145; dynamic edit-text ids 0142-0144 do not flatten locally">
+                      <img src="${getM07Asset("/flying-pause-button-body.png")}" alt="" aria-hidden="true" />
+                      <span>PAUSE</span>
+                    </button>`
+                  : ""
+              }
+              ${
+                state.flyingPhase === "paused"
+                  ? controlButton("m07-flying-resume", "data-flying-pause", "/flying-resume-button-body.png", "/flying-resume-label.png", "Resume")
+                  : ""
+              }
+              ${state.flyingPhase === "blocked" || state.flyingPhase === "complete"
+                ? controlButton("m07-flying-restart", "data-flying-restart", "/flying-try-again-button-body.png", "/flying-try-again-label.png", "Try again")
+                : ""}`
+        }
+        ${unlocked && !choosing ? `<img class="m07-flying-magic-key" src="${getM07Asset("/flying-magic-key.png")}" alt="" aria-hidden="true"
+          data-source-key="gameKey3" data-source-sprite="magicKey id 0318 root x526.80 y106.95 scaleX -0.336 scaleY 0.336" />` : ""}
+        <p class="sr-only" aria-live="polite">${
+          state.flyingFeedback === "match"
+            ? "Matching instrument families cleared."
+            : state.flyingFeedback === "blocked"
+              ? "The starting cell is blocked. Try again."
+              : state.flyingFeedback === "win"
+                ? "Game complete. Magic key 3 is saved."
+                : state.flyingFeedback === "round-complete"
+                  ? `Round complete with ${state.flyingScore} points. Try again to reach 300 points.`
+                : choosing
+                  ? "Choose level 1, 2, or 3."
+                  : state.flyingPhase === "ready"
+                    ? `Level ${state.flyingLevel} selected. Press Start.`
+                    : instrument
+                  ? `${escapeHtml(instrument.name)} is falling. ${Math.min(state.flyingCorrectCount, targetCount)} of ${targetCount} instruments played.`
+                  : ""
         }</p>
-        ${unlocked ? '<p class="m07-source-reward" data-source-key="gameKey3">RESUME</p>' : ""}
-        <span class="sr-only">Classify the recovered ${escapeHtml(instrument.name)} sound and image.</span>
       </section>
     </div>
   `;
