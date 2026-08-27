@@ -12,9 +12,9 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 | --- | --- | --- | --- |
 | `overture` | Source-backed intro/skip now reaches the recovered frame-1268 launcher; all launcher controls work; manual review open | `Nutcracker2.exe`, `flute_intro.swf` | JIP-818 |
 | `main-menu` | Ruffle-recovered `playRoom` foreground composited over exact JPEG 0518, with exact hotspots/key gate; manual review open | projector embedded SWF frame 2378 | JIP-818 |
-| `story` | Exact four-spread text/control map and recovered book art, manual review open | `activities/story/story.swf` | JIP-819 |
-| `composer-biography` | Exact four-spread text/image/control map, manual review open | `activities/biography/biography.swf` | JIP-819 |
-| `ballet-history` | Exact five-spread text/image/control map, manual review open | `activities/ballet/ballet.swf` | JIP-819 |
+| `story` | Four complete Ruffle-recovered spreads, source page hit regions/hover states, narration, and EXIT fade; manual review open | `activities/story/story.swf` | JIP-819 |
+| `composer-biography` | Four complete Ruffle-recovered spreads with exact photos/text, source controls, narration, and EXIT fade; manual review open | `activities/biography/biography.swf` | JIP-819 |
+| `ballet-history` | Five complete Ruffle-recovered spreads with exact photos/text, source controls, narration, and EXIT fade; manual review open | `activities/ballet/ballet.swf` | JIP-819 |
 | `music-dictionary` | Exact source prose/audio ids and NEXT/EXIT sequence, character-timeline fallback, manual review open | `activities/musictionary/musictionary.swf` | JIP-820 |
 | `suite` | Promoted gramophone/frame children, exact theme/state actions, timeline fallback, manual review open | `activities/originals/gramophone.swf` | JIP-820 |
 | `nutcracker-chooser` | Source-backed, documented playback fallbacks, manual review open | `games/nutcrackergame/nutchooser.swf` | JIP-334, JIP-347, JIP-349, JIP-357, JIP-359 |

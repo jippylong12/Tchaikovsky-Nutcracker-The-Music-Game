@@ -100,9 +100,22 @@
       "classifications": ["original asset", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/activities/story/story.swf",
+        "app/source-evidence/readers/story-frame-1-source.png",
+        "app/source-evidence/readers/story-frame-2-source.png",
+        "app/source-evidence/readers/story-frame-3-source.png",
+        "app/source-evidence/readers/story-frame-4-source.png",
         "app/src/data/referenceContent.ts"
       ],
-      "promotedAssets": ["app/src/assets/source-scenes/story-reader-book.png"],
+      "promotedAssets": [
+        "app/src/assets/source-scenes/story-reader-book.png",
+        "app/src/assets/source-scenes/story-reader-frame-1.png",
+        "app/src/assets/source-scenes/story-reader-frame-2.png",
+        "app/src/assets/source-scenes/story-reader-frame-3.png",
+        "app/src/assets/source-scenes/story-reader-frame-4.png",
+        "app/src/assets/source-scenes/reader-control-next-hover.png",
+        "app/src/assets/source-scenes/reader-control-prev-hover.png",
+        "app/src/assets/source-scenes/reader-control-exit-hover.png"
+      ],
       "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-819"],
       "fallbackEvidence": [
@@ -120,14 +133,14 @@
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes the promoted book layer with exact source text, frame labels, and controls.",
-            "retainedGap": "Full interactive Flash reader timeline playback remains unavailable."
+            "details": "The runtime displays promoted, hash-locked official-Ruffle captures for all four complete root frames, overlays source-cropped hover pixels on the exact Flash hit regions, starts DefineSound 0031 on entry, and reproduces the bye-frame book fade before returning to playRoom.",
+            "retainedGap": "Full live timeline playback remains unavailable for the pre-page book fade and transient source loading sprite; the stable labeled frames and interactions are reconstructed from source captures."
           },
           "evidenceDoc": "docs/shell-reference-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "All four source spreads, eight page numbers, exact prose, recovered book art, and source controls are implemented for review."
+      "auditFinding": "All four complete source-runtime spreads, source page hit regions, hover states, automatic narration, and exit fade are implemented; the inferred DOM reader chrome has been removed and Marcus approval remains open."
     },
     {
       "id": "composer-biography",
@@ -137,15 +150,21 @@
       "classifications": ["original asset", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/activities/biography/biography.swf",
+        "app/source-evidence/readers/biography-frame-1-source.png",
+        "app/source-evidence/readers/biography-frame-2-source.png",
+        "app/source-evidence/readers/biography-frame-3-source.png",
+        "app/source-evidence/readers/biography-frame-4-source.png",
         "app/src/data/referenceContent.ts"
       ],
       "promotedAssets": [
         "app/src/assets/source-scenes/biography-reader-book.png",
-        "app/public/local-media/visual/activities/biography/18.jpg",
-        "app/public/local-media/visual/activities/biography/38.jpg",
-        "app/public/local-media/visual/activities/biography/45.jpg",
-        "app/public/local-media/visual/activities/biography/46.jpg",
-        "app/public/local-media/visual/activities/biography/53.jpg"
+        "app/src/assets/source-scenes/biography-reader-frame-1.png",
+        "app/src/assets/source-scenes/biography-reader-frame-2.png",
+        "app/src/assets/source-scenes/biography-reader-frame-3.png",
+        "app/src/assets/source-scenes/biography-reader-frame-4.png",
+        "app/src/assets/source-scenes/reader-control-next-hover.png",
+        "app/src/assets/source-scenes/reader-control-prev-hover.png",
+        "app/src/assets/source-scenes/reader-control-exit-hover.png"
       ],
       "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-819"],
@@ -164,14 +183,14 @@
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes promoted biography image layers, including both frame-3 JPEGs 0045/0046, with explicit left/right source text, frame labels, and controls.",
-            "retainedGap": "Full interactive Flash reader timeline playback remains unavailable."
+            "details": "The runtime displays promoted, hash-locked official-Ruffle captures for all four complete root frames, including both frame-3 JPEGs 0045/0046, overlays source-cropped hover pixels on the exact Flash hit regions, starts DefineSound 0032 on entry, and reproduces the bye-frame book fade.",
+            "retainedGap": "Full live timeline playback remains unavailable for the pre-page book fade and transient source loading sprite; the stable labeled frames and interactions are reconstructed from source captures."
           },
           "evidenceDoc": "docs/shell-reference-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "All four source spreads, exact biography prose, recovered images, and source controls are implemented for review."
+      "auditFinding": "All four complete source-runtime spreads, exact source images/text, source page hit regions, hover states, automatic narration, and exit fade are implemented; Marcus approval remains open."
     },
     {
       "id": "ballet-history",
@@ -181,12 +200,23 @@
       "classifications": ["original asset", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/activities/ballet/ballet.swf",
+        "app/source-evidence/readers/ballet-frame-1-source.png",
+        "app/source-evidence/readers/ballet-frame-2-source.png",
+        "app/source-evidence/readers/ballet-frame-3-source.png",
+        "app/source-evidence/readers/ballet-frame-4-source.png",
+        "app/source-evidence/readers/ballet-frame-5-source.png",
         "app/src/data/referenceContent.ts"
       ],
       "promotedAssets": [
         "app/src/assets/source-scenes/ballet-reader-book.png",
-        "app/public/local-media/visual/activities/ballet/18.jpg",
-        "app/public/local-media/visual/activities/ballet/55.jpg"
+        "app/src/assets/source-scenes/ballet-reader-frame-1.png",
+        "app/src/assets/source-scenes/ballet-reader-frame-2.png",
+        "app/src/assets/source-scenes/ballet-reader-frame-3.png",
+        "app/src/assets/source-scenes/ballet-reader-frame-4.png",
+        "app/src/assets/source-scenes/ballet-reader-frame-5.png",
+        "app/src/assets/source-scenes/reader-control-next-hover.png",
+        "app/src/assets/source-scenes/reader-control-prev-hover.png",
+        "app/src/assets/source-scenes/reader-control-exit-hover-ballet.png"
       ],
       "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-819"],
@@ -205,14 +235,14 @@
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes promoted ballet image layers with explicit left/right source text, frame labels, and controls.",
-            "retainedGap": "Full interactive Flash reader timeline playback remains unavailable."
+            "details": "The runtime displays promoted, hash-locked official-Ruffle captures for all five complete root frames, overlays source-cropped hover pixels on the exact Flash hit regions, starts DefineSound 0033 on entry, and reproduces the bye-frame book fade before returning to playRoom.",
+            "retainedGap": "Full live timeline playback remains unavailable for the pre-page book fade and transient source loading sprite; the stable labeled frames and interactions are reconstructed from source captures."
           },
           "evidenceDoc": "docs/shell-reference-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "All five source spreads, ten page numbers, exact ballet prose, recovered images, and controls are implemented for review."
+      "auditFinding": "All five complete source-runtime spreads, source page hit regions, hover states, automatic narration, and exit fade are implemented; the ballet-specific EXIT hover is preserved and Marcus approval remains open."
     },
     {
       "id": "music-dictionary",

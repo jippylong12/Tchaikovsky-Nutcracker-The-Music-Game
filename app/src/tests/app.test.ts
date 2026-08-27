@@ -260,16 +260,47 @@ describe("desktop app shell", () => {
     expect(mount.textContent).toContain("Clara's godfather gave her an awesome Nutcracker doll");
     expect(mount.querySelector<HTMLElement>(".source-reader-scene")?.dataset.sourceSwf).toContain("activities/story/story.swf");
     expect(mount.querySelector<HTMLElement>(".source-reader-scene")?.dataset.sourceTextIds).toBe("35,36");
+    expect(mount.querySelector<HTMLElement>(".source-reader-scene")?.dataset.sourceClassification).toBe("original asset");
     expect(mount.textContent).toContain("8 pages");
     expect(mount.textContent).toContain("< PREV");
     expect(mount.textContent).toContain("NEXT >");
-    expect(mount.textContent).not.toContain("Play original audio");
-    expect(mount.querySelector<HTMLButtonElement>('[aria-label="Play original audio"]')).not.toBeNull();
-    expect(mount.querySelector<HTMLImageElement>(".source-reader-book-frame")?.src).toContain("story-reader-book");
+    expect(mount.querySelector('[aria-label="Play original audio"]')).toBeNull();
+    expect(mount.querySelector<HTMLImageElement>(".source-reader-scene-frame")?.src).toContain("story-reader-frame-2");
+    expect(mount.querySelector<HTMLImageElement>(".source-reader-exit-book-frame")?.src).toContain("story-reader-book");
     expect(mount.querySelector<HTMLElement>('[data-source-side="left"]')?.dataset.sourceTextIds).toBe("35");
     expect(mount.querySelector<HTMLElement>('[data-source-side="right"]')?.dataset.sourceTextIds).toBe("36");
+    expect(mount.querySelector<HTMLElement>(".source-reader-control-prev")?.dataset.sourceHitBounds).toContain("20.00-309.00");
+    expect(mount.querySelector<HTMLElement>(".source-reader-control-next")?.dataset.sourceHitBounds).toContain("327.00-624.95");
+    expect(lastPlayedSource()).toContain("/local-media/audio/activities/story/31.mp3");
     expect(document.activeElement).toBe(mount.querySelector('[data-reading-direction="next"]'));
     mount.remove();
+  });
+
+  it("replays source narration from spread one and follows the source exit fade", () => {
+    vi.useFakeTimers();
+    const mount = document.createElement("main");
+    document.body.append(mount);
+
+    try {
+      createTestShell(mount);
+      mount.querySelector<HTMLButtonElement>('[data-route="story"]')?.click();
+      expect(lastPlayedSource()).toContain("/local-media/audio/activities/story/31.mp3");
+      mount.querySelector<HTMLButtonElement>('[data-reading-direction="next"]')?.click();
+      expect(mount.querySelector<HTMLImageElement>(".source-reader-scene-frame")?.src).toContain("story-reader-frame-2");
+
+      mount.querySelector<HTMLButtonElement>('[data-action="exit"]')?.click();
+      expect(mount.querySelector<HTMLElement>(".source-reader-scene")?.dataset.exiting).toBe("true");
+      vi.advanceTimersByTime(399);
+      expect(mount.querySelector(".source-reader-scene")).not.toBeNull();
+      vi.advanceTimersByTime(1);
+      expect(mount.querySelector(".source-playroom-background")).not.toBeNull();
+
+      mount.querySelector<HTMLButtonElement>('[data-scene-route="story"]')?.click();
+      expect(mount.querySelector<HTMLImageElement>(".source-reader-scene-frame")?.src).toContain("story-reader-frame-1");
+    } finally {
+      mount.remove();
+      vi.useRealTimers();
+    }
   });
 
   it("selects music dictionary instruments and plays their recovered clips", () => {
@@ -291,7 +322,7 @@ describe("desktop app shell", () => {
     mount.remove();
   });
 
-  it("renders both recovered biography frame-three images on the source right page", () => {
+  it("uses the complete biography frame-three source capture with both source image ids", () => {
     const mount = document.createElement("main");
 
     createTestShell(mount);
@@ -306,12 +337,9 @@ describe("desktop app shell", () => {
       ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     const rightPage = mount.querySelector<HTMLElement>('[data-source-side="right"]');
-    const images = Array.from(rightPage?.querySelectorAll<HTMLImageElement>(".source-reader-images img") ?? []);
     expect(rightPage?.dataset.sourceImageIds).toBe("45,46");
-    expect(images.map((image) => image.src)).toEqual([
-      expect.stringContaining("/local-media/visual/activities/biography/45.jpg"),
-      expect.stringContaining("/local-media/visual/activities/biography/46.jpg"),
-    ]);
+    expect(mount.querySelector<HTMLImageElement>(".source-reader-scene-frame")?.src).toContain("biography-reader-frame-3");
+    expect(mount.querySelector(".source-reader-images")).toBeNull();
   });
 
   it("plays and stops Nutcracker Suite gramophone tracks", () => {
@@ -1515,6 +1543,12 @@ describe("desktop app shell", () => {
 
     imagePaths.forEach((imagePath) => {
       expect(publicAssetSize(imagePath)).toBeGreaterThan(1000);
+    });
+
+    readingActivities.forEach((activity) => {
+      activity.pages.forEach((page, index) => {
+        expect(page.sceneImagePath).toContain(`${activity.sourceSwfPath.split("/")[1]}-reader-frame-${index + 1}`);
+      });
     });
   });
 

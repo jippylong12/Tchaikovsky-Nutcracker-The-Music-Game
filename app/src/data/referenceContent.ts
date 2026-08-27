@@ -1,8 +1,21 @@
 import { mediaManifest } from "./generated/mediaManifest";
 import { findAudioByOriginalPath } from "./mediaCatalog";
 import balletReaderBookUrl from "../assets/source-scenes/ballet-reader-book.png";
+import balletReaderFrame1Url from "../assets/source-scenes/ballet-reader-frame-1.png";
+import balletReaderFrame2Url from "../assets/source-scenes/ballet-reader-frame-2.png";
+import balletReaderFrame3Url from "../assets/source-scenes/ballet-reader-frame-3.png";
+import balletReaderFrame4Url from "../assets/source-scenes/ballet-reader-frame-4.png";
+import balletReaderFrame5Url from "../assets/source-scenes/ballet-reader-frame-5.png";
 import biographyReaderBookUrl from "../assets/source-scenes/biography-reader-book.png";
+import biographyReaderFrame1Url from "../assets/source-scenes/biography-reader-frame-1.png";
+import biographyReaderFrame2Url from "../assets/source-scenes/biography-reader-frame-2.png";
+import biographyReaderFrame3Url from "../assets/source-scenes/biography-reader-frame-3.png";
+import biographyReaderFrame4Url from "../assets/source-scenes/biography-reader-frame-4.png";
 import storyReaderBookUrl from "../assets/source-scenes/story-reader-book.png";
+import storyReaderFrame1Url from "../assets/source-scenes/story-reader-frame-1.png";
+import storyReaderFrame2Url from "../assets/source-scenes/story-reader-frame-2.png";
+import storyReaderFrame3Url from "../assets/source-scenes/story-reader-frame-3.png";
+import storyReaderFrame4Url from "../assets/source-scenes/story-reader-frame-4.png";
 export type ReadingRouteId = "story" | "composer-biography" | "ballet-history";
 
 export type ReadingPageColumn = {
@@ -17,6 +30,7 @@ export type ReadingPageColumn = {
 export type ReadingPage = {
   readonly title: string;
   readonly sourceFrameLabel: string;
+  readonly sceneImagePath: string;
   readonly columns: readonly [ReadingPageColumn, ReadingPageColumn];
 };
 
@@ -71,6 +85,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 1-2",
         sourceFrameLabel: "1",
+        sceneImagePath: storyReaderFrame1Url,
         columns: [
           {
             heading: "The Nutcracker Tale in a Nutshell",
@@ -87,6 +102,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 3-4",
         sourceFrameLabel: "2",
+        sceneImagePath: storyReaderFrame2Url,
         columns: [
           {
             body: "With his magical toys, he was very good at it, and the guests loved it! Two of his gorgeous big dolls were dancing all around the room, and everyone was very impressed.\n\nAnd then came the time to give the kids their Christmas gifts! Clara's godfather gave her an awesome Nutcracker doll. But Clara's brother Fritz was jealous and broke the Nutcracker! Clara was very upset, but her godfather fixed the doll in no time and gave it back to her.",
@@ -103,6 +119,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 5-6",
         sourceFrameLabel: "3",
+        sceneImagePath: storyReaderFrame3Url,
         columns: [
           {
             body: "But a wicked witch had put a spell on him and turned him into a wooden doll!\n\nAnd soon a big army of mice led by their evil Mouse King gathered around them. They did not like Clara at all and wanted to attack her. But the Nutcracker prepared to defend his new friend! He rallied an army of toy soldiers to give battle right under the Christmas tree! When the Mouse King attacked, the Nutcracker Prince fought bravely, but he was struck down in battle.",
@@ -119,6 +136,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 7-8",
         sourceFrameLabel: "4",
+        sceneImagePath: storyReaderFrame4Url,
         columns: [
           {
             body: "watched snowflakes dance. They finally reached the Kingdom of the Sweets, ruled over by the Sugarplum Fairy.\n\nThe Sugarplum Fairy was a hospitable lady. She introduced Clara and the Prince to her delicious friends - Hot Chocolate from Spain, Coffee from Arabia, and others.\n\nThey all danced and danced together and had a lot of fun!",
@@ -143,6 +161,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 1-2",
         sourceFrameLabel: "1",
+        sceneImagePath: biographyReaderFrame1Url,
         columns: [
           {
             heading: "Pyotr Tchaikovsky",
@@ -161,6 +180,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 3-4",
         sourceFrameLabel: "2",
+        sceneImagePath: biographyReaderFrame2Url,
         columns: [
           {
             body: "Even when he could not get to a piano, the six-year-old musician was sometimes heard drumming his fingers on windowpanes - he could not go on without making music. Once he drummed on a window so hard that he cut himself because the glass broke!\n\nWhen Pyotr turned ten, his family moved to St. Petersburg,",
@@ -178,6 +198,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 5-6",
         sourceFrameLabel: "3",
+        sceneImagePath: biographyReaderFrame3Url,
         columns: [
           {
             body: "In 1865 Tchaikovsky moved to Moscow to become a professor at the Moscow Conservatory. He was composing great works of music one after another: symphonies and operas, piano concertos, the ballet \"The Swan Lake\" - and so on.\n\nFrom the late 1870s on, Tchaikovsky began to travel extensively as conductor of his own music.",
@@ -194,6 +215,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 7-8",
         sourceFrameLabel: "4",
+        sceneImagePath: biographyReaderFrame4Url,
         columns: [
           {
             body: "He met many great composers of his time: Brahms, Grieg, Saint-Saens, Massenet and others. His own fame grew with each triumphant performance. In 1891 Tchaikovsky traveled to the United States, where he conducted at the opening of Carnegie Hall in New York.",
@@ -223,6 +245,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 1-2",
         sourceFrameLabel: "1",
+        sceneImagePath: balletReaderFrame1Url,
         columns: [
           {
             heading: "The Nutcracker Ballet",
@@ -241,6 +264,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 3-4",
         sourceFrameLabel: "2",
+        sceneImagePath: balletReaderFrame2Url,
         columns: [
           {
             body: "Tchaikovsky's partner in creating the Nutcracker Ballet was the famous choreographer Marius Petipa. He gave Tchaikovsky dry, detailed instructions about what kind of music he had to write for each character in the Ballet - everything down to the rhythm, tempo, moods and even the number of musical bars in every piece. Here is an example of Petipa's instructions:\n\n\"An empty stage. The moon shines into the dining room through the window. 8 bars of mysterious and delicate",
@@ -257,6 +281,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 5-6",
         sourceFrameLabel: "3",
+        sceneImagePath: balletReaderFrame3Url,
         columns: [
           {
             body: "And so on. It is not at all surprising that Tchaikovsky wasn't too happy with these instructions. He did not want to be told what kind of music to write. At first he was not even sure he liked the idea of writing music for the Nutcracker Ballet.\n\nBut then, on a trip to Paris, Tchaikovsky saw something that made him change his mind. It was a newly invented musical instrument, the celesta. The celesta made unusual sounds that were just perfect for a fairytale!",
@@ -273,6 +298,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 7-8",
         sourceFrameLabel: "4",
+        sceneImagePath: balletReaderFrame4Url,
         columns: [
           {
             body: "Still, his work was coming along slowly. Even so, as time went by, Tchaikovsky became more and more absorbed with the Nutcracker Ballet. While he was still working on it, Tchaikovsky completed a group of dances that came to be known as The Nutcracker Suite. The premier of The Nutcracker Suite was held at the Russian Musical Society in St. Petersburg on March 19, 1892. It was a smashing success - the audience fell in love with the music at once!",
@@ -289,6 +315,7 @@ export const readingActivities: readonly ReadingActivity[] = [
       {
         title: "Pages 9-10",
         sourceFrameLabel: "5",
+        sceneImagePath: balletReaderFrame5Url,
         columns: [
           {
             imagePaths: [activityImage("ballet", 55)],

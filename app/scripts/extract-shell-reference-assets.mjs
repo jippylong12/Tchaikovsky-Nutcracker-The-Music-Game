@@ -24,24 +24,75 @@ const projectorPlayRoomLayerCapturePath = join(
   appRoot,
   "source-evidence/shell/projector-playroom-layer-source.png",
 );
+const readerCaptureRoot = join(appRoot, "source-evidence/readers");
 const readerSources = [
   {
     name: "story",
     path: join(projectRoot, "analysis/setup/app/activities/story/story.swf"),
     sourceSha256: "e9445db9802becdd4ac04dfbd917ec1aec1c53432de23ba1d3fbde448c2a017f",
     bookSha256: "e6257fedfea3a714382c52f764f8022fbed5b2e47d1f2d6d5b3933b9ada650b2",
+    pageCaptureSha256: [
+      "1623d95eaca4f9e3e7c24307551ab6b2131df508980a008930e5b380c8ccf522",
+      "2163977522b632bf9fd316473522ce8e2e2c41e622804c26b9ce8cda47053981",
+      "7810646f95b9533a78937ab655fb01cbdd30ae554c4727d063cdc0cf945ce556",
+      "94d91683b9a6a3687602c8c7d6e14b28ebda6387bed9454c6650cb06aaea582b",
+    ],
   },
   {
     name: "biography",
     path: join(projectRoot, "analysis/setup/app/activities/biography/biography.swf"),
     sourceSha256: "476e70ba2027bfd80524373c926821f2f430e468b45209e7e7a98e09294b6063",
     bookSha256: "6397fe3b7b90768c0136c7c203234fe41d8eca6e2aff680c084071b6b623ff51",
+    pageCaptureSha256: [
+      "df68afdf045985836d24698e3ecce7456051e56497e23d1aaa6bb93296ee7117",
+      "9e958422c003dcdc1b000db675d0a9699509a24e5b32ec6c7516d71a0c30fcd9",
+      "3c4b8a03ba1fdf9cd399c81cfdf1cb23b46ae4e5b69404fa230e0f37e57be87c",
+      "f07e7b241fee52d8a6fff7ec1311d2b8208bb931e3b20422b76cb8c99785904a",
+    ],
   },
   {
     name: "ballet",
     path: join(projectRoot, "analysis/setup/app/activities/ballet/ballet.swf"),
     sourceSha256: "b0f95b56cbaebfb3a75ce295e413095a561dc16d36c44fd0d779f5fecbb6cf65",
     bookSha256: "4ad48b9beb2c2cb7b21070afe575df1f241b7ff89de126b6f4079bd8837044e8",
+    pageCaptureSha256: [
+      "a8e7d90de0a997b9f6bb9555cd7ec5db5838f7e28caf61fb7e166a46a5ea090e",
+      "ba32e42102d3518e873d5e954ba3d509ebe6b5e01aab240d38d399b8685edbe1",
+      "34a9902994a67157d77f73752b84da171a0261f49253d96166771b69517800e2",
+      "a66723199734e366f716da74b81fe59faf2e98f811b58f29566eaeb885cdbdf8",
+      "d42073b16c91252ebc8a69fc03681f9d69264112318e1dd9592416e558b0f228",
+    ],
+  },
+];
+
+const readerControlCaptures = [
+  {
+    name: "next-hover",
+    sourcePath: join(readerCaptureRoot, "story-frame-2-next-hover-source.png"),
+    sourceSha256: "25d4722b50d37490e9a1a16293635e98626b0e8c4056d61545f67297cad5a50a",
+    crop: "65x34+415+399",
+    promotedSha256: "0d4376708525b2b4842f29558357c0b064fec492a280e00e37a79d5680dc9ec8",
+  },
+  {
+    name: "prev-hover",
+    sourcePath: join(readerCaptureRoot, "story-frame-2-prev-hover-source.png"),
+    sourceSha256: "ee0c14672f7939ce05715c2c49fe09ecfeb710452d343cd3be7881ae833c5d75",
+    crop: "64x34+160+399",
+    promotedSha256: "b47fb6f25a78c035be60fc5a03ed1b8176aaa670e9fce9f62df8c1d26104ddb9",
+  },
+  {
+    name: "exit-hover",
+    sourcePath: join(readerCaptureRoot, "story-frame-1-exit-hover-source.png"),
+    sourceSha256: "1c82191cf3dd657a9d0ed1a4bbfcf1cfadbce9da371e9b3abc6bed8db4c9687f",
+    crop: "47x34+578+31",
+    promotedSha256: "f56879812e9423ca3ea4a587fb8983febd170793ca5aeafa3754664bdebb95d1",
+  },
+  {
+    name: "exit-hover-ballet",
+    sourcePath: join(readerCaptureRoot, "ballet-frame-1-exit-hover-source.png"),
+    sourceSha256: "3f9372a9339fe7f55417183e03799f029a6859a1a0ac22e825bce129cb90a6c0",
+    crop: "47x34+578+31",
+    promotedSha256: "9001308bc99e2c32ee603835c5897d766d16a62a9cd98711740f3c48ed830e70",
   },
 ];
 
@@ -203,6 +254,12 @@ requireFile(gramophonePath);
 requireFile(projectorChooseCapturePath);
 requireFile(projectorPlayRoomLayerCapturePath);
 readerSources.forEach((reader) => requireFile(reader.path));
+readerSources.forEach((reader) =>
+  reader.pageCaptureSha256.forEach((_, index) =>
+    requireFile(join(readerCaptureRoot, `${reader.name}-frame-${index + 1}-source.png`)),
+  ),
+);
+readerControlCaptures.forEach((capture) => requireFile(capture.sourcePath));
 mkdirSync(generatedRoot, { recursive: true });
 mkdirSync(promotedRoot, { recursive: true });
 
@@ -343,6 +400,41 @@ const readerBooks = readerSources.map((reader) => {
   return { ...reader, promoted };
 });
 
+const readerScenes = readerSources.flatMap((reader) =>
+  reader.pageCaptureSha256.map((expectedSha256, index) => {
+    const frame = index + 1;
+    const sourcePath = join(readerCaptureRoot, `${reader.name}-frame-${frame}-source.png`);
+    const sourceCapture = readFileSync(sourcePath);
+    assertEqual(sha256(sourceCapture), expectedSha256, `${reader.name} reader frame ${frame} Ruffle capture SHA-256`);
+    const promotedPath = join(promotedRoot, `${reader.name}-reader-frame-${frame}.png`);
+    writeFileSync(promotedPath, sourceCapture);
+    return { name: reader.name, frame, promoted: sourceCapture };
+  }),
+);
+
+const readerControls = readerControlCaptures.map((capture) => {
+  const sourceCapture = readFileSync(capture.sourcePath);
+  assertEqual(sha256(sourceCapture), capture.sourceSha256, `reader ${capture.name} source capture SHA-256`);
+  const promotedPath = join(promotedRoot, `reader-control-${capture.name}.png`);
+  execFileSync("magick", [
+    capture.sourcePath,
+    "-crop",
+    capture.crop,
+    "+repage",
+    "-depth",
+    "8",
+    "-define",
+    "png:color-type=6",
+    "-define",
+    "png:exclude-chunks=date,time",
+    "-strip",
+    promotedPath,
+  ]);
+  const promoted = readFileSync(promotedPath);
+  assertEqual(sha256(promoted), capture.promotedSha256, `reader ${capture.name} promoted crop SHA-256`);
+  return { ...capture, promoted };
+});
+
 const manifest = {
   source: "analysis/setup/app/Nutcracker2.exe",
   embeddedSwf: {
@@ -392,10 +484,20 @@ const manifest = {
       path: `app/src/assets/source-scenes/${reader.name}-reader-book.png`,
       sha256: sha256(reader.promoted),
     })),
+    ...readerScenes.map((scene) => ({
+      sourceLocator: `activities/${scene.name}/${scene.name}.swf root frame label ${scene.frame}; official Ruffle v0.5.0 neutral source-runtime capture`,
+      path: `app/src/assets/source-scenes/${scene.name}-reader-frame-${scene.frame}.png`,
+      sha256: sha256(scene.promoted),
+    })),
+    ...readerControls.map((control) => ({
+      sourceLocator: `activities/story/story.swf and activities/ballet/ballet.swf source button hover state crop ${control.crop}`,
+      path: `app/src/assets/source-scenes/reader-control-${control.name}.png`,
+      sha256: sha256(control.promoted),
+    })),
   ],
 };
 writeFileSync(join(generatedRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 
 console.log(
-  `Shell/reference extraction verified: projector byte ${embedded.offset}, source launcher, composed playRoom, intro JPEG ${expected.introJpegId}, gramophone JPEG3 ${expected.gramophoneJpeg3Id}, and ${readerBooks.length} reader books.`,
+  `Shell/reference extraction verified: projector byte ${embedded.offset}, source launcher, composed playRoom, intro JPEG ${expected.introJpegId}, gramophone JPEG3 ${expected.gramophoneJpeg3Id}, ${readerBooks.length} reader books, ${readerScenes.length} complete reader frames, and ${readerControls.length} source control states.`,
 );

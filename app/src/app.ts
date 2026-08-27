@@ -56,6 +56,10 @@ import listeningRoomRecordLp4Url from "./assets/source-scenes/listening-room-rec
 import listeningRoomRecordLp5Url from "./assets/source-scenes/listening-room-record-lp5.png";
 import mainPlayRoomCompositeUrl from "./assets/source-scenes/main-playroom-source-composite.png";
 import projectorChooseSourceUrl from "./assets/source-scenes/projector-choose-source.png";
+import readerControlExitHoverBalletUrl from "./assets/source-scenes/reader-control-exit-hover-ballet.png";
+import readerControlExitHoverUrl from "./assets/source-scenes/reader-control-exit-hover.png";
+import readerControlNextHoverUrl from "./assets/source-scenes/reader-control-next-hover.png";
+import readerControlPrevHoverUrl from "./assets/source-scenes/reader-control-prev-hover.png";
 import stageMarkUrl from "./assets/stage-mark.svg";
 import { createAudioService, type AudioService } from "./audio/audioService";
 import {
@@ -66,7 +70,6 @@ import {
   isReadingRouteId,
   suiteTracks,
   type DictionaryInstrument,
-  type ReadingPageColumn,
   type ReadingRouteId,
   type SuiteTrack,
 } from "./data/referenceContent";
@@ -381,6 +384,21 @@ export type AppShellOptions = {
 };
 
 const defaultPreviewAudioPath = suiteTracks[0].audioPath;
+const sourceReaderPreviousButtonIds: Record<ReadingRouteId, readonly (number | null)[]> = {
+  story: [null, 34, 39, 44],
+  "composer-biography": [null, 35, 43, 50],
+  "ballet-history": [null, 36, 42, 47, 53],
+};
+const sourceReaderNextButtonIds: Record<ReadingRouteId, readonly (number | null)[]> = {
+  story: [14, 14, 14, null],
+  "composer-biography": [14, 14, 14, null],
+  "ballet-history": [14, 14, 14, 48, null],
+};
+const sourceReaderExitButtonIds: Record<ReadingRouteId, number> = {
+  story: 28,
+  "composer-biography": 31,
+  "ballet-history": 32,
+};
 
 export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}): void {
   const progress = options.progress ?? createProgressStore();
@@ -481,6 +499,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   const flyingTimerIds = new Set<number>();
   const toyTimerIds = new Set<number>();
   let suppressNextNutHouseFocusPreview = false;
+  let readerExitTimerId: number | null = null;
 
   const stopMelodyPlayback = () => {
     melodyTimerIds.forEach((timerId) => window.clearTimeout(timerId));
@@ -657,16 +676,20 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-reading-page]").forEach((button) => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (event) => {
         const routeId = button.dataset.readingRoute;
         const pageIndex = Number(button.dataset.readingPage);
         if (routeId && isRouteId(routeId) && isReadingRouteId(routeId) && Number.isInteger(pageIndex)) {
           const activity = getReadingActivity(routeId);
           shellState.readingPages[routeId] = Math.min(Math.max(pageIndex, 0), activity.pages.length - 1);
-          render(
-            `[data-reading-direction="${button.dataset.readingDirection ?? "next"}"]`,
-            "[data-source-reader-heading]",
-          );
+          if (event.detail === 0) {
+            render(
+              `[data-reading-direction="${button.dataset.readingDirection ?? "next"}"]`,
+              "[data-source-reader-heading]",
+            );
+          } else {
+            render();
+          }
         }
       });
     });
@@ -1518,6 +1541,10 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   };
 
   const navigate = (routeId: RouteId) => {
+    if (readerExitTimerId !== null) {
+      window.clearTimeout(readerExitTimerId);
+      readerExitTimerId = null;
+    }
     const routeChanged = routeId !== shellState.routeId;
     if (routeChanged) {
       shellState.routeStack.push(shellState.routeId);
@@ -1555,6 +1582,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     if (routeChanged && routeId === "overture") {
       shellState.overturePhase = "intro";
     }
+    if (routeChanged && isReadingRouteId(routeId)) {
+      shellState.readingPages[routeId] = 0;
+    }
     if (routeChanged && routeId === "nut-house") {
       shellState.nutHouseRoom = 11 + Math.min(progress.getSnapshot().nutHouse.openDoor, 7);
       shellState.nutHousePhase = progress.getSnapshot().nutHouse.openDoor === 0 ? "tutorial" : "prompt";
@@ -1572,6 +1602,12 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     audio.stopSceneAudio();
     shellState.activeAudioId = null;
     shellState.activeSuiteTrackId = null;
+    if (isReadingRouteId(routeId)) {
+      const narrationPath = getReadingActivity(routeId).audioPath;
+      if (narrationPath) {
+        shellState.activeAudioId = audio.playOneShot(narrationPath).id;
+      }
+    }
     if (routeId === "waltz") {
       audio.playOneShot(getM08Asset("/audio/waltz/MP3Wedding3.wav"));
     }
@@ -1843,6 +1879,20 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
 
     if (action === "exit") {
+      if (isReadingRouteId(shellState.routeId)) {
+        const readerScene = mount.querySelector<HTMLElement>(".source-reader-scene");
+        if (!readerScene || readerScene.dataset.exiting === "true") {
+          return;
+        }
+        audio.stopSceneAudio();
+        shellState.activeAudioId = null;
+        readerScene.dataset.exiting = "true";
+        readerExitTimerId = window.setTimeout(() => {
+          readerExitTimerId = null;
+          navigate("main-menu");
+        }, 400);
+        return;
+      }
       navigate("main-menu");
       return;
     }
@@ -2266,12 +2316,13 @@ function renderReadingActivity(routeId: ReadingRouteId, pageIndex: number): stri
   const activity = getReadingActivity(routeId);
   const safePageIndex = Math.min(Math.max(pageIndex, 0), activity.pages.length - 1);
   const page = activity.pages[safePageIndex];
-  const previousPage = Math.max(safePageIndex - 1, 0);
-  const nextPage = Math.min(safePageIndex + 1, activity.pages.length - 1);
-
-  const leftPageNumber = safePageIndex * 2 + 1;
+  const previousPage = safePageIndex - 1;
+  const nextPage = safePageIndex + 1;
   const sourceTextIds = page.columns.flatMap((column) => column.sourceTextIds);
   const sourceImageIds = [activity.sourceBookImageId, ...page.columns.flatMap((column) => column.sourceImageIds)];
+  const previousButtonId = sourceReaderPreviousButtonIds[routeId][safePageIndex];
+  const nextButtonId = sourceReaderNextButtonIds[routeId][safePageIndex];
+  const exitHoverPath = routeId === "ballet-history" ? readerControlExitHoverBalletUrl : readerControlExitHoverUrl;
   return `
     <div
       class="scene-body source-reader-scene"
@@ -2280,58 +2331,78 @@ function renderReadingActivity(routeId: ReadingRouteId, pageIndex: number): stri
       data-source-text-ids="${sourceTextIds.join(",") || "none"}"
       data-source-image-ids="${sourceImageIds.join(",")}"
       data-source-controls="NEXT >, < PREV, EXIT"
-      data-source-fallback="the full root render crashes in the local SWF renderer with missing JPEG support and invalid-gradient output; recovered source text, images, frame labels, and controls are composed in DOM"
+      data-source-classification="original asset"
+      data-source-capture="official Ruffle v0.5.0 neutral source-runtime capture"
+      data-source-fallback="static source-runtime frame captures preserve the complete display; live narration, page navigation, source hit regions, hover art, and exit fade are reconstructed while the pre-page book fade and transient loading sprite remain a documented timeline gap"
     >
       <article class="source-reader-book" aria-label="${escapeHtml(activity.title)}">
         <img
-          class="source-reader-book-frame"
+          class="source-reader-scene-frame"
+          src="${page.sceneImagePath}"
+          alt=""
+          aria-hidden="true"
+          data-source-image="official Ruffle v0.5.0 root frame label ${page.sourceFrameLabel} capture"
+        />
+        <img
+          class="source-reader-exit-book-frame"
           src="${activity.bookImagePath}"
           alt=""
           aria-hidden="true"
-          data-source-image="DEFINEBITSJPEG3 id ${String(activity.sourceBookImageId).padStart(4, "0")}"
+          data-source-image="DEFINEBITSJPEG3 id ${String(activity.sourceBookImageId).padStart(4, "0")} exit fade layer"
         />
         <h1 class="sr-only" tabindex="-1" data-source-reader-heading>${escapeHtml(activity.title)} · ${escapeHtml(page.title)}</h1>
         <p class="sr-only" role="status" aria-live="polite">${escapeHtml(page.title)} of ${escapeHtml(activity.pageCountLabel)}</p>
-        <div class="source-reader-spread">
-          ${renderReadingColumn(page.columns[0], "left", leftPageNumber)}
-          ${renderReadingColumn(page.columns[1], "right", leftPageNumber + 1)}
+        <div class="sr-only" data-source-reader-accessible-copy>
+          ${page.columns
+            .map(
+              (column, index) => `<section data-source-side="${index === 0 ? "left" : "right"}" data-source-text-ids="${column.sourceTextIds.join(",") || "none"}" data-source-image-ids="${column.sourceImageIds.join(",") || "none"}">
+                ${column.heading ? `<h2>${escapeHtml(column.heading)}</h2>` : ""}
+                ${column.subheading ? `<p>${escapeHtml(column.subheading)}</p>` : ""}
+                ${column.body ? `<p>${formatMultilineText(column.body)}</p>` : ""}
+              </section>`,
+            )
+            .join("")}
         </div>
-        <footer class="source-reader-controls" aria-label="Page controls">
-          <button type="button" data-action="exit">EXIT</button>
-          <button type="button" data-reading-route="${routeId}" data-reading-page="${previousPage}" data-reading-direction="previous" ${safePageIndex === 0 ? "disabled" : ""}>&lt; PREV</button>
+        <nav class="source-reader-controls" aria-label="Source reader controls">
+          <button
+            class="source-reader-control source-reader-control-exit"
+            type="button"
+            data-action="exit"
+            data-source-button-id="${sourceReaderExitButtonIds[routeId]}"
+            data-source-action="goto bye timeline, play, then unloadMovie"
+            aria-label="Exit reader"
+          ><img src="${exitHoverPath}" alt="" aria-hidden="true" /><span class="sr-only">EXIT</span></button>
           ${
-            activity.audioPath
-              ? `<button class="source-reader-audio" type="button" data-reading-audio="${activity.audioPath}" aria-label="Play original audio" title="Play original audio">♪</button>`
-              : ""
+            previousButtonId === null
+              ? ""
+              : `<button
+                  class="source-reader-control source-reader-control-prev"
+                  type="button"
+                  data-reading-route="${routeId}"
+                  data-reading-page="${previousPage}"
+                  data-reading-direction="previous"
+                  data-source-button-id="${previousButtonId}"
+                  data-source-hit-bounds="x 20.00-309.00 y 35.00-434.95"
+                  aria-label="Previous spread"
+                ><img src="${readerControlPrevHoverUrl}" alt="" aria-hidden="true" /><span class="sr-only">&lt; PREV</span></button>`
           }
-          <span>${escapeHtml(page.title)} · ${escapeHtml(activity.pageCountLabel)}</span>
-          <button type="button" data-reading-route="${routeId}" data-reading-page="${nextPage}" data-reading-direction="next" ${safePageIndex === activity.pages.length - 1 ? "disabled" : ""}>NEXT &gt;</button>
-        </footer>
+          ${
+            nextButtonId === null
+              ? ""
+              : `<button
+                  class="source-reader-control source-reader-control-next"
+                  type="button"
+                  data-reading-route="${routeId}"
+                  data-reading-page="${nextPage}"
+                  data-reading-direction="next"
+                  data-source-button-id="${nextButtonId}"
+                  data-source-hit-bounds="x 327.00-624.95 y 35.00-436.95"
+                  aria-label="Next spread"
+                ><img src="${readerControlNextHoverUrl}" alt="" aria-hidden="true" /><span class="sr-only">NEXT &gt;</span></button>`
+          }
+        </nav>
       </article>
     </div>
-  `;
-}
-
-function renderReadingColumn(column: ReadingPageColumn, side: "left" | "right", pageNumber: number): string {
-  return `
-    <section
-      class="source-reader-page source-reader-page-${side}"
-      data-source-side="${side}"
-      data-source-text-ids="${column.sourceTextIds.join(",") || "none"}"
-      data-source-image-ids="${column.sourceImageIds.join(",") || "none"}"
-    >
-      ${column.heading ? `<h2>${escapeHtml(column.heading)}</h2>` : ""}
-      ${column.subheading ? `<p class="source-reader-subheading">${escapeHtml(column.subheading)}</p>` : ""}
-      ${
-        column.imagePaths?.length
-          ? `<div class="source-reader-images source-reader-images-${column.imagePaths.length}">${column.imagePaths
-              .map((imagePath) => `<img src="${imagePath}" alt="" aria-hidden="true" />`)
-              .join("")}</div>`
-          : ""
-      }
-      ${column.body ? `<p class="source-reader-copy">${formatMultilineText(column.body)}</p>` : ""}
-      <span class="source-page-number">${pageNumber}</span>
-    </section>
   `;
 }
 
