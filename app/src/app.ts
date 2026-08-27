@@ -54,7 +54,8 @@ import listeningRoomRecordLp2Url from "./assets/source-scenes/listening-room-rec
 import listeningRoomRecordLp3Url from "./assets/source-scenes/listening-room-record-lp3.png";
 import listeningRoomRecordLp4Url from "./assets/source-scenes/listening-room-record-lp4.png";
 import listeningRoomRecordLp5Url from "./assets/source-scenes/listening-room-record-lp5.png";
-import mainPlayRoomBackgroundUrl from "./assets/source-scenes/main-playroom-background.jpg";
+import mainPlayRoomCompositeUrl from "./assets/source-scenes/main-playroom-source-composite.png";
+import projectorChooseSourceUrl from "./assets/source-scenes/projector-choose-source.png";
 import stageMarkUrl from "./assets/stage-mark.svg";
 import { createAudioService, type AudioService } from "./audio/audioService";
 import {
@@ -125,6 +126,7 @@ import { createProgressStore, type DoorKey, type GameKey, type ProgressStoreCont
 type ShellState = {
   routeId: RouteId;
   routeStack: RouteId[];
+  overturePhase: "intro" | "launcher";
   helpOpen: boolean;
   nutcrackerChooserWarningOpen: boolean;
   activeAudioId: string | null;
@@ -374,6 +376,8 @@ export type AppShellOptions = {
   printCertificate?: () => void;
   random?: () => number;
   showDeveloperPanel?: boolean;
+  openExternal?: (url: string) => void;
+  exitApp?: () => void;
 };
 
 const defaultPreviewAudioPath = suiteTracks[0].audioPath;
@@ -385,9 +389,24 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   const printCertificate = options.printCertificate ?? (() => window.print());
   const random = options.random ?? Math.random;
   const showDeveloperPanel = options.showDeveloperPanel ?? import.meta.env.DEV;
+  const openExternal = options.openExternal ?? ((url: string) => {
+    if ("__TAURI_INTERNALS__" in window) {
+      void import("@tauri-apps/plugin-opener").then(({ openUrl }) => openUrl(url));
+      return;
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
+  });
+  const exitApp = options.exitApp ?? (() => {
+    if ("__TAURI_INTERNALS__" in window) {
+      void import("@tauri-apps/api/window").then(({ getCurrentWindow }) => getCurrentWindow().close());
+      return;
+    }
+    window.close();
+  });
   const shellState: ShellState = {
     routeId: "overture",
     routeStack: [],
+    overturePhase: "intro",
     helpOpen: false,
     nutcrackerChooserWarningOpen: false,
     activeAudioId: null,
@@ -1533,6 +1552,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.aliceDialValues = [4, 4, 4];
       shellState.aliceFeedback = null;
     }
+    if (routeChanged && routeId === "overture") {
+      shellState.overturePhase = "intro";
+    }
     if (routeChanged && routeId === "nut-house") {
       shellState.nutHouseRoom = 11 + Math.min(progress.getSnapshot().nutHouse.openDoor, 7);
       shellState.nutHousePhase = progress.getSnapshot().nutHouse.openDoor === 0 ? "tutorial" : "prompt";
@@ -1740,7 +1762,34 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
 
   const handleAction = (action: string | undefined) => {
     if (action === "start") {
+      shellState.overturePhase = "launcher";
+      render(".source-projector-launcher");
+      return;
+    }
+
+    if (action === "play-featured-game") {
       navigate("main-menu");
+      return;
+    }
+
+    if (action === "preview-musical-friends") {
+      shellState.overturePhase = "intro";
+      render(".source-intro-scene");
+      return;
+    }
+
+    if (action === "preview-alice") {
+      navigate("alice-puzzles");
+      return;
+    }
+
+    if (action === "open-kids-music-stage") {
+      openExternal("http://www.kidsmusicstage.com");
+      return;
+    }
+
+    if (action === "exit-projector") {
+      exitApp();
       return;
     }
 
@@ -1992,7 +2041,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
 
 function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreController["getSnapshot"]>, shellState: ShellState): string {
   if (route.id === "overture") {
-    return renderSourceOverture();
+    return renderSourceOverture(shellState.overturePhase);
   }
 
   if (route.id === "main-menu") {
@@ -2089,14 +2138,70 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
   `;
 }
 
-function renderSourceOverture(): string {
+function renderSourceOverture(phase: ShellState["overturePhase"]): string {
+  if (phase === "launcher") {
+    return `
+      <div
+        class="scene-body source-projector-launcher"
+        tabindex="-1"
+        data-source-projector="analysis/setup/app/Nutcracker2.exe embedded FWS at byte 864256"
+        data-source-frame="root frame 1268 label choose"
+        data-source-capture="official Ruffle v0.5.0 source-runtime capture"
+        data-source-action-map="nut to nutIni; MFBtn to MFintro; aliceBTN to aliceIntro; webBTN to warningMSG_mc show; button 0038 to root frame 2388"
+      >
+        <img class="source-projector-choose" src="${projectorChooseSourceUrl}" alt="" aria-hidden="true" />
+        <h1 class="sr-only">Choose a Kids Music Stage game</h1>
+        <button
+          class="source-projector-launcher-button source-projector-play"
+          type="button"
+          data-action="play-featured-game"
+          aria-label="Play Featured Game"
+          data-source-placement="button id 0028 instance nut at depth 0002 x 364.15 y 90.95 ratio 1267"
+          data-source-action="root gotoAndPlay nutIni"
+        ><span class="sr-only">Play Featured Game</span></button>
+        <button
+          class="source-projector-launcher-button source-projector-preview-mf"
+          type="button"
+          data-action="preview-musical-friends"
+          aria-label="Preview Musical Friends"
+          data-source-placement="button id 0043 instance MFBtn at depth 0012 x 146.25 y 355.55 ratio 1267"
+          data-source-action="root gotoAndPlay MFintro"
+        ><span class="sr-only">Preview Musical Friends</span></button>
+        <button
+          class="source-projector-launcher-button source-projector-preview-alice"
+          type="button"
+          data-action="preview-alice"
+          aria-label="Preview Alice's Adventures in Musicland"
+          data-source-placement="button id 0047 instance aliceBTN at depth 0020 x 291.80 y 355.55 ratio 1267"
+          data-source-action="root gotoAndPlay aliceIntro"
+        ><span class="sr-only">Preview Alice's Adventures in Musicland</span></button>
+        <button
+          class="source-projector-launcher-button source-projector-web"
+          type="button"
+          data-action="open-kids-music-stage"
+          aria-label="Go to KidsMusicStage.com"
+          data-source-placement="button id 0051 instance webBTN at depth 0029 x 527.70 y 355.65 ratio 1267"
+          data-source-action="warningMSG_mc gotoAndStop show; YES opens http://www.kidsmusicstage.com"
+        ><span class="sr-only">Go to KidsMusicStage.com</span></button>
+        <button
+          class="source-projector-launcher-button source-projector-exit"
+          type="button"
+          data-action="exit-projector"
+          aria-label="Exit"
+          data-source-placement="button id 0038 at depth 0009 x 563.50 y 25.45 ratio 1267"
+          data-source-action="GotoFrame 2388 then FSCommand quit"
+        ><span class="sr-only">Exit</span></button>
+      </div>
+    `;
+  }
+
   return `
     <div
       class="scene-body source-intro-scene"
       data-source-swf="analysis/setup/app/flute_intro.swf"
       data-source-frame="root frame 1 through 1277 at 15 fps"
       data-source-image="DEFINEBITSJPEG id 0371 promoted as the recovered garden layer"
-      data-source-control="source text skip at the lower-right edge"
+      data-source-control="source text skip at the lower-right edge; root gotoAndStop choose"
       data-source-fallback="full root probes at frames 1, 300, 900, 1200, and 1277 rendered blank; frames 100 and 600 crashed the local SWF renderer, so the runtime holds one promoted source layer instead of claiming full timeline playback"
     >
       <img class="source-intro-garden" src="${fluteIntroGardenUrl}" alt="" aria-hidden="true" />
@@ -2114,9 +2219,10 @@ function renderMainPlayRoom(progress: ReturnType<ProgressStoreController["getSna
       data-source-projector="analysis/setup/app/Nutcracker2.exe embedded FWS at byte 864256"
       data-source-frame="root frame 2378 label playRoom"
       data-source-background="DEFINEBITSJPEG id 0518; shape id 0519 at depth 0003 centered x 320 y 240"
-      data-source-fallback="swfextract -f 2378 could not flatten the root scene because the installed SWFTools build has no JPEG library; the runtime uses the promoted source background with source-coordinate hotspots"
+      data-source-capture="official Ruffle v0.5.0 render of extracted root frame 2378 source layers"
+      data-source-fallback="swfextract -f 2378 omits JPEG id 0518 with the installed SWFTools build; the deterministic asset gate chroma-keys the source-runtime foreground capture over the exact promoted source JPEG and retains source-coordinate hotspots"
     >
-      <img class="source-playroom-background" src="${mainPlayRoomBackgroundUrl}" alt="" aria-hidden="true" />
+      <img class="source-playroom-background" src="${mainPlayRoomCompositeUrl}" alt="" aria-hidden="true" />
       <div class="source-playroom-hotspots" role="group" aria-label="Music room activities">
         ${mainRoomHotspots.map(renderMainRoomHotspot).join("")}
         ${

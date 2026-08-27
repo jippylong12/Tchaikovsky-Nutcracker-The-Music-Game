@@ -74,6 +74,11 @@ function publicAssetSize(publicPath: string): number {
   return statSync(join(currentDir, "../../public", publicPath)).size;
 }
 
+function openRecoveredMainMenu(mount: HTMLElement): void {
+  mount.querySelector<HTMLButtonElement>('[data-action="start"]')?.click();
+  mount.querySelector<HTMLButtonElement>('[data-action="play-featured-game"]')?.click();
+}
+
 describe("desktop app shell", () => {
   it("renders the fixed game viewport and recovered route map", () => {
     const mount = document.createElement("main");
@@ -87,6 +92,51 @@ describe("desktop app shell", () => {
     expect(mount.textContent).toContain("Story");
     expect(mount.textContent).toContain("Tree Game");
     expect(mount.textContent).toContain("Local desktop package only");
+  });
+
+  it("follows the recovered projector launcher sequence and wires every visible launcher button", () => {
+    const openExternal = vi.fn();
+    const exitApp = vi.fn();
+    const makeMount = () => {
+      const mount = document.createElement("main");
+      createAppShell(mount, {
+        progress: createProgressStore(createMemoryPersistence()),
+        audio: createAudioService({
+          createAudioElement: () => new FakeAudioElement(),
+        }),
+        openExternal,
+        exitApp,
+        showDeveloperPanel: false,
+      });
+      mount.querySelector<HTMLButtonElement>('[data-action="start"]')?.click();
+      return mount;
+    };
+
+    const playMount = makeMount();
+    expect(playMount.querySelector<HTMLImageElement>(".source-projector-choose")?.src).toContain(
+      "projector-choose-source",
+    );
+    expect(playMount.querySelectorAll(".source-projector-launcher-button")).toHaveLength(5);
+    playMount.querySelector<HTMLButtonElement>('[data-action="play-featured-game"]')?.click();
+    expect(playMount.querySelector<HTMLImageElement>(".source-playroom-background")?.src).toContain(
+      "main-playroom-source-composite",
+    );
+
+    const musicalFriendsMount = makeMount();
+    musicalFriendsMount.querySelector<HTMLButtonElement>('[data-action="preview-musical-friends"]')?.click();
+    expect(musicalFriendsMount.querySelector(".source-intro-garden")).not.toBeNull();
+
+    const aliceMount = makeMount();
+    aliceMount.querySelector<HTMLButtonElement>('[data-action="preview-alice"]')?.click();
+    expect(aliceMount.querySelector(".m08-alice-scene")).not.toBeNull();
+
+    const webMount = makeMount();
+    webMount.querySelector<HTMLButtonElement>('[data-action="open-kids-music-stage"]')?.click();
+    expect(openExternal).toHaveBeenCalledWith("http://www.kidsmusicstage.com");
+
+    const exitMount = makeMount();
+    exitMount.querySelector<HTMLButtonElement>('[data-action="exit-projector"]')?.click();
+    expect(exitApp).toHaveBeenCalledOnce();
   });
 
   it("removes development navigation and cheat controls from the release shell", () => {
@@ -152,8 +202,10 @@ describe("desktop app shell", () => {
     const mount = document.createElement("main");
 
     createTestShell(mount);
-    mount.querySelector<HTMLButtonElement>('[data-action="start"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(mount.querySelector<HTMLImageElement>(".source-playroom-background")?.src).toContain("main-playroom-background");
+    openRecoveredMainMenu(mount);
+    expect(mount.querySelector<HTMLImageElement>(".source-playroom-background")?.src).toContain(
+      "main-playroom-source-composite",
+    );
     expect(mount.querySelector<HTMLElement>('[data-scene-route="trivia"]')?.dataset.sourcePlacement).toContain(
       "button id 0636",
     );
@@ -167,14 +219,14 @@ describe("desktop app shell", () => {
   it("shows the source nutButton only after all nine game keys", () => {
     const lockedMount = document.createElement("main");
     createTestShell(lockedMount);
-    lockedMount.querySelector<HTMLButtonElement>('[data-action="start"]')?.click();
+    openRecoveredMainMenu(lockedMount);
     expect(lockedMount.querySelector(".source-playroom-nutcracker")).toBeNull();
 
     const unlockedMount = document.createElement("main");
     createTestShell(unlockedMount, (progress) => {
       ([1, 2, 3, 4, 5, 6, 7, 8, 9] as const satisfies readonly GameKey[]).forEach((key) => progress.markGameKey(key));
     });
-    unlockedMount.querySelector<HTMLButtonElement>('[data-action="start"]')?.click();
+    openRecoveredMainMenu(unlockedMount);
 
     expect(unlockedMount.querySelector<HTMLElement>(".source-playroom-nutcracker")?.dataset.sourcePlacement).toContain(
       "sprite id 0671",

@@ -3446,6 +3446,7 @@ button {
 }
 
 .source-intro-scene,
+.source-projector-launcher,
 .source-playroom-scene,
 .source-reader-scene,
 .source-musictionary-scene,
@@ -3458,6 +3459,69 @@ button {
 
 .source-intro-scene {
   background: #000000;
+}
+
+.source-projector-launcher {
+  background: #000066;
+}
+
+.source-projector-choose {
+  position: absolute;
+  inset: 0;
+  width: 640px;
+  height: 480px;
+  object-fit: fill;
+}
+
+.source-projector-launcher-button {
+  position: absolute;
+  z-index: 2;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.source-projector-launcher-button:focus-visible {
+  outline: 2px solid #ffff66;
+  outline-offset: 2px;
+}
+
+.source-projector-play {
+  left: 108px;
+  top: 22px;
+  width: 104px;
+  height: 101px;
+}
+
+.source-projector-preview-mf {
+  left: 27px;
+  top: 163px;
+  width: 67px;
+  height: 67px;
+}
+
+.source-projector-preview-alice {
+  left: 98px;
+  top: 163px;
+  width: 68px;
+  height: 67px;
+}
+
+.source-projector-web {
+  left: 216px;
+  top: 160px;
+  width: 72px;
+  height: 72px;
+}
+
+.source-projector-exit {
+  left: 286px;
+  top: 4px;
+  width: 38px;
+  height: 25px;
+  border-radius: 0;
 }
 
 .source-intro-garden {
@@ -3482,7 +3546,6 @@ button {
   cursor: pointer;
 }
 
-.source-intro-skip:hover,
 .source-intro-skip:focus-visible {
   color: #ffff00;
   outline: 1px solid #ffff00;
@@ -3513,7 +3576,6 @@ button {
   transform: translate(-50%, -50%);
 }
 
-.source-playroom-hotspot:hover,
 .source-playroom-hotspot:focus-visible {
   outline: 2px dashed rgba(255, 255, 102, 0.92);
   outline-offset: 1px;

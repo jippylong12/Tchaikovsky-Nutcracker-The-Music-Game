@@ -18,10 +18,14 @@ Locked evidence:
 - final valid embedded `FWS` at byte `864256`, Flash 6, declared length `6085533`
 - `flute_intro.swf` SHA-256 `aa92b6b3022c3cf3030cecd7c06888aebd929a63bcc7b3ce18119f3f7476b782`
 - `gramophone.swf` SHA-256 `76310a834c1ba3773bd429b594a20a1083b61c657d78de4fc9c1ac20cc58bbdf`
+- official Ruffle `v0.5.0` self-hosted archive SHA-256 `4e0d44ba990f9fe3434d7848f740348299bd6c473db59fb5f8606b750fcc5760`
+- root-frame-1268 source-runtime capture SHA-256 `d3cae55ce2e93c21bc461f7e6ccf8a5f5f83d6d001f6b9f32a63b906b9b093e5`
+- root-frame-2378 foreground source-runtime capture SHA-256 `93a4f305c588c65665ec506545554f7c751740d18c1cd715743ea78a02412b0e`
+- deterministic frame-2378 room composite SHA-256 `f1f42c978c8735db266e6aa89bf67d34b2e4b84e7f9b43acfdc47a720b298f75`
 
 ## Projector introduction
 
-The main projector loads `flute_intro.swf`. That movie is an 800 x 600, 15 fps, 1277-frame timeline with a source `skip` text control at the lower-right edge. The runtime preserves the skip behavior, scales one promoted source garden layer from `DEFINEBITSJPEG id 0371`, and does not claim to reproduce the full intro timeline.
+The main projector loads `flute_intro.swf`. That movie is an 800 x 600, 15 fps, 1277-frame timeline with a source `skip` text control at the lower-right edge. The projector root binds both the intro mouse-up path and `skipBTN.onRelease` to `gotoAndStop("choose")`. The runtime preserves that phase change, scales one promoted source garden layer from `DEFINEBITSJPEG id 0371`, and does not claim to reproduce the full intro timeline.
 
 Local probes are an explicit fallback boundary:
 
@@ -30,9 +34,27 @@ Local probes are an explicit fallback boundary:
 
 The runtime records this evidence on `.source-intro-scene` through `data-source-*` attributes.
 
+## Projector source chooser
+
+The missing opening menu is projector root frame `1268`, label `choose`; the earlier static-intro implementation incorrectly skipped directly to `playRoom`. Official Ruffle `v0.5.0` self-hosted playback rendered the complete frame, which is committed as `app/source-evidence/shell/projector-choose-source.png`, hash-locked by `assets:shell-reference`, and promoted as `projector-choose-source.png`.
+
+The runtime overlays transparent accessible hit targets only where source buttons already exist:
+
+| Control | Source placement | Source action | Remake equivalent |
+| --- | --- | --- | --- |
+| Featured game | button `0028`, instance `nut`, depth `0002`, x `364.15`, y `90.95`, ratio `1267` | root `gotoAndPlay("nutIni")` | continue to the recovered `playRoom` |
+| Musical Friends preview | button `0043`, instance `MFBtn`, depth `0012`, x `146.25`, y `355.55`, ratio `1267` | root `gotoAndPlay("MFintro")` | replay the recovered local Musical Friends/flute introduction |
+| Alice preview | button `0047`, instance `aliceBTN`, depth `0020`, x `291.80`, y `355.55`, ratio `1267` | root `gotoAndPlay("aliceIntro")` | open the reconstructed Alice activity |
+| Website | button `0051`, instance `webBTN`, depth `0029`, x `527.70`, y `355.65`, ratio `1267` | `warningMSG_mc.gotoAndStop("show")`, then `http://www.kidsmusicstage.com` | open the exact legacy URL through the desktop/browser external-link boundary |
+| Exit | button `0038`, depth `0009`, x `563.50`, y `25.45`, ratio `1267` | root frame `2388`, then `FSCommand:quit` | close the Tauri window; browser preview uses `window.close()` |
+
+The source text objects remain baked into the recovered frame: text `0030` is `Play / Featured / Game`, text `0031` is `Preview Other Games`, text `0048` is `Go to / KidsMusicStage.com`, and button texts `0033`-`0037` provide the EXIT states. No new visible launcher labels or controls are drawn over the source art.
+
 ## Projector `playRoom`
 
 Root frame 2378 is labeled `playRoom`. Its room art is `DEFINEBITSJPEG id 0518`, referenced by shape `0519` at depth `0003`, centered at x `320`, y `240`. The promoted `main-playroom-background.jpg` is the exact 640 x 480 JPEG payload.
+
+`swfextract -f 2378` successfully isolates the root frame, and official Ruffle renders its recoverable foreground/display-list children, including the source giraffe, elephant, vibraphone, papers, books, and framed art. SWFTools omits JPEG `0518` from that extracted frame because the installed build has no JPEG library. `assets:shell-reference` therefore hash-checks the captured foreground, removes only its flat `#000066` stage color with a fixed 7% fuzz, and composites it over the exact JPEG `0518`. The result is promoted as `main-playroom-source-composite.png`; this is the runtime menu surface.
 
 The activity buttons are source hotspots; their source button ids, depths, coordinates, and actions are preserved in the DOM:
 
@@ -54,7 +76,7 @@ The activity buttons are source hotspots; their source button ids, depths, coord
 
 The Nutcracker game is a separate `nutButton` sprite `0671` at depth `0187`, x `300.95`, y `192.40`. Its on-load ActionScript hides the instance until `collectedKeys == 9`; the remake uses the equivalent nine-completed-game gate.
 
-`swfextract -f 2378` cannot flatten the full projector scene with the installed build because it reports `No JPEG library compiled in`. The promoted background plus source-coordinate hotspots is the documented runtime composition. Flying Instruments and Orchestra remain present as disabled source hotspots because this route manifest does not yet contain those activities.
+The source-coordinate hotspots stay over that recovered composite. Every listed activity now maps to a reconstructed local route; no visible playRoom activity is intentionally left as a dead or disabled source button. Full moving projector-timeline playback remains the documented gap.
 
 ## Story, biography, and ballet readers
 

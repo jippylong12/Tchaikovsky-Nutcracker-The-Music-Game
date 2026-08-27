@@ -10,8 +10,8 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 
 | App route | Current audit state | Primary source | Required follow-up |
 | --- | --- | --- | --- |
-| `overture` | Source-backed intro still/skip behavior, documented timeline fallback, manual review open | `Nutcracker2.exe`, `flute_intro.swf` | JIP-818 |
-| `main-menu` | Exact `playRoom` art/hotspots/key gate, documented flattening fallback, manual review open | projector embedded SWF frame 2378 | JIP-818 |
+| `overture` | Source-backed intro/skip now reaches the recovered frame-1268 launcher; all launcher controls work; manual review open | `Nutcracker2.exe`, `flute_intro.swf` | JIP-818 |
+| `main-menu` | Ruffle-recovered `playRoom` foreground composited over exact JPEG 0518, with exact hotspots/key gate; manual review open | projector embedded SWF frame 2378 | JIP-818 |
 | `story` | Exact four-spread text/control map and recovered book art, manual review open | `activities/story/story.swf` | JIP-819 |
 | `composer-biography` | Exact four-spread text/image/control map, manual review open | `activities/biography/biography.swf` | JIP-819 |
 | `ballet-history` | Exact five-spread text/image/control map, manual review open | `activities/ballet/ballet.swf` | JIP-819 |
@@ -40,7 +40,7 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 
 ## Audit conclusions
 
-- The shell/reference retrofits now carry durable source classifications and explicit playback/display-list fallbacks. JIP-818 through JIP-820 remain open for Marcus's visual approval, not as generic-UI defects.
+- The opening shell now preserves the intro → source chooser → `playRoom` lifecycle, and the menu restores recoverable projector foreground art instead of showing the empty room JPEG. JIP-818 remains open for Marcus's visual approval; JIP-819 and JIP-820 retain their own manual approval gates.
 - M06 chooser/song work has durable source classifications and approval evidence, but exact timeline/manual gates remain open.
 - M07 and M08 routes are source-backed review surfaces with exact automated evidence and retained Marcus approval gates. Alice and Nut House now use hash-locked official-Ruffle captures where SWFTools cannot resolve their full display lists; remaining static-capture motion/timeline gaps stay documented rather than being replaced with generic UI.
 - JIP-345 release QA remains blocked by JIP-360 and must use this matrix/contact sheet rather than rediscover route coverage at packaging time.

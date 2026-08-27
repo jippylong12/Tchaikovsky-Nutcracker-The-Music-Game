@@ -16,6 +16,14 @@ const promotedRoot = join(appRoot, "src/assets/source-scenes");
 const projectorPath = join(projectRoot, "analysis/setup/app/Nutcracker2.exe");
 const introPath = join(projectRoot, "analysis/setup/app/flute_intro.swf");
 const gramophonePath = join(projectRoot, "analysis/setup/app/activities/originals/gramophone.swf");
+const projectorChooseCapturePath = join(
+  appRoot,
+  "source-evidence/shell/projector-choose-source.png",
+);
+const projectorPlayRoomLayerCapturePath = join(
+  appRoot,
+  "source-evidence/shell/projector-playroom-layer-source.png",
+);
 const readerSources = [
   {
     name: "story",
@@ -43,6 +51,9 @@ const expected = {
   projectorDeclaredLength: 6085533,
   playRoomJpegId: 518,
   playRoomSha256: "c0b4eb8a1b3a1fbf196bbc05a301d2b615de69e119d15bd09e694b7de796eddc",
+  projectorChooseCaptureSha256: "d3cae55ce2e93c21bc461f7e6ccf8a5f5f83d6d001f6b9f32a63b906b9b093e5",
+  projectorPlayRoomLayerCaptureSha256: "93a4f305c588c65665ec506545554f7c751740d18c1cd715743ea78a02412b0e",
+  playRoomCompositeSha256: "f1f42c978c8735db266e6aa89bf67d34b2e4b84e7f9b43acfdc47a720b298f75",
   introSha256: "aa92b6b3022c3cf3030cecd7c06888aebd929a63bcc7b3ce18119f3f7476b782",
   introJpegId: 371,
   introStillSha256: "90185364eb26cb2b295084db962c23aeab64090d268ae09c89add44489d27e7d",
@@ -189,6 +200,8 @@ function extractJpeg3(sourceSwf, jpegId, targetPath, generatedName, pngComment) 
 requireFile(projectorPath);
 requireFile(introPath);
 requireFile(gramophonePath);
+requireFile(projectorChooseCapturePath);
+requireFile(projectorPlayRoomLayerCapturePath);
 readerSources.forEach((reader) => requireFile(reader.path));
 mkdirSync(generatedRoot, { recursive: true });
 mkdirSync(promotedRoot, { recursive: true });
@@ -211,6 +224,62 @@ for (const [suffix, flag] of [["actions", "-a"], ["placements", "-p"], ["text", 
 const playRoomPath = join(promotedRoot, "main-playroom-background.jpg");
 const playRoom = extractJpeg(mainSwfPath, expected.playRoomJpegId, playRoomPath);
 assertEqual(sha256(playRoom), expected.playRoomSha256, "playRoom JPEG 518 SHA-256");
+
+const projectorChooseCapture = readFileSync(projectorChooseCapturePath);
+assertEqual(
+  sha256(projectorChooseCapture),
+  expected.projectorChooseCaptureSha256,
+  "projector choose Ruffle capture SHA-256",
+);
+const projectorChoosePath = join(promotedRoot, "projector-choose-source.png");
+writeFileSync(projectorChoosePath, projectorChooseCapture);
+
+const projectorPlayRoomLayerCapture = readFileSync(projectorPlayRoomLayerCapturePath);
+assertEqual(
+  sha256(projectorPlayRoomLayerCapture),
+  expected.projectorPlayRoomLayerCaptureSha256,
+  "projector playRoom layer Ruffle capture SHA-256",
+);
+const transparentPlayRoomLayerPath = join(generatedRoot, "projector-playroom-layer-transparent.png");
+execFileSync("magick", [
+  projectorPlayRoomLayerCapturePath,
+  "-alpha",
+  "on",
+  "-fuzz",
+  "7%",
+  "-transparent",
+  "#000066",
+  "-depth",
+  "8",
+  "-define",
+  "png:color-type=6",
+  "-define",
+  "png:exclude-chunks=date,time",
+  "-strip",
+  transparentPlayRoomLayerPath,
+]);
+const playRoomCompositePath = join(promotedRoot, "main-playroom-source-composite.png");
+execFileSync("magick", [
+  playRoomPath,
+  transparentPlayRoomLayerPath,
+  "-compose",
+  "over",
+  "-composite",
+  "-depth",
+  "8",
+  "-define",
+  "png:color-type=2",
+  "-define",
+  "png:exclude-chunks=date,time",
+  "-strip",
+  playRoomCompositePath,
+]);
+const playRoomComposite = readFileSync(playRoomCompositePath);
+assertEqual(
+  sha256(playRoomComposite),
+  expected.playRoomCompositeSha256,
+  "composed playRoom source capture SHA-256",
+);
 
 const intro = readFileSync(introPath);
 assertEqual(sha256(intro), expected.introSha256, "flute_intro.swf SHA-256");
@@ -289,6 +358,16 @@ const manifest = {
       sha256: sha256(playRoom),
     },
     {
+      sourceLocator: "embedded main SWF root frame 1268 label choose; official Ruffle v0.5.0 source-runtime capture",
+      path: "app/src/assets/source-scenes/projector-choose-source.png",
+      sha256: sha256(projectorChooseCapture),
+    },
+    {
+      sourceLocator: `embedded main SWF root frame 2378 label playRoom; official Ruffle v0.5.0 render of the extracted frame composited over DEFINEBITSJPEG id ${expected.playRoomJpegId}`,
+      path: "app/src/assets/source-scenes/main-playroom-source-composite.png",
+      sha256: sha256(playRoomComposite),
+    },
+    {
       sourceLocator: `flute_intro.swf DEFINEBITSJPEG id ${expected.introJpegId}`,
       path: "app/src/assets/source-scenes/flute-intro-garden.jpg",
       sha256: sha256(introStill),
@@ -318,5 +397,5 @@ const manifest = {
 writeFileSync(join(generatedRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 
 console.log(
-  `Shell/reference extraction verified: projector byte ${embedded.offset}, playRoom JPEG ${expected.playRoomJpegId}, intro JPEG ${expected.introJpegId}, gramophone JPEG3 ${expected.gramophoneJpeg3Id}, and ${readerBooks.length} reader books.`,
+  `Shell/reference extraction verified: projector byte ${embedded.offset}, source launcher, composed playRoom, intro JPEG ${expected.introJpegId}, gramophone JPEG3 ${expected.gramophoneJpeg3Id}, and ${readerBooks.length} reader books.`,
 );

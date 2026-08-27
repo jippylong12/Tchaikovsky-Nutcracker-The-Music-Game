@@ -14,12 +14,16 @@
       "title": "Overture / intro",
       "routeIds": ["overture"],
       "lifecycle": "implemented-review",
-      "classifications": ["original asset", "original source text", "documented fallback"],
+      "classifications": ["original asset", "SWF-derived recreation", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/Nutcracker2.exe",
-        "analysis/setup/app/flute_intro.swf"
+        "analysis/setup/app/flute_intro.swf",
+        "app/source-evidence/shell/projector-choose-source.png"
       ],
-      "promotedAssets": ["app/src/assets/source-scenes/flute-intro-garden.jpg"],
+      "promotedAssets": [
+        "app/src/assets/source-scenes/flute-intro-garden.jpg",
+        "app/src/assets/source-scenes/projector-choose-source.png"
+      ],
       "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-818"],
       "fallbackEvidence": [
@@ -27,8 +31,8 @@
           "source": "analysis/setup/app/flute_intro.swf",
           "sourceLocator": {
             "kind": "sprite-timeline",
-            "identifier": "root frame 1-1277; JPEG id 0371",
-            "frameOrState": "root frame 1 through frame 1277 at 15 fps"
+            "identifier": "root frame 1-1277; JPEG id 0371; projector root frame 1268 label choose",
+            "frameOrState": "intro root frame 1 through frame 1277 at 15 fps, then projector choose"
           },
           "toolLimitation": {
             "capability": "interactive-timeline-flattening",
@@ -37,27 +41,31 @@
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes the promoted JPEG 0371 layer with the exact source skip control.",
+            "details": "The runtime composes the promoted JPEG 0371 layer with the exact source skip control, then renders the hash-locked source-runtime capture of projector frame 1268 with source-action hit targets.",
             "retainedGap": "Full interactive intro timeline playback remains outside the reconstructed runtime."
           },
           "evidenceDoc": "docs/shell-reference-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "The source intro representation, skip behavior, provenance, and exact renderer gap are implemented; Marcus visual approval remains open."
+      "auditFinding": "The source intro now transitions to the recovered frame-1268 launcher, all five visible launcher controls are functional, and Marcus visual approval remains open."
     },
     {
       "id": "main-menu",
       "title": "Main menu",
       "routeIds": ["main-menu"],
       "lifecycle": "implemented-review",
-      "classifications": ["original asset", "original source text", "documented fallback"],
+      "classifications": ["original asset", "SWF-derived recreation", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/Nutcracker2.exe",
         "analysis/setup/app/flute_intro.swf",
-        "analysis/setup/app/fscommand"
+        "analysis/setup/app/fscommand",
+        "app/source-evidence/shell/projector-playroom-layer-source.png"
       ],
-      "promotedAssets": ["app/src/assets/source-scenes/main-playroom-background.jpg"],
+      "promotedAssets": [
+        "app/src/assets/source-scenes/main-playroom-background.jpg",
+        "app/src/assets/source-scenes/main-playroom-source-composite.png"
+      ],
       "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-818"],
       "fallbackEvidence": [
@@ -71,18 +79,18 @@
           "toolLimitation": {
             "capability": "interactive-timeline-flattening",
             "tool": "SWFTools",
-            "observedFailure": "SWFTools cannot flatten the frame 2378 timeline because the installed renderer has no JPEG library."
+            "observedFailure": "SWFTools cannot flatten the complete frame-2378 timeline: it extracts the foreground but omits JPEG id 0518 because the installed renderer has no JPEG library."
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes the promoted playRoom background layer with exact source-coordinate button hotspots.",
-            "retainedGap": "Full interactive projector timeline playback and two unregistered activity routes remain unavailable."
+            "details": "The runtime chroma-keys the hash-locked official-Ruffle foreground layer over exact promoted JPEG id 0518 and retains exact source-coordinate button hotspots.",
+            "retainedGap": "Full moving projector timeline playback remains unavailable."
           },
           "evidenceDoc": "docs/shell-reference-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "The exact playRoom background, activity placements/actions, and nine-key Nutcracker gate are implemented for review."
+      "auditFinding": "The source-backed playRoom composite restores recovered characters and props while preserving every activity action and the nine-key Nutcracker gate; Marcus visual approval remains open."
     },
     {
       "id": "story",

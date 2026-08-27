@@ -13,7 +13,21 @@ function sha256(fileName) {
 }
 
 describe("shell and reference source reconstruction", () => {
+  it("allows the recovered projector EXIT action to close the desktop window", () => {
+    const capability = JSON.parse(
+      readFileSync(path.resolve(process.cwd(), "src-tauri/capabilities/default.json"), "utf8"),
+    );
+
+    expect(capability.permissions).toContain("core:window:allow-close");
+  });
+
   it("locks the promoted projector, intro, and Listening Room children", () => {
+    expect(sha256("projector-choose-source.png")).toBe(
+      "d3cae55ce2e93c21bc461f7e6ccf8a5f5f83d6d001f6b9f32a63b906b9b093e5",
+    );
+    expect(sha256("main-playroom-source-composite.png")).toBe(
+      "f1f42c978c8735db266e6aa89bf67d34b2e4b84e7f9b43acfdc47a720b298f75",
+    );
     expect(sha256("main-playroom-background.jpg")).toBe(
       "c0b4eb8a1b3a1fbf196bbc05a301d2b615de69e119d15bd09e694b7de796eddc",
     );
