@@ -20,7 +20,7 @@ Locked evidence:
 - `musictionary.swf` SHA-256 `c8ce65d2ee006afb6254e59e49b2867ad22cd4a5a6d5da004be53c28c632f7cd`
 - `gramophone.swf` SHA-256 `76310a834c1ba3773bd429b594a20a1083b61c657d78de4fc9c1ac20cc58bbdf`
 - official Ruffle `v0.5.0` self-hosted archive SHA-256 `4e0d44ba990f9fe3434d7848f740348299bd6c473db59fb5f8606b750fcc5760`
-- root-frame-1268 source-runtime capture SHA-256 `d3cae55ce2e93c21bc461f7e6ccf8a5f5f83d6d001f6b9f32a63b906b9b093e5`
+- root-frame-1268 source-runtime capture SHA-256 `d0bf34493f250904056468eae4525f039da4e55797282ae2d97d7246c54ecaf0`
 - root-frame-2378 foreground source-runtime capture SHA-256 `93a4f305c588c65665ec506545554f7c751740d18c1cd715743ea78a02412b0e`
 - deterministic frame-2378 room composite SHA-256 `f1f42c978c8735db266e6aa89bf67d34b2e4b84e7f9b43acfdc47a720b298f75`
 
@@ -39,6 +39,10 @@ The runtime records this evidence on `.source-intro-scene` through `data-source-
 
 The missing opening menu is projector root frame `1268`, label `choose`; the earlier static-intro implementation incorrectly skipped directly to `playRoom`. Official Ruffle `v0.5.0` self-hosted playback rendered the complete frame, which is committed as `app/source-evidence/shell/projector-choose-source.png`, hash-locked by `assets:shell-reference`, and promoted as `projector-choose-source.png`.
 
+The first committed capture was a DPR-2 clipping error: a requested 640 x 480 browser clip contained only the top-left 320 x 240 source area padded to a 640 x 480 file. The runtime then stretched that incomplete frame while its hit targets were incorrectly halved. The corrected evidence captures the lossless 1280 x 960 DPR-2 page surface, downsamples it to the native 640 x 480 SWF stage, strips volatile PNG metadata, and restores the five hit regions to full-stage coordinates. This is why the corrected image reaches the bottom-row preview buttons and why the target rectangles below are twice the previous CSS values.
+
+The normal source frame is exact. Isolated extraction probes for button ids `0028`, `0038`, `0043`, `0047`, and `0051` succeed, but direct `swfrender` reports each button id unknown (and the JPEG-backed preview buttons also report missing JPEG support). Exact rollover/down timeline playback therefore remains a named button-renderer gap rather than being replaced by invented hover art.
+
 The runtime overlays transparent accessible hit targets only where source buttons already exist:
 
 | Control | Source placement | Source action | Remake equivalent |
@@ -48,6 +52,8 @@ The runtime overlays transparent accessible hit targets only where source button
 | Alice preview | button `0047`, instance `aliceBTN`, depth `0020`, x `291.80`, y `355.55`, ratio `1267` | root `gotoAndPlay("aliceIntro")` | open the reconstructed Alice activity |
 | Website | button `0051`, instance `webBTN`, depth `0029`, x `527.70`, y `355.65`, ratio `1267` | `warningMSG_mc.gotoAndStop("show")`, then `http://www.kidsmusicstage.com` | open the exact legacy URL through the desktop/browser external-link boundary |
 | Exit | button `0038`, depth `0009`, x `563.50`, y `25.45`, ratio `1267` | root frame `2388`, then `FSCommand:quit` | close the Tauri window; browser preview uses `window.close()` |
+
+The modern hit rectangles over that native capture are Play `x 216-424, y 44-246`, Musical Friends `x 54-188, y 326-460`, Alice `x 196-332, y 326-460`, website `x 432-576, y 320-464`, and EXIT `x 572-640, y 8-58`. Their DOM `data-source-hit-rect` evidence and actual CSS geometry are both locked by shell tests so metadata cannot stay correct while the clickable regions drift.
 
 The source text objects remain baked into the recovered frame: text `0030` is `Play / Featured / Game`, text `0031` is `Preview Other Games`, text `0048` is `Go to / KidsMusicStage.com`, and button texts `0033`-`0037` provide the EXIT states. No new visible launcher labels or controls are drawn over the source art.
 

@@ -7,9 +7,23 @@ import { dictionaryInstruments, readingActivities } from "../data/referenceConte
 import { routes } from "../routes";
 
 const sourceSceneRoot = path.resolve(process.cwd(), "src/assets/source-scenes");
+const sourceStyles = readFileSync(path.resolve(process.cwd(), "src/styles.css"), "utf8");
 
 function sha256(fileName) {
   return createHash("sha256").update(readFileSync(path.join(sourceSceneRoot, fileName))).digest("hex");
+}
+
+function cssDeclarations(selector) {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const rule = sourceStyles.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`));
+  if (!rule) throw new Error(`Missing CSS rule for ${selector}`);
+
+  return Object.fromEntries(
+    [...rule[1].matchAll(/([\w-]+)\s*:\s*([^;]+);/g)].map((declaration) => [
+      declaration[1],
+      declaration[2].trim(),
+    ]),
+  );
 }
 
 describe("shell and reference source reconstruction", () => {
@@ -23,7 +37,7 @@ describe("shell and reference source reconstruction", () => {
 
   it("locks the promoted projector, intro, and Listening Room children", () => {
     expect(sha256("projector-choose-source.png")).toBe(
-      "d3cae55ce2e93c21bc461f7e6ccf8a5f5f83d6d001f6b9f32a63b906b9b093e5",
+      "d0bf34493f250904056468eae4525f039da4e55797282ae2d97d7246c54ecaf0",
     );
     expect(sha256("main-playroom-source-composite.png")).toBe(
       "f1f42c978c8735db266e6aa89bf67d34b2e4b84e7f9b43acfdc47a720b298f75",
@@ -55,6 +69,39 @@ describe("shell and reference source reconstruction", () => {
     expect(sha256("ballet-reader-book.png")).toBe(
       "4ad48b9beb2c2cb7b21070afe575df1f241b7ff89de126b6f4079bd8837044e8",
     );
+  });
+
+  it("locks the launcher controls to the recovered full-stage hit rectangles", () => {
+    expect(cssDeclarations(".source-projector-play")).toMatchObject({
+      left: "216px",
+      top: "44px",
+      width: "208px",
+      height: "202px",
+    });
+    expect(cssDeclarations(".source-projector-preview-mf")).toMatchObject({
+      left: "54px",
+      top: "326px",
+      width: "134px",
+      height: "134px",
+    });
+    expect(cssDeclarations(".source-projector-preview-alice")).toMatchObject({
+      left: "196px",
+      top: "326px",
+      width: "136px",
+      height: "134px",
+    });
+    expect(cssDeclarations(".source-projector-web")).toMatchObject({
+      left: "432px",
+      top: "320px",
+      width: "144px",
+      height: "144px",
+    });
+    expect(cssDeclarations(".source-projector-exit")).toMatchObject({
+      left: "572px",
+      top: "8px",
+      width: "68px",
+      height: "50px",
+    });
   });
 
   it("keeps exact reader spread counts and numbered source locators", () => {

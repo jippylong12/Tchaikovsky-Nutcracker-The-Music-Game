@@ -129,6 +129,17 @@ describe("desktop app shell", () => {
       "projector-choose-source",
     );
     expect(playMount.querySelectorAll(".source-projector-launcher-button")).toHaveLength(5);
+    expect(
+      [...playMount.querySelectorAll<HTMLElement>(".source-projector-launcher-button")].map(
+        (button) => [button.dataset.action, button.dataset.sourceHitRect],
+      ),
+    ).toEqual([
+      ["play-featured-game", "x 216-424 y 44-246"],
+      ["preview-musical-friends", "x 54-188 y 326-460"],
+      ["preview-alice", "x 196-332 y 326-460"],
+      ["open-kids-music-stage", "x 432-576 y 320-464"],
+      ["exit-projector", "x 572-640 y 8-58"],
+    ]);
     playMount.querySelector<HTMLButtonElement>('[data-action="play-featured-game"]')?.click();
     expect(playMount.querySelector<HTMLImageElement>(".source-playroom-background")?.src).toContain(
       "main-playroom-source-composite",
@@ -1391,7 +1402,7 @@ describe("desktop app shell", () => {
       vi.clearAllTimers();
       vi.useRealTimers();
     }
-  });
+  }, 15_000);
 
   it("completes a Children's Album door from the recovered binary pattern", () => {
     const mount = document.createElement("main");

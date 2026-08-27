@@ -144,7 +144,7 @@ const expected = {
   projectorDeclaredLength: 6085533,
   playRoomJpegId: 518,
   playRoomSha256: "c0b4eb8a1b3a1fbf196bbc05a301d2b615de69e119d15bd09e694b7de796eddc",
-  projectorChooseCaptureSha256: "d3cae55ce2e93c21bc461f7e6ccf8a5f5f83d6d001f6b9f32a63b906b9b093e5",
+  projectorChooseCaptureSha256: "d0bf34493f250904056468eae4525f039da4e55797282ae2d97d7246c54ecaf0",
   projectorPlayRoomLayerCaptureSha256: "93a4f305c588c65665ec506545554f7c751740d18c1cd715743ea78a02412b0e",
   playRoomCompositeSha256: "f1f42c978c8735db266e6aa89bf67d34b2e4b84e7f9b43acfdc47a720b298f75",
   introSha256: "aa92b6b3022c3cf3030cecd7c06888aebd929a63bcc7b3ce18119f3f7476b782",

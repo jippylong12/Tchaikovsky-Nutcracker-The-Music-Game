@@ -2306,7 +2306,8 @@ function renderSourceOverture(phase: ShellState["overturePhase"]): string {
         tabindex="-1"
         data-source-projector="analysis/setup/app/Nutcracker2.exe embedded FWS at byte 864256"
         data-source-frame="root frame 1268 label choose"
-        data-source-capture="official Ruffle v0.5.0 source-runtime capture"
+        data-source-capture="official Ruffle v0.5.0 lossless 1280 x 960 DPR-2 source-runtime capture downsampled to the native 640 x 480 stage"
+        data-source-fallback="static source capture preserves the normal launcher frame; isolated button ids 0028, 0038, 0043, 0047, and 0051 extract but swfrender reports the button ids unknown, so exact rollover/down timeline playback remains pending"
         data-source-action-map="nut to nutIni; MFBtn to MFintro; aliceBTN to aliceIntro; webBTN to warningMSG_mc show; button 0038 to root frame 2388"
       >
         <img class="source-projector-choose" src="${projectorChooseSourceUrl}" alt="" aria-hidden="true" />
@@ -2317,6 +2318,7 @@ function renderSourceOverture(phase: ShellState["overturePhase"]): string {
           data-action="play-featured-game"
           aria-label="Play Featured Game"
           data-source-placement="button id 0028 instance nut at depth 0002 x 364.15 y 90.95 ratio 1267"
+          data-source-hit-rect="x 216-424 y 44-246"
           data-source-action="root gotoAndPlay nutIni"
         ><span class="sr-only">Play Featured Game</span></button>
         <button
@@ -2325,6 +2327,7 @@ function renderSourceOverture(phase: ShellState["overturePhase"]): string {
           data-action="preview-musical-friends"
           aria-label="Preview Musical Friends"
           data-source-placement="button id 0043 instance MFBtn at depth 0012 x 146.25 y 355.55 ratio 1267"
+          data-source-hit-rect="x 54-188 y 326-460"
           data-source-action="root gotoAndPlay MFintro"
         ><span class="sr-only">Preview Musical Friends</span></button>
         <button
@@ -2333,6 +2336,7 @@ function renderSourceOverture(phase: ShellState["overturePhase"]): string {
           data-action="preview-alice"
           aria-label="Preview Alice's Adventures in Musicland"
           data-source-placement="button id 0047 instance aliceBTN at depth 0020 x 291.80 y 355.55 ratio 1267"
+          data-source-hit-rect="x 196-332 y 326-460"
           data-source-action="root gotoAndPlay aliceIntro"
         ><span class="sr-only">Preview Alice's Adventures in Musicland</span></button>
         <button
@@ -2341,6 +2345,7 @@ function renderSourceOverture(phase: ShellState["overturePhase"]): string {
           data-action="open-kids-music-stage"
           aria-label="Go to KidsMusicStage.com"
           data-source-placement="button id 0051 instance webBTN at depth 0029 x 527.70 y 355.65 ratio 1267"
+          data-source-hit-rect="x 432-576 y 320-464"
           data-source-action="warningMSG_mc gotoAndStop show; YES opens http://www.kidsmusicstage.com"
         ><span class="sr-only">Go to KidsMusicStage.com</span></button>
         <button
@@ -2349,6 +2354,7 @@ function renderSourceOverture(phase: ShellState["overturePhase"]): string {
           data-action="exit-projector"
           aria-label="Exit"
           data-source-placement="button id 0038 at depth 0009 x 563.50 y 25.45 ratio 1267"
+          data-source-hit-rect="x 572-640 y 8-58"
           data-source-action="GotoFrame 2388 then FSCommand quit"
         ><span class="sr-only">Exit</span></button>
       </div>
