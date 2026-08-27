@@ -30,6 +30,58 @@ function cssDeclarations(selector: string): Record<string, string> {
 }
 
 describe("Nutcracker song game data", () => {
+  it("locks every actor-free source-runtime song frame", () => {
+    const expectedHashes = [
+      "f3c9a7fd690b55c7933f7cb3b8ea0a4dbf959df77740106a60ea40af31b497c5",
+      "898d8dc9516d1886bb0d60bc351963bee74b8a814f6b61da7c394a1c063a8a8b",
+      "f63e4d256fc205adf0e94bbd2fb6269a4306d15b62d69cee70bb8c4f310c105a",
+      "57a15ace6e384bb85fe8c0b12150ef3cf9ce0e25e43c75bc5091b02604066120",
+      "19350ffb277cb9c969cf9dcebbce40d9aae614d153d00b27378b08d753be533b",
+      "8a5e4bb6f79993b9dd322d5dc537ebf0784b907e7cdafd9ba23bd5fe462f528f",
+      "5c190b0c90c03517e82613df1aeda24ed600bd98ba926de809aadddd89bd50d4",
+      "a34af8caaf1fd8cbe0066b01cd615a7d9175863ce90f8081b487c6b0011c4145",
+    ];
+
+    expectedHashes.forEach((expectedHash, index) => {
+      const songFrame = readFileSync(join(sourceAssetRoot, `song${index + 1}-source-interactive.png`));
+
+      expect(createHash("sha256").update(songFrame).digest("hex")).toBe(expectedHash);
+    });
+  });
+
+  it("keeps the five song controls on their recovered source hit rectangles", () => {
+    expect(cssDeclarations(".source-song-actions .source-song-change-button")).toMatchObject({
+      left: "57.82px",
+      top: "136.05px",
+      width: "56.73px",
+      height: "43.23px",
+    });
+    expect(cssDeclarations(".source-song-actions .source-song-listen-button")).toMatchObject({
+      left: "52.18px",
+      top: "235.59px",
+      width: "64.39px",
+      height: "43.13px",
+    });
+    expect(cssDeclarations(".source-song-actions .source-song-help-button")).toMatchObject({
+      left: "532.13px",
+      top: "141.95px",
+      width: "51.98px",
+      height: "38.48px",
+    });
+    expect(cssDeclarations(".source-song-actions .source-song-hint-button")).toMatchObject({
+      left: "532.76px",
+      top: "240.75px",
+      width: "51.96px",
+      height: "38.21px",
+    });
+    expect(cssDeclarations(".source-song-actions .source-song-exit-button")).toMatchObject({
+      left: "549.72px",
+      top: "449.05px",
+      width: "72.36px",
+      height: "46.89px",
+    });
+  });
+
   it("locks the complete recovered normal chooser frame", () => {
     const chooserFrame = readFileSync(join(sourceAssetRoot, "nutchooser-source-normal.png"));
 

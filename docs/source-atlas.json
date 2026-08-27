@@ -407,7 +407,14 @@
         "analysis/setup/app/games/data/nutdoors.txt"
       ],
       "promotedAssets": [
-        "app/src/assets/nutcracker-source/song-game-render.png",
+        "app/src/assets/nutcracker-source/song1-source-interactive.png",
+        "app/src/assets/nutcracker-source/song2-source-interactive.png",
+        "app/src/assets/nutcracker-source/song3-source-interactive.png",
+        "app/src/assets/nutcracker-source/song4-source-interactive.png",
+        "app/src/assets/nutcracker-source/song5-source-interactive.png",
+        "app/src/assets/nutcracker-source/song6-source-interactive.png",
+        "app/src/assets/nutcracker-source/song7-source-interactive.png",
+        "app/src/assets/nutcracker-source/song8-source-interactive.png",
         "app/src/assets/nutcracker-source/song1-track1-actor.png",
         "app/src/assets/nutcracker-source/song-keyframe-talker.png"
       ],
@@ -432,14 +439,14 @@
           },
           "runtimeFallback": {
             "mechanism": "promoted-source-stills-with-typescript-state",
-            "details": "The runtime uses promoted source stills with TypeScript state and retains exact renderer provenance.",
+            "details": "The runtime uses hash-locked promoted official-Ruffle actor-free normal-state captures plus per-song actor source stills with TypeScript state and retains exact renderer provenance.",
             "retainedGap": "Full actor animation and arbitrary later-frame motion remain unavailable."
           },
           "evidenceDoc": "docs/nutcracker-song-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "All eight routes carry source classifications and per-track evidence; exact actor/timeline playback and Marcus approval remain open."
+      "auditFinding": "All eight routes now use their own hash-locked complete actor-free source-runtime frame, the five controls follow nested button ActionScript and source-coordinate hit bounds, and the default invented curtain/separate stretched scenery layers are removed; exact actor/timeline playback and Marcus approval remain open."
     },
     {
       "id": "childrens-album",

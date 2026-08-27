@@ -8,26 +8,21 @@ import chooserWarningNoLabelUrl from "./assets/nutcracker-source/chooser-warning
 import chooserWarningYesBodyUrl from "./assets/nutcracker-source/chooser-warning-yes-body.png";
 import chooserWarningYesLabelUrl from "./assets/nutcracker-source/chooser-warning-yes-label.png";
 import chooserWarningframeTalkerUrl from "./assets/nutcracker-source/chooser-warningframe-talker.png";
-import nutcrackerSongFrameUrl from "./assets/nutcracker-source/song-game-render.png";
-import song2SceneryUrl from "./assets/nutcracker-source/song2-scenery.png";
-import song3SceneryPrimaryUrl from "./assets/nutcracker-source/song3-scenery-primary.png";
-import song4SceneryUrl from "./assets/nutcracker-source/song4-scenery.png";
-import song5SceneryUrl from "./assets/nutcracker-source/song5-scenery.png";
-import song6SceneryUrl from "./assets/nutcracker-source/song6-scenery.png";
-import song7SceneryUrl from "./assets/nutcracker-source/song7-scenery.png";
-import song8SceneryUrl from "./assets/nutcracker-source/song8-scenery.png";
-import songChangeSongLabelUrl from "./assets/nutcracker-source/song-change-song-label.png";
+import song1SourceInteractiveUrl from "./assets/nutcracker-source/song1-source-interactive.png";
+import song2SourceInteractiveUrl from "./assets/nutcracker-source/song2-source-interactive.png";
+import song3SourceInteractiveUrl from "./assets/nutcracker-source/song3-source-interactive.png";
+import song4SourceInteractiveUrl from "./assets/nutcracker-source/song4-source-interactive.png";
+import song5SourceInteractiveUrl from "./assets/nutcracker-source/song5-source-interactive.png";
+import song6SourceInteractiveUrl from "./assets/nutcracker-source/song6-source-interactive.png";
+import song7SourceInteractiveUrl from "./assets/nutcracker-source/song7-source-interactive.png";
+import song8SourceInteractiveUrl from "./assets/nutcracker-source/song8-source-interactive.png";
 import songControlButtonBodyUrl from "./assets/nutcracker-source/song-control-button-body.png";
-import songControlHelpBodyUrl from "./assets/nutcracker-source/song-control-help-body.png";
 import songCurtainCurveCxformUrl from "./assets/nutcracker-source/song-curtain-curve-cxform.png";
 import songCurtainFillUrl from "./assets/nutcracker-source/song-curtain-fill.png";
 import songCurtainStarsUrl from "./assets/nutcracker-source/song-curtain-stars.png";
-import songExitLabelUrl from "./assets/nutcracker-source/song-exit-label.png";
 import songHelpArtUrl from "./assets/nutcracker-source/song-help-art.png";
 import songHelpframeTalkerUrl from "./assets/nutcracker-source/song-helpframe-talker.png";
-import songHintLabelUrl from "./assets/nutcracker-source/song-hint-label.png";
 import songKeyFrameTalkerUrl from "./assets/nutcracker-source/song-keyframe-talker.png";
-import songListenLabelUrl from "./assets/nutcracker-source/song-listen-label.png";
 import nutcrackerClubCertificateUrl from "./assets/nutcracker-source/nutcracker-club-certificate.png";
 import songNoLabelUrl from "./assets/nutcracker-source/song-no-label.png";
 import songPlayAgainButtonBodyUrl from "./assets/nutcracker-source/song-play-again-button-body.png";
@@ -114,6 +109,17 @@ import {
 } from "./data/m08Games";
 import { getRouteById, isRouteId, routes, type RouteDefinition, type RouteId } from "./routes";
 import { createProgressStore, type DoorKey, type GameKey, type ProgressStoreController } from "./state/progressStore";
+
+const nutcrackerSongSourceFrameUrls: Readonly<Record<NutcrackerSongId, string>> = {
+  1: song1SourceInteractiveUrl,
+  2: song2SourceInteractiveUrl,
+  3: song3SourceInteractiveUrl,
+  4: song4SourceInteractiveUrl,
+  5: song5SourceInteractiveUrl,
+  6: song6SourceInteractiveUrl,
+  7: song7SourceInteractiveUrl,
+  8: song8SourceInteractiveUrl,
+};
 
 type ShellState = {
   routeId: RouteId;
@@ -659,6 +665,14 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
 
     mount.querySelectorAll<HTMLButtonElement>("[data-action]").forEach((button) => {
       button.addEventListener("click", () => {
+        const activeSong = getNutcrackerSongGameByRoute(shellState.routeId);
+        if (
+          activeSong &&
+          isNutcrackerSongInteractionBlocked(activeSong.id) &&
+          button.dataset.modalDismiss !== "true"
+        ) {
+          return;
+        }
         handleAction(button.dataset.action);
       });
     });
@@ -813,6 +827,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         const songId = Number(button.dataset.songId);
         const trackNumber = Number(button.dataset.songTrack);
         if (isNutcrackerSongId(songId) && isNutcrackerTrackNumber(trackNumber)) {
+          if (isNutcrackerSongInteractionBlocked(songId)) {
+            return;
+          }
           const song = nutcrackerSongGames.find((item) => item.id === songId);
           const track = song?.tracks.find((item) => item.number === trackNumber);
           if (!song || !track) {
@@ -831,6 +848,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         const songId = Number(button.dataset.songId);
         const trackNumber = Number(button.dataset.songTrack);
         if (isNutcrackerSongId(songId) && isNutcrackerTrackNumber(trackNumber)) {
+          if (isNutcrackerSongInteractionBlocked(songId)) {
+            return;
+          }
           const song = nutcrackerSongGames.find((item) => item.id === songId);
           if (!song) {
             return;
@@ -887,6 +907,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         const songId = Number(songIdRaw);
         const trackNumber = Number(trackNumberRaw);
         if (isNutcrackerSongId(songId) && isNutcrackerTrackNumber(trackNumber)) {
+          if (isNutcrackerSongInteractionBlocked(songId)) {
+            return;
+          }
           const song = nutcrackerSongGames.find((item) => item.id === songId);
           if (!song || song.routeId !== shellState.routeId) {
             return;
@@ -902,7 +925,11 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       button.addEventListener("click", () => {
         const songId = Number(button.dataset.songId);
         if (isNutcrackerSongId(songId)) {
-          handleSongAction(songId, button.dataset.songAction);
+          const songAction = button.dataset.songAction;
+          if (isNutcrackerSongInteractionBlocked(songId) && !isNutcrackerSongModalAction(songAction)) {
+            return;
+          }
+          handleSongAction(songId, songAction);
         }
       });
     });
@@ -1528,6 +1555,20 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
   };
 
+  const isNutcrackerSongInteractionBlocked = (songId: NutcrackerSongId): boolean =>
+    getNutcrackerSongGameByRoute(shellState.routeId)?.id === songId &&
+    (shellState.helpOpen ||
+      shellState.nutcrackerFeedback[songId] === "hint" ||
+      shellState.pendingNutcrackerSongChange === songId ||
+      shellState.pendingNutcrackerSongExit === songId);
+
+  const isNutcrackerSongModalAction = (action: string | undefined): boolean =>
+    action === "dismiss-hint" ||
+    action === "accept-change-song" ||
+    action === "cancel-change-song" ||
+    action === "accept-exit-song" ||
+    action === "cancel-exit-song";
+
   const startMelodyDemonstration = () => {
     const sequences = getMelodySequences(shellState.melodyDifficulty);
     const sequence = sequences[shellState.melodySequenceIndex % sequences.length];
@@ -1927,10 +1968,25 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
 
     if (action === "help") {
+      const songRoute = getNutcrackerSongGameByRoute(shellState.routeId);
+      const closingSongHelp = Boolean(songRoute && shellState.helpOpen);
       shellState.nutcrackerChooserWarningOpen = false;
+      shellState.pendingNutcrackerSongChange = null;
       shellState.pendingNutcrackerSongExit = null;
+      if (songRoute) {
+        audio.stopSceneAudio();
+        shellState.activeAudioId = null;
+        shellState.activeSuiteTrackId = null;
+      }
       shellState.helpOpen = !shellState.helpOpen;
-      render();
+      if (songRoute) {
+        render(
+          closingSongHelp ? '[data-source-control="helpButton"]' : '[data-modal-dismiss="true"]',
+          ".nutcracker-song-scene",
+        );
+      } else {
+        render();
+      }
       return;
     }
 
@@ -2102,14 +2158,14 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.activeSuiteTrackId = null;
       shellState.pendingNutcrackerSongChange = songId;
       shellState.pendingNutcrackerSongExit = null;
-      render();
+      render('[data-song-action="cancel-change-song"]', ".source-change-alert");
       return;
     }
 
     if (action === "cancel-change-song") {
       shellState.pendingNutcrackerSongChange = null;
       shellState.pendingNutcrackerSongExit = null;
-      render();
+      render('[data-source-control="songChooser"]', ".nutcracker-song-scene");
       return;
     }
 
@@ -2126,13 +2182,13 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.activeSuiteTrackId = null;
       shellState.pendingNutcrackerSongChange = null;
       shellState.pendingNutcrackerSongExit = songId;
-      render();
+      render('[data-song-action="cancel-exit-song"]', ".source-song-warning-modal");
       return;
     }
 
     if (action === "cancel-exit-song") {
       shellState.pendingNutcrackerSongExit = null;
-      render();
+      render('[data-source-control="quiter"]', ".nutcracker-song-scene");
       return;
     }
 
@@ -2143,10 +2199,21 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
 
     if (action === "hint-song") {
+      audio.stopSceneAudio();
+      shellState.activeAudioId = null;
+      shellState.activeSuiteTrackId = null;
       shellState.pendingNutcrackerSongChange = null;
       shellState.pendingNutcrackerSongExit = null;
       showNutcrackerHint(song, shellState, progress);
-      render();
+      render('[data-song-action="dismiss-hint"]', ".source-hint-alert");
+      return;
+    }
+
+    if (action === "dismiss-hint") {
+      if (shellState.nutcrackerFeedback[songId] === "hint") {
+        shellState.nutcrackerFeedback[songId] = null;
+      }
+      render('[data-source-control="hintButton"]', ".nutcracker-song-scene");
       return;
     }
 
@@ -2276,6 +2343,7 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
       shellState.activeAudioId !== null,
       shellState.pendingNutcrackerSongChange === song.id,
       shellState.pendingNutcrackerSongExit === song.id,
+      shellState.helpOpen,
     );
   }
 
@@ -3448,6 +3516,7 @@ function renderNutcrackerSongGame(
   isPlaying: boolean,
   changePromptOpen: boolean,
   exitWarningOpen: boolean,
+  helpOpen: boolean,
 ): string {
   const selectedTrackCount = selectedTrackNumbers.length;
   const correctRequiredCount = getCorrectNutcrackerTrackNumbers(song).length;
@@ -3456,6 +3525,8 @@ function renderNutcrackerSongGame(
   const hintOnly = feedback === "hint";
   const selectionCorrect = isCorrectNutcrackerSelection(song, selectedTrackNumbers);
   const showFinalKeyFrame = feedback === "ok" && allNutcrackerDoorsComplete;
+  const sourceControlsBlocked = helpOpen || hintOnly || changePromptOpen || exitWarningOpen;
+  const disabledSourceControl = sourceControlsBlocked ? " disabled" : "";
   const sourceMessage = feedback && !hintOnly
     ? selectionCorrect
       ? null
@@ -3468,43 +3539,43 @@ function renderNutcrackerSongGame(
     <div class="scene-body nutcracker-song-scene source-flash-scene">
       <img
         class="song-source-frame"
-        src="${nutcrackerSongFrameUrl}"
+        src="${nutcrackerSongSourceFrameUrls[song.id]}"
         alt=""
         aria-hidden="true"
-        data-source-classification="swf-derived recreation"
-        data-source-image="song1/song.swf first frame rendered by swfrender"
+        data-source-classification="original source-runtime capture"
+        data-source-image="song${song.id}/song.swf normal interactive state captured through official Ruffle v0.5.0 at DPR 2 with external character animation SWFs withheld, downsampled to 640 x 480, and metadata-stripped"
       />
-      ${renderNutcrackerSongScenery(song.id)}
-      <section class="song-stage-overlay" aria-label="${escapeHtml(song.title)} track choices" data-song-drop-stage="${song.id}">
+      <section class="song-stage-overlay" aria-label="${escapeHtml(song.title)} track choices">
         <h1 class="sr-only">${escapeHtml(song.title)}</h1>
         <p class="song-source-message sr-only" aria-live="polite">${escapeHtml(sourceMessage ?? "")}</p>
+        <div class="song-interaction-surface${sourceControlsBlocked ? " song-interaction-surface-blocked" : ""}" data-song-drop-stage="${song.id}"${sourceControlsBlocked ? ' inert aria-hidden="true"' : ""}>
         ${renderSelectedNutcrackerActors(song, selectedTrackNumbers, feedback)}
-        ${song.tracks.map((track) => renderNutcrackerTrackButton(song.id, track, selectedTrackNumbers, feedback)).join("")}
+        ${song.tracks.map((track) => renderNutcrackerTrackButton(song.id, track, selectedTrackNumbers, feedback, sourceControlsBlocked)).join("")}
         ${renderNutcrackerFlyingHelp()}
         ${showFinalKeyFrame ? renderNutcrackerSongKeyFrame() : ""}
-        <div class="song-actions source-song-actions" aria-label="Source song controls">
-          <button class="media-button source-label-button source-listen-button" type="button" data-source-control="songChooser" data-source-body="song1/song.swf songChooser sprite id 0133 buttonON places shape id 0126 depth 0004" data-source-help="${isPlaying ? "Stop the Music" : "Listen to the Original Music"}" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="play-theme" data-song-id="${song.id}">
-            <img class="source-button-body" src="${songControlButtonBodyUrl}" alt="" aria-hidden="true" />
-            <img class="source-button-label" src="${isPlaying ? songStopLabelUrl : songListenLabelUrl}" alt="" aria-hidden="true" />
-            <span class="sr-only">${isPlaying ? "STOP" : "LISTEN"}</span>
+        <div class="song-actions source-song-actions${sourceControlsBlocked ? " source-song-actions-blocked" : ""}" aria-label="Source song controls">
+          <button class="scene-button source-label-button source-song-help-button" type="button"${disabledSourceControl} data-action="help" data-source-control="helpButton" data-source-placement="song1/song.swf helpButton sprite id 0120 at root depth 0122 matrix scale 1.350 x 556.50 y 165.30" data-source-state="buttonON places button id 0118 depth 0001 and shape id 0119 depth 0004; normal art is baked into the complete source-runtime capture" data-source-hit-rect="532.13,141.95,51.98,38.48" data-source-help="Help" data-source-help-frame="4" data-source-help-bounds="button id 0118 pushes Help and calls _root.helpme; flyinghelp frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-source-action="sets _root.theNextFrame to helpFrame and drives _root.usmus to helpFrame/showUp">
+            <span class="sr-only">HELP</span>
           </button>
-          <button class="scene-button source-label-button source-hint-button" type="button" data-source-control="helpButton" data-source-body="song1/song.swf helpButton sprite id 0120 buttonON places shape id 0119 depth 0004" data-source-help="Hint" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="hint-song" data-song-id="${song.id}">
-            <img class="source-button-body" src="${songControlHelpBodyUrl}" alt="" aria-hidden="true" />
-            <img class="source-button-label" src="${songHintLabelUrl}" alt="" aria-hidden="true" />
+          <button class="scene-button source-label-button source-song-hint-button" type="button"${disabledSourceControl} data-source-control="hintButton" data-source-placement="song1/song.swf hintButton sprite id 0127 at root depth 0127 matrix scale 1.350 x 556.35 y 267.95" data-source-state="buttonON places button id 0125 depth 0001 and shape id 0126 depth 0005; normal art is baked into the complete source-runtime capture" data-source-hit-rect="532.76,240.75,51.96,38.21" data-source-help="Hint" data-source-help-frame="4" data-source-help-bounds="button id 0125 pushes Hint and calls _root.helpme; flyinghelp frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-source-action="calls showHint and drives _root.courtain to giveHint" data-song-action="hint-song" data-song-id="${song.id}">
             <span class="sr-only">HINT</span>
           </button>
-          <button class="scene-button source-label-button source-change-song-button" type="button" data-source-control="hintButton" data-source-body="song1/song.swf hintButton sprite id 0127 buttonON places shape id 0126 depth 0005 with scale 0.911" data-source-help="Select a&#10;different&#10;song" data-source-help-frame="4" data-source-help-bounds="frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-song-action="confirm-change-song" data-song-id="${song.id}">
-            <img class="source-button-body" src="${songControlButtonBodyUrl}" alt="" aria-hidden="true" />
-            <img class="source-button-label" src="${songChangeSongLabelUrl}" alt="" aria-hidden="true" />
+          <button class="scene-button source-label-button source-song-change-button" type="button"${disabledSourceControl} data-source-control="songChooser" data-source-placement="song1/song.swf songChooser sprite id 0133 at root depth 0133 matrix scale 1.598 x 84.10 y 163.70" data-source-state="buttonON places button id 0132 depth 0001 and shape id 0126 depth 0004; normal art is baked into the complete source-runtime capture" data-source-hit-rect="57.82,136.05,56.73,43.23" data-source-help="Select a&#10;different&#10;song" data-source-help-frame="4" data-source-help-bounds="button id 0132 pushes Select a different song and calls _root.helpme; flyinghelp frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-source-action="sets the recovered change-song message and drives _root.courtain to alert" data-song-action="confirm-change-song" data-song-id="${song.id}">
             <span class="sr-only">CHANGE SONG</span>
           </button>
-          <button class="scene-button source-label-button source-exit-button" type="button" data-source-control="listenSong" data-source-body="song1/song.swf listenSong sprite id 0144 buttonON places shape id 0126 depth 0006" data-source-help="Quit the Game" data-source-help-frame="3" data-source-help-bounds="frame 3 edit ids 0234-0236 bbox approx 276x22 after 1.2 scale" data-source-action="sets _root.theNextFrame to warningFrame; drives _root.usmus to warningFrame/showUp" data-song-action="confirm-exit-song" data-song-id="${song.id}">
-            <img class="source-button-body" src="${songControlButtonBodyUrl}" alt="" aria-hidden="true" />
-            <img class="source-button-label" src="${songExitLabelUrl}" alt="" aria-hidden="true" />
+          <button class="media-button source-label-button source-song-listen-button" type="button"${disabledSourceControl} data-source-control="listenSong" data-source-placement="song1/song.swf listenSong sprite id 0144 at root depth 0138 matrix scale 1.524 x 81.75 y 266.30" data-source-state="buttonON places button id 0137 depth 0001 and shape id 0126 depth 0006; songStop places button id 0143 depth 0003" data-source-hit-rect="52.18,235.59,64.39,43.13" data-source-help="${isPlaying ? "Stop the Music" : "Listen to the Original Music"}" data-source-help-frame="4" data-source-help-bounds="button id 0137 pushes Listen to the Original Music; button id 0143 pushes Stop the Music; flyinghelp frame 4 places sprite id 0240 at x 80.00 y 37.20 ratio 3" data-source-action="calls previewSong; the songStop state calls stopPreview/resumeInst/instFrameShow" data-song-action="play-theme" data-song-id="${song.id}">
+            ${
+              isPlaying
+                ? `<img class="source-button-body" src="${songControlButtonBodyUrl}" alt="" aria-hidden="true" /><img class="source-button-label" src="${songStopLabelUrl}" alt="" aria-hidden="true" />`
+                : ""
+            }
+            <span class="sr-only">${isPlaying ? "STOP" : "LISTEN"}</span>
+          </button>
+          <button class="scene-button source-label-button source-song-exit-button" type="button"${disabledSourceControl} data-source-control="quiter" data-source-placement="song1/song.swf quiter sprite id 0150 at root depth 0145 matrix scale 0.900 x 585.90 y 472.45" data-source-state="buttonON places button id 0148 depth 0001; normal EXIT art is baked into the complete source-runtime capture" data-source-hit-rect="549.72,449.05,72.36,46.89" data-source-help="Quit the Game" data-source-help-frame="3" data-source-help-bounds="button id 0148 hover action pushes Quit the Game, frame 3, and calls _root.helpme" data-source-action="sets _root.theNextFrame to warningFrame; drives _root.usmus to warningFrame/showUp" data-song-action="confirm-exit-song" data-song-id="${song.id}">
             <span class="sr-only">EXIT</span>
           </button>
           ${
-            feedback
+            feedback && !hintOnly
               ? `<button
                   class="page-button source-label-button source-play-again-button"
                   type="button"
@@ -3521,7 +3592,9 @@ function renderNutcrackerSongGame(
               : ""
           }
         </div>
-        ${sourceMessage ? renderNutcrackerHintCurtain(sourceMessage) : ""}
+        </div>
+        ${sourceMessage && feedback && !sourceControlsBlocked ? renderNutcrackerHintCurtain(sourceMessage) : ""}
+        ${sourceMessage && hintOnly && !helpOpen && !changePromptOpen && !exitWarningOpen ? renderNutcrackerHintCurtain(sourceMessage, song.id) : ""}
         ${changePromptOpen ? renderNutcrackerChangeSongPrompt(song.id) : ""}
         ${exitWarningOpen ? renderNutcrackerSongExitWarning(song.id) : ""}
         <p class="sr-only">${completed ? "Door cleared." : "Door ready."} Source: ${escapeHtml(song.sourcePath)}. Track streams extracted from recovered SWFs.</p>
@@ -3550,17 +3623,31 @@ function renderNutcrackerSongKeyFrame(): string {
   `;
 }
 
-function renderNutcrackerHintCurtain(message: string): string {
+function renderNutcrackerHintCurtain(message: string, songId?: NutcrackerSongId): string {
   return `
     <aside
       class="source-alert source-hint-alert"
       aria-label="Song hint"
+      ${songId ? 'role="dialog" aria-modal="true"' : 'role="status"'}
       data-source-classification="swf-derived recreation"
       data-source-frame="song1/song.swf courtain giveHint"
-      data-source-placement="courtain root id 0063 depth 0082 x 319.85 y 4.90; _root.message edit id 0058 depth 0007 matrix scale 0.953/0.843 x 132.90 y 96.80 ratio 14"
+      data-source-placement="courtain root id 0063 depth 0082 x 319.85 y 4.90; giveHint places source dismiss button id 0057 depth 0005, _root.message edit id 0058 depth 0007 matrix scale 0.953/0.843 x 132.90 y 96.80 ratio 14, and noAction clip id 0059 depth 0008"
     >
       ${renderNutcrackerCurtainArt()}
       <p>${escapeHtml(message)}</p>
+      ${
+        songId
+          ? `<button
+              class="source-hint-dismiss"
+              type="button"
+              data-song-action="dismiss-hint"
+              data-song-id="${songId}"
+              data-source-button="song1/song.swf courtain giveHint button id 0057 depth 0005"
+              data-source-action="stopPreview; instFrameShow; restore speakers/focus/quiter buttonON; gotoAndPlay courtain bye"
+              aria-label="Dismiss hint"
+            ></button>`
+          : ""
+      }
     </aside>
   `;
 }
@@ -3570,6 +3657,8 @@ function renderNutcrackerChangeSongPrompt(songId: NutcrackerSongId): string {
     <aside
       class="source-alert source-change-alert"
       aria-label="Change song confirmation"
+      role="dialog"
+      aria-modal="true"
       data-source-classification="swf-derived recreation"
       data-source-frame="song1/song.swf courtain alert"
       data-source-placement="courtain root id 0063 depth 0082 x 319.85 y 4.90; _root.message edit id 0054 depth 0012 matrix x 155.90 y 97.10 ratio 4"
@@ -3593,6 +3682,8 @@ function renderNutcrackerSongExitWarning(songId: NutcrackerSongId): string {
     <aside
       class="source-song-warning-modal"
       aria-label="Exit song confirmation"
+      role="dialog"
+      aria-modal="true"
       data-source-classification="swf-derived recreation"
       data-source-frame="song1/song.swf warningFrame"
       data-source-placement="warningFrame places sprite id 0340 depth 0001 matrix scale 1.051 x -15.45 y 52.40 ratio 29; noAction id 0341 depth 0003 matrix scale 12.497 x -319.25 y -234.35 ratio 29; YES button id 0346 depth 0005 x -66.15 y -43.55; NO button id 0351 depth 0008 x 27.30 y -43.55; close sprite id 0352 depth 0011 x 96.30 y -143.70"
@@ -3663,24 +3754,6 @@ function renderNutcrackerCurtainArt(): string {
   `;
 }
 
-function renderNutcrackerSongScenery(songId: NutcrackerSongId): string {
-  const scenery: Partial<Record<NutcrackerSongId, readonly string[]>> = {
-    2: [song2SceneryUrl],
-    3: [song3SceneryPrimaryUrl],
-    4: [song4SceneryUrl],
-    5: [song5SceneryUrl],
-    6: [song6SceneryUrl],
-    7: [song7SceneryUrl],
-    8: [song8SceneryUrl],
-  };
-  return (scenery[songId] ?? [])
-    .map(
-      (sourceUrl, index) =>
-        `<img class="song-source-scenery song-source-scenery-${songId}-${index + 1}" src="${sourceUrl}" alt="" aria-hidden="true" data-source-classification="original asset" data-source-image="song${songId}/song.swf repaired DefineBitsJPEG3 source asset" />`,
-    )
-    .join("");
-}
-
 function renderSelectedNutcrackerActors(
   song: NutcrackerSongGame,
   selectedTrackNumbers: readonly NutcrackerTrackNumber[],
@@ -3712,6 +3785,7 @@ function renderNutcrackerTrackButton(
   track: NutcrackerTrack,
   selectedTrackNumbers: readonly NutcrackerTrackNumber[],
   feedback: string | null,
+  interactionBlocked: boolean,
 ): string {
   const selected = selectedTrackNumbers.includes(track.number);
   const feedbackClass = feedback ? (track.valid ? " valid" : selected ? " invalid" : "") : "";
@@ -3731,6 +3805,7 @@ function renderNutcrackerTrackButton(
       <button
         class="track-select-button"
         type="button"
+        ${interactionBlocked ? "disabled" : ""}
         data-song-id="${songId}"
         data-song-track="${track.number}"
         draggable="true"
@@ -4238,6 +4313,8 @@ function renderHelp(route: RouteDefinition): string {
       <aside
         class="help-modal source-help-modal source-song-help-modal"
         aria-label="Scene help"
+        role="dialog"
+        aria-modal="true"
         data-source-classification="swf-derived recreation"
         data-source-frame="song1/song.swf helpframe"
         data-source-placement="helpframe places sprite id 0333 depth 0001 matrix scale 1.051 x -5.00 y 74.95 ratio 27; noAction id 0334 depth 0003 matrix scale 12.497 x -319.25 y -234.35 ratio 27"
@@ -4258,6 +4335,14 @@ function renderHelp(route: RouteDefinition): string {
           data-source-image="song1/song.swf helpframe sprite id 0333 rendered in swfcombine translated wrapper x 140 y 60; direct swfrender clips negative-coordinate source art"
         />
         <p class="sr-only">${escapeHtml(getHelpText(route))}</p>
+        <button
+          class="source-song-help-dismiss"
+          type="button"
+          data-action="help"
+          data-modal-dismiss="true"
+          data-source-fallback="the recovered helpframe sprite auto-exits only after its streamed timeline; the static DOM frame uses one full-frame dismiss surface while exact timed source playback remains unrecovered"
+          aria-label="Close song help"
+        ></button>
       </aside>
     `;
   }

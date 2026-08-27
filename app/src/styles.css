@@ -1984,67 +1984,23 @@ button {
   pointer-events: none;
 }
 
-.song-source-scenery {
-  position: absolute;
-  z-index: 1;
-  object-fit: contain;
-  pointer-events: none;
-  filter: drop-shadow(1px 1px 0 rgba(255, 247, 168, 0.3));
-}
-
-.song-source-scenery-2-1 {
-  left: 160px;
-  top: 21px;
-  width: 310px;
-  height: 183px;
-}
-
-.song-source-scenery-3-1 {
-  left: 234px;
-  top: 41px;
-  width: 177px;
-  height: 142px;
-}
-
-.song-source-scenery-4-1 {
-  left: 245px;
-  top: 41px;
-  width: 144px;
-  height: 135px;
-}
-
-.song-source-scenery-5-1 {
-  left: 137px;
-  top: 35px;
-  width: 378px;
-  height: 172px;
-}
-
-.song-source-scenery-6-1 {
-  left: 229px;
-  top: 36px;
-  width: 165px;
-  height: 155px;
-}
-
-.song-source-scenery-7-1 {
-  left: 115px;
-  top: 36px;
-  width: 471px;
-  height: 194px;
-}
-
-.song-source-scenery-8-1 {
-  left: 85px;
-  top: 50px;
-  width: 433px;
-  height: 163px;
-}
-
 .song-stage-overlay {
   position: absolute;
   inset: 0;
   z-index: 2;
+}
+
+.song-interaction-surface {
+  position: absolute;
+  inset: 0;
+}
+
+.song-interaction-surface-blocked {
+  pointer-events: none;
+}
+
+.song-interaction-surface-blocked .source-selected-actor {
+  animation-play-state: paused;
 }
 
 .song-source-message {
@@ -2074,6 +2030,11 @@ button {
 
 .source-song-actions .source-label-button {
   position: absolute;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
   pointer-events: auto;
 }
 
@@ -2109,28 +2070,10 @@ button {
   object-fit: contain;
 }
 
-.source-song-actions .source-listen-button .source-button-label {
+.source-song-actions .source-song-listen-button .source-button-label {
   inset: 4px 12px 5px;
   width: calc(100% - 24px);
   height: calc(100% - 9px);
-}
-
-.source-song-actions .source-hint-button .source-button-label {
-  inset: 4px 15px 5px;
-  width: calc(100% - 30px);
-  height: calc(100% - 9px);
-}
-
-.source-song-actions .source-exit-button .source-button-label {
-  inset: 5px 13px 5px;
-  width: calc(100% - 26px);
-  height: calc(100% - 10px);
-}
-
-.source-change-song-button .source-button-label {
-  inset: 7px 9px 6px;
-  width: calc(100% - 18px);
-  height: calc(100% - 13px);
 }
 
 .source-play-again-button .source-button-label {
@@ -2146,31 +2089,50 @@ button {
   background: rgba(255, 247, 168, 0.1);
 }
 
-.source-song-actions .source-listen-button {
-  left: 82px;
-  top: 164px;
-  width: 72px;
-  min-width: 72px;
-  height: 26px;
-  padding: 0;
+.source-song-actions .source-song-change-button {
+  left: 57.82px;
+  top: 136.05px;
+  width: 56.73px;
+  height: 43.23px;
 }
 
-.source-song-actions .source-hint-button {
-  left: 556px;
-  top: 165px;
-  width: 66px;
-  min-width: 66px;
-  height: 25px;
-  padding: 0;
+.source-song-actions .source-song-listen-button {
+  left: 52.18px;
+  top: 235.59px;
+  width: 64.39px;
+  height: 43.13px;
 }
 
-.source-song-actions .source-exit-button {
-  left: 82px;
-  top: 266px;
-  width: 54px;
-  min-width: 54px;
-  height: 24px;
-  padding: 0;
+.source-song-actions .source-song-help-button {
+  left: 532.13px;
+  top: 141.95px;
+  width: 51.98px;
+  height: 38.48px;
+}
+
+.source-song-actions .source-song-hint-button {
+  left: 532.76px;
+  top: 240.75px;
+  width: 51.96px;
+  height: 38.21px;
+}
+
+.source-song-actions .source-song-exit-button {
+  left: 549.72px;
+  top: 449.05px;
+  width: 72.36px;
+  height: 46.89px;
+}
+
+.source-song-actions .source-label-button:hover,
+.source-song-actions .source-label-button:focus-visible {
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.source-song-actions-blocked .source-label-button:not(.source-play-again-button) {
+  pointer-events: none;
 }
 
 .source-song-actions .source-play-again-button {
@@ -2179,14 +2141,6 @@ button {
   width: 78px;
   min-width: 78px;
   height: 50px;
-  padding: 0;
-}
-
-.source-change-song-button {
-  left: 556px;
-  top: 268px;
-  width: 68px;
-  height: 39px;
   padding: 0;
 }
 
@@ -2205,7 +2159,24 @@ button {
 }
 
 .source-hint-alert {
-  pointer-events: none;
+  pointer-events: auto;
+}
+
+.source-hint-dismiss {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.source-hint-dismiss:focus-visible {
+  outline: 3px solid rgba(255, 247, 168, 0.9);
+  outline-offset: -5px;
 }
 
 .source-alert::before,
@@ -3242,6 +3213,24 @@ button {
 
 .source-song-help-modal {
   z-index: 30;
+  pointer-events: auto;
+}
+
+.source-song-help-dismiss {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.source-song-help-dismiss:focus-visible {
+  outline: 3px solid rgba(255, 247, 168, 0.9);
+  outline-offset: -5px;
 }
 
 .source-song-help-modal .source-song-helpframe-talker {
