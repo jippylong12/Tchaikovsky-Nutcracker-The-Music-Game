@@ -1864,67 +1864,12 @@ button {
   background: #ffffff;
 }
 
-.nutcracker-chooser-hallway-fill {
+.nutcracker-chooser-source-frame {
   position: absolute;
-  left: 84px;
-  top: 68px;
+  inset: 0;
   z-index: 0;
-  width: 459px;
-  height: 265px;
-  object-fit: fill;
-  pointer-events: none;
-}
-
-.nutcracker-chooser-hallway-portal {
-  position: absolute;
-  left: 291px;
-  top: 148px;
-  z-index: 0;
-  width: 53px;
-  height: 71px;
-  object-fit: fill;
-  pointer-events: none;
-}
-
-.nutcracker-chooser-hallway-vector {
-  position: absolute;
-  left: 73px;
-  top: -4px;
-  z-index: 0;
-  width: 489px;
-  height: 358px;
-  object-fit: fill;
-  pointer-events: none;
-}
-
-.nutcracker-chooser-hallway-tint {
-  position: absolute;
-  left: 88px;
-  top: 46px;
-  z-index: 0;
-  width: 457px;
-  height: 301px;
-  object-fit: fill;
-  pointer-events: none;
-}
-
-.nutcracker-frame-art {
-  position: absolute;
-  left: 6px;
-  top: -4px;
-  width: 633px;
-  height: 485px;
-  object-fit: fill;
-  pointer-events: none;
-}
-
-.nutcracker-chooser-instruments {
-  position: absolute;
-  left: 47px;
-  top: 286px;
-  z-index: 1;
-  width: 512px;
-  height: 171px;
+  width: 640px;
+  height: 480px;
   object-fit: fill;
   pointer-events: none;
 }
@@ -1959,12 +1904,21 @@ button {
   background: transparent;
 }
 
+.nutcracker-chooser .nutcracker-door-button:hover,
+.nutcracker-chooser .nutcracker-door-button:disabled {
+  border: 0;
+  background: transparent;
+}
+
+.nutcracker-chooser .nutcracker-door-button:disabled {
+  color: transparent;
+  cursor: default;
+}
+
 .chooser-door-art {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
   object-fit: fill;
+  transform-origin: center;
   pointer-events: none;
 }
 
@@ -1999,25 +1953,21 @@ button {
   height: 47px;
 }
 
-.chooser-source-help-button img,
-.chooser-exit-button-art,
-.chooser-exit-label-art {
-  object-fit: fill;
+.chooser-source-controls .chooser-source-help-button {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-.chooser-exit-button-art {
-  position: absolute;
-  inset: 0;
-  width: 72px;
-  height: 47px;
+.chooser-source-controls .chooser-source-exit-button {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-.chooser-exit-label-art {
-  position: absolute;
-  left: 28px;
-  top: 15px;
-  width: 39px;
-  height: 13px;
+.chooser-source-controls .chooser-source-help-button:hover,
+.chooser-source-controls .chooser-source-exit-button:hover {
+  background: transparent;
 }
 
 .nutcracker-song-scene {

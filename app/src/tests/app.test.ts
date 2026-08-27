@@ -480,57 +480,13 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLElement>(".nutcracker-door-card")?.dataset.sourceAction).toContain(
       "sets this._visible",
     );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-fill")?.src).toContain(
-      "chooser-hallway-fill",
-    );
-    expect(
-      mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-fill")?.dataset.sourceClassification,
-    ).toBe("swf-derived recreation");
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-fill")?.dataset.sourcePlacement).toContain(
-      "shape id 0016",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-fill")?.dataset.sourceImage).toContain(
-      "shape id 0016 rendered",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-vector")?.src).toContain(
-      "chooser-hallway-vector",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-portal")?.src).toContain(
-      "chooser-hallway-portal-cxform",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-portal")?.dataset.sourcePlacement).toContain(
-      "shape id 0017",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-portal")?.dataset.sourceImage).toContain(
-      "CXForm add 143 60 -10 0",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-vector")?.dataset.sourcePlacement).toContain(
-      "shape id 0018",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-vector")?.dataset.sourceImage).toContain(
-      "full sprite id 0021 still blocked",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-tint")?.src).toContain(
-      "chooser-hallway-tint-cxform",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-tint")?.dataset.sourcePlacement).toContain(
-      "shape id 0020",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-tint")?.dataset.sourceImage).toContain(
-      "CXForm mul 0 0 0 1 add 255 51 153 0",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-frame-art")?.dataset.sourcePlacement).toContain(
-      "id 0034 depth 0055",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-instruments")?.dataset.sourcePlacement).toContain(
-      "id 0068 depth 0069",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-instruments")?.src).toContain(
-      "chooser-instruments-cxform",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-instruments")?.dataset.sourceImage).toContain(
-      "CXForm add -209 -153 134 -223",
-    );
+    const chooserSourceFrame = mount.querySelector<HTMLImageElement>(".nutcracker-chooser-source-frame");
+    expect(chooserSourceFrame?.src).toContain("nutchooser-source-normal");
+    expect(chooserSourceFrame?.dataset.sourceClassification).toBe("SWF-derived recreation");
+    expect(chooserSourceFrame?.dataset.sourceMethod).toBe("source-runtime capture");
+    expect(chooserSourceFrame?.dataset.sourceFrame).toContain("normal chooser state");
+    expect(chooserSourceFrame?.dataset.sourceCapture).toContain("1280 x 960 DPR-2");
+    expect(chooserSourceFrame?.dataset.sourceCapture).toContain("640 x 480");
     expect(mount.querySelector(".source-scene-actions")).toBeNull();
     expect(mount.querySelector(".scene-footer")).toBeNull();
     expect(mount.querySelector(".source-control-help")).toBeNull();
@@ -542,7 +498,7 @@ describe("desktop app shell", () => {
       "buttonON places button id 0200",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.dataset.sourceImage).toContain(
-      "shape id 0201",
+      "source-runtime capture",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]')?.getAttribute("class")).toContain(
       "chooser-source-help-button",
@@ -559,10 +515,7 @@ describe("desktop app shell", () => {
       "shape id 0205",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceImage).toContain(
-      "shape id 0205",
-    );
-    expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceImage).toContain(
-      "text id 0204",
+      "source-runtime capture",
     );
     expect(mount.querySelector<HTMLButtonElement>('[data-source-control="quiter"]')?.dataset.sourceImage).toContain(
       "text id 0203 is the blue buttonOFF label",
@@ -576,17 +529,21 @@ describe("desktop app shell", () => {
     expect(mount.querySelector<HTMLElement>(".source-flying-help")?.dataset.sourcePlacement).toContain(
       "nutchooser.swf button ids 0200 and 0206",
     );
-    expect(mount.querySelector<HTMLImageElement>(".chooser-door-art")?.dataset.sourceImage).toContain(
-      "no modern hover glow",
+    expect(mount.querySelector(".chooser-source-controls img")).toBeNull();
+    expect(mount.querySelector<HTMLImageElement>('[data-nutcracker-door="1"] .chooser-door-art')?.hidden).toBe(true);
+    expect(mount.querySelector<HTMLImageElement>('[data-nutcracker-door="2"] .chooser-door-art')?.hidden).toBe(true);
+    const firstDoorButton = mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]');
+    const firstDoorArt = firstDoorButton?.querySelector<HTMLImageElement>(".chooser-door-art");
+    expect(firstDoorButton?.closest<HTMLElement>(".nutcracker-door-card")?.getAttribute("style")).toBe(
+      "left:105.02px;top:107.96px;width:77.97px;height:191.10px",
     );
-    expect(mount.querySelector<HTMLImageElement>('[data-source-control="helpButton"] img')?.src).toContain(
-      "chooser-help-button-art",
+    expect(firstDoorArt?.src).toContain("chooser-open-door");
+    expect(firstDoorArt?.getAttribute("style")).toBe(
+      "left:14.74px;top:-0.42px;width:107.70px;height:204.63px;transform:none",
     );
-    expect(mount.querySelector<HTMLImageElement>('[data-source-control="quiter"] .chooser-exit-button-art')?.src).toContain(
-      "chooser-exit-button-art",
-    );
-    expect(mount.querySelector<HTMLImageElement>('[data-source-control="quiter"] .chooser-exit-label-art')?.src).toContain(
-      "chooser-exit-label",
+    expect(firstDoorArt?.dataset.sourceCrop).toContain("x 130 y 105");
+    expect(firstDoorArt?.dataset.sourceImage).toContain(
+      "only when the recovered door# completion flag equals 1",
     );
     const hiddenMagicKey = mount.querySelector<HTMLImageElement>(".nutcracker-chooser-magic-key");
     expect(hiddenMagicKey?.src).toContain("chooser-magic-key");
@@ -829,6 +786,12 @@ describe("desktop app shell", () => {
     expect(magicKey?.hidden).toBe(false);
     expect(magicKey?.dataset.sourceVisible).toBe("true");
     expect(magicKey?.src).toContain("chooser-magic-key");
+    expect(
+      [...mount.querySelectorAll<HTMLImageElement>(".chooser-door-art")].every((doorArt) => !doorArt.hidden),
+    ).toBe(true);
+    expect(
+      mount.querySelector<HTMLImageElement>('[data-nutcracker-door="2"] .chooser-door-art')?.getAttribute("style"),
+    ).toBe("left:-36.13px;top:3.78px;width:107.70px;height:204.63px;transform:scaleX(-1)");
   });
 
   it("maps Nutcracker songs to their matching gramophone records", () => {
@@ -850,17 +813,8 @@ describe("desktop app shell", () => {
     createTestShell(mount);
     mount.querySelector<HTMLButtonElement>('[data-route="nutcracker-chooser"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-fill")?.src).toContain(
-      "chooser-hallway-fill",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-vector")?.src).toContain(
-      "chooser-hallway-vector",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-portal")?.src).toContain(
-      "chooser-hallway-portal-cxform",
-    );
-    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-hallway-tint")?.src).toContain(
-      "chooser-hallway-tint-cxform",
+    expect(mount.querySelector<HTMLImageElement>(".nutcracker-chooser-source-frame")?.src).toContain(
+      "nutchooser-source-normal",
     );
 
     mount.querySelector<HTMLButtonElement>('[data-route="song-2"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));

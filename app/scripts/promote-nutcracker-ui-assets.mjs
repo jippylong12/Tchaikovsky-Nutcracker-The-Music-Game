@@ -1,5 +1,6 @@
-import { copyFile, mkdir } from "node:fs/promises";
+import { copyFile, mkdir, readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import console from "node:console";
 import path from "node:path";
@@ -10,6 +11,7 @@ const appRoot = path.resolve(currentDir, "..");
 const projectRoot = path.resolve(appRoot, "..");
 const sourceRoot = path.join(appRoot, "generated/nutcracker-source-extract/full-swf-pass/direct-png");
 const targetRoot = path.join(appRoot, "src/assets/nutcracker-source");
+const sourceEvidenceRoot = path.join(appRoot, "source-evidence/nutcracker");
 const chooserRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser");
 const chooserBackgroundRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-background");
 const chooserControlsRoot = path.join(appRoot, "generated/nutcracker-source-extract/nutchooser-controls");
@@ -44,6 +46,18 @@ function imagesArePixelEquivalent(source, target) {
 }
 
 const uiAssets = [
+  {
+    source: path.join(sourceEvidenceRoot, "nutchooser-source-normal.png"),
+    target: "nutchooser-source-normal.png",
+    sourceId: "nutchooser.swf official Ruffle v0.5.0 normal chooser state captured at DPR 2, downsampled to the native 640 x 480 stage, and metadata-stripped",
+    expectedSha256: "969c1b97245244a589b5480f802a6bc9d732e23ba1bb0f97867f23c341e2c390",
+  },
+  {
+    source: path.join(chooserRoot, "door-sprite-80-source-crop.png"),
+    target: "chooser-open-door.png",
+    sourceId: "nutchooser.swf movie clip id 0080 rendered to 512 x 512, then cropped at source-local x 130 y 105 to 100 x 190 so root m1-m8 matrices can be applied without the renderer's origin artifact",
+    expectedSha256: "6145ebfc7db5002496463222057d950c77a6cabc6f7d0b04d72bf4e4eab293df",
+  },
   {
     source: path.join(sourceRoot, "song1__song/lossless-39.png"),
     target: "song-curtain-scallop.png",
@@ -203,6 +217,17 @@ await mkdir(songControlsRoot, { recursive: true });
 await mkdir(songHelpRoot, { recursive: true });
 await mkdir(songWarningRoot, { recursive: true });
 await mkdir(songKeyFrameRoot, { recursive: true });
+
+const chooserDoorSpriteSwf = path.join(chooserRoot, "door-sprite-80.swf");
+const chooserDoorSpritePng = path.join(chooserRoot, "door-sprite-80.png");
+const chooserDoorSourceCropPng = path.join(chooserRoot, "door-sprite-80-source-crop.png");
+if (!existsSync(chooserDoorSpriteSwf)) {
+  runTool("swfextract", ["-i", "80", "-o", chooserDoorSpriteSwf, nutchooserSwf]);
+}
+if (!existsSync(chooserDoorSpritePng)) {
+  runTool("swfrender", ["-o", chooserDoorSpritePng, chooserDoorSpriteSwf]);
+}
+runTool("magick", [chooserDoorSpritePng, "-crop", "100x190+130+105", "+repage", "-strip", chooserDoorSourceCropPng]);
 
 const chooserInstrumentSwf = path.join(chooserRoot, "help-exit-sprite-68.swf");
 const chooserInstrumentPng = path.join(chooserRoot, "help-exit-sprite-68.png");
@@ -670,6 +695,15 @@ for (const label of songWarningLabels) {
 for (const asset of uiAssets) {
   if (!existsSync(asset.source)) {
     throw new Error(`Missing generated UI source asset: ${path.relative(appRoot, asset.source)}. Run npm run assets:nutcracker-swf first.`);
+  }
+
+  if (asset.expectedSha256) {
+    const actualSha256 = createHash("sha256").update(await readFile(asset.source)).digest("hex");
+    if (actualSha256 !== asset.expectedSha256) {
+      throw new Error(
+        `Source evidence hash mismatch for ${path.relative(appRoot, asset.source)}: expected ${asset.expectedSha256}, received ${actualSha256}`,
+      );
+    }
   }
 
   const targetFile = path.join(targetRoot, asset.target);

@@ -1,14 +1,7 @@
 import nutChooserFrameUrl from "./assets/nutcracker-source/nutchooser-frame-source.png";
-import chooserDoorUrl from "./assets/nutcracker-source/chooser-door.png";
-import chooserHallwayFillUrl from "./assets/nutcracker-source/chooser-hallway-fill.png";
-import chooserHallwayPortalCxformUrl from "./assets/nutcracker-source/chooser-hallway-portal-cxform.png";
-import chooserHallwayTintCxformUrl from "./assets/nutcracker-source/chooser-hallway-tint-cxform.png";
-import chooserHallwayVectorUrl from "./assets/nutcracker-source/chooser-hallway-vector.png";
-import chooserHelpButtonArtUrl from "./assets/nutcracker-source/chooser-help-button-art.png";
+import nutChooserSourceNormalUrl from "./assets/nutcracker-source/nutchooser-source-normal.png";
+import chooserOpenDoorUrl from "./assets/nutcracker-source/chooser-open-door.png";
 import chooserHelpframeTalkerUrl from "./assets/nutcracker-source/chooser-helpframe-talker.png";
-import chooserInstrumentsCxformUrl from "./assets/nutcracker-source/chooser-instruments-cxform.png";
-import chooserExitButtonArtUrl from "./assets/nutcracker-source/chooser-exit-button-art.png";
-import chooserExitLabelUrl from "./assets/nutcracker-source/chooser-exit-label.png";
 import chooserMagicKeyUrl from "./assets/nutcracker-source/chooser-magic-key.png";
 import chooserWarningNoBodyUrl from "./assets/nutcracker-source/chooser-warning-no-body.png";
 import chooserWarningNoLabelUrl from "./assets/nutcracker-source/chooser-warning-no-label.png";
@@ -2666,57 +2659,16 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
   return `
     <div class="scene-body chooser-scene nutcracker-chooser source-flash-scene">
       <img
-        class="nutcracker-chooser-hallway-fill"
-        src="${chooserHallwayFillUrl}"
+        class="nutcracker-chooser-source-frame"
+        src="${nutChooserSourceNormalUrl}"
         alt=""
         aria-hidden="true"
-        data-source-classification="swf-derived recreation"
-        data-source-placement="nutchooser.swf sprite id 0021 places shape id 0016 at depth 0001 with root scale 0.743 x 87.85 y 46.15; shape bbox [-5.25,30.05,612.45,387.00]"
-        data-source-image="shape id 0016 rendered with swfrender and trimmed by npm run assets:nutcracker-ui"
-      />
-      <img
-        class="nutcracker-chooser-hallway-portal"
-        src="${chooserHallwayPortalCxformUrl}"
-        alt=""
-        aria-hidden="true"
-        data-source-classification="swf-derived recreation"
-        data-source-placement="nutchooser.swf sprite id 0021 places shape id 0017 at depth 0007 matrix x 273.35 y 137.75 with root scale 0.743 x 87.85 y 46.15"
-        data-source-image="shape id 0017 rendered with swfrender, trimmed, then CXForm add 143 60 -10 0 applied by npm run assets:nutcracker-ui"
-      />
-      <img
-        class="nutcracker-chooser-hallway-vector"
-        src="${chooserHallwayVectorUrl}"
-        alt=""
-        aria-hidden="true"
-        data-source-classification="swf-derived recreation"
-        data-source-placement="nutchooser.swf sprite id 0021 contains shape id 0018 at depth 0011; root scale 0.743 x 87.85 y 46.15; shape bbox [-19.65,-67.05,637.70,414.95]"
-        data-source-image="shape id 0018 rendered with swfrender and trimmed by npm run assets:nutcracker-ui; full sprite id 0021 still blocked by local JPEG3 renderer support"
-      />
-      <img
-        class="nutcracker-chooser-hallway-tint"
-        src="${chooserHallwayTintCxformUrl}"
-        alt=""
-        aria-hidden="true"
-        data-source-classification="swf-derived recreation"
-        data-source-placement="nutchooser.swf sprite id 0021 places shape id 0020 at depth 0012 with root scale 0.743 x 87.85 y 46.15; shape bbox [0.00,0.00,615.20,404.95]"
-        data-source-image="shape id 0020 uses bitmap id 0019 fill; alpha from repaired JPEG3 id 0019 resized to shape bbox, then CXForm mul 0 0 0 1 add 255 51 153 0 applied by npm run assets:nutcracker-ui"
-      />
-      <img
-        class="nutcracker-frame-art"
-        src="${nutChooserFrameUrl}"
-        alt=""
-        aria-hidden="true"
-        data-source-classification="original asset"
-        data-source-placement="nutchooser.swf id 0034 depth 0055 matrix scale 1.055 x 5.55 y -3.85 ratio 5"
-      />
-      <img
-        class="nutcracker-chooser-instruments"
-        src="${chooserInstrumentsCxformUrl}"
-        alt=""
-        aria-hidden="true"
-        data-source-classification="swf-derived recreation"
-        data-source-placement="nutchooser.swf id 0068 depth 0069 matrix scale 1.000 x 46.55 y 285.85 ratio 5 cxform add -209 -153 134 -223"
-        data-source-image="sprite id 0068 rendered and trimmed, then root depth 0069 CXForm add -209 -153 134 -223 applied by npm run assets:nutcracker-ui"
+        data-source-classification="SWF-derived recreation"
+        data-source-method="source-runtime capture"
+        data-source-swf="analysis/setup/app/games/nutcrackergame/nutchooser.swf"
+        data-source-frame="normal chooser state after the source intro mascot clears; dynamic opened-door and magic-key layers excluded"
+        data-source-capture="official Ruffle v0.5.0 lossless 1280 x 960 DPR-2 source-runtime capture downsampled to the native 640 x 480 stage and stripped of PNG metadata"
+        data-source-image="complete source frame preserves the hallway, source color transforms, ornamental frame, instrument bed, Help control, and EXIT control that the earlier child-layer composition did not flatten exactly"
       />
       <p class="sr-only">Nutcracker song doors</p>
       <div class="nutcracker-door-grid" aria-label="Nutcracker song doors">
@@ -2745,11 +2697,14 @@ function renderNutcrackerChooser(progress: ReturnType<ProgressStoreController["g
                 >
                   <img
                     class="chooser-door-art"
-                    src="${chooserDoorUrl}"
+                    src="${chooserOpenDoorUrl}"
+                    style="${getNutcrackerDoorArtStyle(song.id)}"
                     alt=""
                     aria-hidden="true"
                     data-source-classification="swf-derived recreation"
-                    data-source-image="trimmed render of nutchooser.swf movie clip id 0080; no modern hover glow, drop shadow, status label, or disabled opacity"
+                    data-source-crop="100 x 190 source-local crop at x 130 y 105 from the 512 x 512 sprite id 0080 render"
+                    data-source-image="source-local crop of nutchooser.swf movie clip id 0080 transformed by the recovered m# root matrix; visible only when the recovered door# completion flag equals 1; no modern hover glow, drop shadow, status label, disabled opacity, or disabled background"
+                    ${completed ? "" : "hidden"}
                   />
                 </button>
                 <button
@@ -3832,17 +3787,32 @@ function renderNutcrackerFlyingHelp(source: "song" | "chooser" = "song"): string
 
 function getNutcrackerDoorStyle(songId: NutcrackerSongId): string {
   const positions: Record<NutcrackerSongId, { left: number; top: number; width: number; height: number }> = {
-    1: { left: 40, top: 231, width: 124, height: 140 },
-    2: { left: 383, top: 226, width: 124, height: 140 },
-    3: { left: 148, top: 219, width: 92, height: 112 },
-    4: { left: 349, top: 221, width: 96, height: 112 },
-    5: { left: 215, top: 208, width: 70, height: 96 },
-    6: { left: 333, top: 210, width: 74, height: 96 },
-    7: { left: 254, top: 206, width: 54, height: 78 },
-    8: { left: 327, top: 203, width: 54, height: 78 },
+    1: { left: 105.02, top: 107.96, width: 77.97, height: 191.10 },
+    2: { left: 447.07, top: 102.91, width: 77.97, height: 191.10 },
+    3: { left: 187.93, top: 134.17, width: 47.76, height: 131.81 },
+    4: { left: 393.59, top: 130.74, width: 53.21, height: 140.31 },
+    5: { left: 239.34, top: 145.03, width: 28.84, height: 98.02 },
+    6: { left: 361.66, top: 152.45, width: 33.93, height: 89.63 },
+    7: { left: 270.60, top: 157.47, width: 20.55, height: 75.64 },
+    8: { left: 341.66, top: 150.00, width: 17.03, height: 81.02 },
   };
   const position = positions[songId];
-  return `left:${position.left}px;top:${position.top}px;width:${position.width}px;height:${position.height}px`;
+  return `left:${position.left.toFixed(2)}px;top:${position.top.toFixed(2)}px;width:${position.width.toFixed(2)}px;height:${position.height.toFixed(2)}px`;
+}
+
+function getNutcrackerDoorArtStyle(songId: NutcrackerSongId): string {
+  const positions: Record<NutcrackerSongId, { left: number; top: number; width: number; height: number; mirrored: boolean }> = {
+    1: { left: 14.74, top: -0.42, width: 107.70, height: 204.63, mirrored: false },
+    2: { left: -36.13, top: 3.78, width: 107.70, height: 204.63, mirrored: true },
+    3: { left: 3.89, top: 7.55, width: 67.40, height: 128.06, mirrored: false },
+    4: { left: -15.53, top: 10.88, width: 67.30, height: 127.87, mirrored: true },
+    5: { left: 2.37, top: 14.90, width: 43.70, height: 83.03, mirrored: false },
+    6: { left: -15.39, top: 6.28, width: 43.60, height: 82.84, mirrored: true },
+    7: { left: 5.04, top: 8.90, width: 29.30, height: 55.67, mirrored: false },
+    8: { left: -11.15, top: 17.46, width: 29.30, height: 55.67, mirrored: true },
+  };
+  const position = positions[songId];
+  return `left:${position.left.toFixed(2)}px;top:${position.top.toFixed(2)}px;width:${position.width.toFixed(2)}px;height:${position.height.toFixed(2)}px;transform:${position.mirrored ? "scaleX(-1)" : "none"}`;
 }
 
 function getNutcrackerDoorSourcePlacement(songId: NutcrackerSongId): string {
@@ -4168,12 +4138,11 @@ function renderChooserSourceControls(): string {
         data-source-control="helpButton"
         data-source-placement="nutchooser.swf helpButton root placement sprite id 0202 at depth 0168 matrix scale 1.350 x 556.50 y 165.30 ratio 5"
         data-source-state="sprite id 0202 buttonON places button id 0200 depth 0001 and shape id 0201 depth 0004; buttonOFF places shape id 0198 depth 0002 with alpha mul 0.4"
-        data-source-image="normal visible Help control uses buttonON shape id 0201; older shape id 0198 render is buttonOFF only"
+        data-source-image="normal Help art is preserved in the complete official-Ruffle source-runtime capture; this transparent source-bounded button supplies modern pointer and keyboard input"
         data-source-help="Help"
         data-source-help-frame="4"
         data-source-help-bounds="nutchooser.swf button id 0200 action pushes string Help, frame 4, and calls _root.helpme; rollout calls _root.nohelp"
       >
-        <img src="${chooserHelpButtonArtUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">Help</span>
       </button>
       <button
@@ -4183,14 +4152,12 @@ function renderChooserSourceControls(): string {
         data-source-control="quiter"
         data-source-placement="nutchooser.swf quiter root placement sprite id 0207 at depth 0173 matrix scale 0.900 x 585.90 y 472.45 ratio 5"
         data-source-state="sprite id 0207 buttonON places button id 0206 depth 0001; button id 0206 source art is recovered as shape id 0205 plus source sibling text id 0204 normal peach EXIT label; buttonOFF places blue text id 0203 depth 0001 matrix scale 1.722 x -114.95 y -12.70 with CXForm add 102 102 204 0"
-        data-source-image="normal visible EXIT button body uses shape id 0205 and label uses text id 0204; text id 0203 is the blue buttonOFF label; isolated button id 0206 rendering remains a local tooling gap"
+        data-source-image="normal EXIT art is preserved in the complete official-Ruffle source-runtime capture; this transparent source-bounded button supplies modern pointer and keyboard input; text id 0203 is the blue buttonOFF label"
         data-source-action="sets _root.theNextFrame to warningFrame; warningFrame YES button id 0183 calls _level0.gotoAndPlay('comeAgain')"
         data-source-help="Quit the Game"
         data-source-help-frame="3"
         data-source-help-bounds="nutchooser.swf button id 0206 action pushes string Quit the Game, frame 3, and calls _root.helpme; rollout calls _root.nohelp"
       >
-        <img class="chooser-exit-button-art" src="${chooserExitButtonArtUrl}" alt="" aria-hidden="true" />
-        <img class="chooser-exit-label-art" src="${chooserExitLabelUrl}" alt="" aria-hidden="true" />
         <span class="sr-only">EXIT</span>
       </button>
     </div>

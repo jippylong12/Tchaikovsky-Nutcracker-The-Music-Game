@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createHash } from "node:crypto";
 import { readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,8 +13,51 @@ import {
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const publicRoot = join(currentDir, "../../public");
+const sourceAssetRoot = join(currentDir, "../assets/nutcracker-source");
+const sourceStyles = readFileSync(join(currentDir, "../styles.css"), "utf8");
+
+function cssDeclarations(selector: string): Record<string, string> {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const rule = sourceStyles.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`));
+  if (!rule) throw new Error(`Missing CSS rule for ${selector}`);
+
+  return Object.fromEntries(
+    [...rule[1].matchAll(/([\w-]+)\s*:\s*([^;]+);/g)].map((declaration) => [
+      declaration[1],
+      declaration[2].trim(),
+    ]),
+  );
+}
 
 describe("Nutcracker song game data", () => {
+  it("locks the complete recovered normal chooser frame", () => {
+    const chooserFrame = readFileSync(join(sourceAssetRoot, "nutchooser-source-normal.png"));
+
+    expect(createHash("sha256").update(chooserFrame).digest("hex")).toBe(
+      "969c1b97245244a589b5480f802a6bc9d732e23ba1bb0f97867f23c341e2c390",
+    );
+  });
+
+  it("locks the source-local opened-door crop", () => {
+    const openedDoor = readFileSync(join(sourceAssetRoot, "chooser-open-door.png"));
+
+    expect(createHash("sha256").update(openedDoor).digest("hex")).toBe(
+      "6145ebfc7db5002496463222057d950c77a6cabc6f7d0b04d72bf4e4eab293df",
+    );
+  });
+
+  it("prevents generic button chrome from covering the recovered chooser", () => {
+    expect(cssDeclarations(".nutcracker-chooser .nutcracker-door-button:disabled")).toMatchObject({
+      border: "0",
+      background: "transparent",
+    });
+    expect(cssDeclarations(".chooser-source-controls .chooser-source-exit-button")).toMatchObject({
+      border: "0",
+      background: "transparent",
+      "box-shadow": "none",
+    });
+  });
+
   it("matches all recovered trackinfo.txt validity and first-frame data", () => {
     nutcrackerSongGames.forEach((song) => {
       const trackInfoPath = join(publicRoot, "local-media/text", song.sourcePath);

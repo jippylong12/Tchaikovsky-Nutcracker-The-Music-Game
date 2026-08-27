@@ -361,7 +361,9 @@
         "analysis/setup/app/games/data/nutdoors.txt"
       ],
       "promotedAssets": [
+        "app/src/assets/nutcracker-source/nutchooser-source-normal.png",
         "app/src/assets/nutcracker-source/nutchooser-frame-source.png",
+        "app/src/assets/nutcracker-source/chooser-open-door.png",
         "app/src/assets/nutcracker-source/chooser-magic-key.png"
       ],
       "evidenceDocs": [
@@ -385,14 +387,14 @@
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes promoted display-list layers with TypeScript state and explicit provenance.",
-            "retainedGap": "Interactive nested-timeline playback remains outside the reconstructed runtime."
+            "details": "The runtime uses the hash-locked complete official-Ruffle normal chooser frame, transparent source-bounded controls, and separate source opened-door/help/warning/key layers with TypeScript state.",
+            "retainedGap": "Ongoing mascot/background/control motion and interactive nested-timeline playback remain outside the reconstructed runtime."
           },
           "evidenceDoc": "docs/nutcracker-song-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "Source-backed composition and behavior are implemented; full timeline playback and Marcus UI approval remain explicit gates."
+      "auditFinding": "The earlier stretched child-layer composition, generic disabled-door rectangles, offset hit targets, and full-canvas opened-door artifact were replaced by the official-Ruffle normal frame, exact id-0085 hit bounds, and a hash-locked source-local id-0080 opened-door crop transformed by each m# matrix; nested timeline playback and Marcus UI approval remain explicit gates."
     },
     {
       "id": "nutcracker-songs",

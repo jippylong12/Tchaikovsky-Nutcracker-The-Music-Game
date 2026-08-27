@@ -18,11 +18,12 @@ The display-list pass writes full ignored proof to `app/generated/nutcracker-sou
 Pre-review automated evidence on 2026-08-26:
 
 - `npm run typecheck`: passed.
-- `npm test`: 8 files, 42 tests passed.
+- `npm test`: 13 files, 100 tests passed.
 - `npm run lint`: passed.
-- `npm run build`: passed, 132 modules transformed.
+- `npm run build`: passed, 772 modules transformed; reader-bundle provenance passed.
+- `npm run assets:source-atlas`: passed, 28 routes across 22 entries and 123 promoted visual samples.
 - `npm run assets:nutcracker-swf`: 73 SWFs, 261 direct lossless PNG assets, 0 failures, 6 required display-list targets recovered.
-- `npm run assets:nutcracker-ui`: passed; all promoted UI assets pixel-unchanged.
+- `npm run assets:nutcracker-ui`: passed; the normal chooser capture and opened-door crop were hash-verified and all promoted UI assets were pixel-unchanged after promotion.
 - `npm run assets:nutcracker-actors`: passed; 0 promoted, 64 pixel-unchanged.
 - `npm run assets:nutcracker-jpeg3`: passed; 9 repaired JPEG3 outputs.
 
@@ -32,15 +33,15 @@ These checks establish deterministic source extraction and application health. T
 
 | Surface | Source-backed implementation | Retained fallback / approval question |
 | --- | --- | --- |
-| Hallway and frame | Sprite `0021` child depths/matrices/CXForms, frame sprite `0034`, repaired JPEG3, and promoted source layers | Full `0021` flattening is blocked by the installed renderer's missing JPEG library. Confirm the composed child layers visually match the original. |
-| Instruments and eight doors | Sprite `0068` with root CXForm; door sprite `0080`; door placements and `nutdoors.txt` unlock behavior | Door interaction rectangles remain DOM hit targets with source-derived bounds. No visible modern lock/status badges are allowed. |
-| Help, quit warning, and final key | Source help/warning talkers, source button bodies/labels, recovered ActionScript flow, and source `magicKey` id `0213` | Translated wrapper renders replace unavailable full timeline flattening. Confirm overlays remain in-frame and do not cover usable doors. |
+| Hallway, frame, instruments, and normal controls | Hash-locked official-Ruffle normal source frame, 640 x 480, plus retained child depth/matrix/CXForm extraction proof | The capture is a static normal state; ongoing mascot/background/control timeline motion is not replayed. |
+| Eight doors | Correctly named/hash-locked id-`0080` source-local opened-door crop, exact `m#` art transforms, exact id-`0085` button-shape hit rectangles, recovered `door#` completion visibility, and `nutdoors.txt`-derived unlock behavior | Accessible DOM hit targets remain visually transparent over source bounds. Ready/locked doors must show no opened-door art and no HTML disabled background; completed doors reveal the separately transformed source opened-door sprite. |
+| Help, quit warning, and final key | Source help/warning talkers, recovered ActionScript flow, and source `magicKey` id `0213` | Translated wrapper renders replace unavailable full nested-timeline flattening. Confirm overlays remain in-frame and do not cover usable doors. |
 
 Manual chooser steps:
 
-1. Open the chooser with a fresh local progress state. Door 1 must be clickable, doors 2-8 must not be clickable, and no visible `Ready`/`Locked`/`Cleared` text may cover a door.
+1. Open the chooser with a fresh local progress state. Door 1 must be clickable, doors 2-8 must not be clickable, no opened-door art should appear yet, and no beige disabled rectangles or visible `Ready`/`Locked`/`Cleared` text may cover the source hallway.
 2. Open Help and the EXIT warning. Confirm both stay inside 640 x 480 and use recovered art rather than generic cards.
-3. Complete songs sequentially. The next door must become clickable after each completion; the source magic key must remain hidden until all eight doors are complete.
+3. Complete songs sequentially. The completed door must reveal the source opened-door clip at its hallway matrix, the next door must become clickable, mirrored right-side door art must face the correct direction, and the source magic key must remain hidden until all eight doors are complete.
 
 ## Eight-song review matrix
 
@@ -70,7 +71,7 @@ Manual song steps for each row:
 - Exact `characters/anim*.swf` arbitrary-frame/timeline playback is replaced by a per-song source bitmap plus restrained source-derived motion.
 - `flyinghelp` dynamic edit-text frames are recreated as layered DOM text at recovered bounds because the installed renderer produces transparent output with unresolved edit-text ids.
 - Dynamic `_root.message` text remains DOM-backed while the curtain art, timeline labels, placement, and source strings are recovered.
-- Full chooser and songs 2-8 composites cannot be flattened by the installed `swfrender` because it lacks JPEG support; repaired JPEG3 assets and recoverable child display-list layers are composed instead.
+- The chooser's exact normal appearance is preserved as a full official-Ruffle source-runtime capture; ongoing mascot/background/control motion and nested help/warning timelines remain reconstructed state transitions rather than embedded SWF playback. Songs 2-8 still use repaired JPEG3 assets and recoverable child display-list layers because the installed `swfrender` cannot flatten their full composites.
 - HTML hit areas provide accessibility and pointer input over recovered source bounds; they must remain visually undecorated.
 
 JIP-349, JIP-347, JIP-357, JIP-358, JIP-359, and the M06 rollups remain open/In Review until Marcus explicitly approves the visual and gameplay experience.
