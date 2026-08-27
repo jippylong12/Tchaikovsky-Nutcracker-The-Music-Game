@@ -65,7 +65,7 @@ const audioPreviewStartSeconds: Record<NutcrackerSongId, Record<NutcrackerTrackN
 };
 
 export const nutcrackerSongGames = [
-  buildSongGame(1, "Dance of the Sugar Plum Fairy", "theme-3", [
+  buildSongGame(1, "Dance of the Sugar Plum Fairy", "theme-9", [
     ["Bass", true, 2, "Nutcracker"],
     ["Violin", true, 14, "Mouse"],
     ["Trumpet", false, 2, "Train"],
@@ -75,7 +75,7 @@ export const nutcrackerSongGames = [
     ["Drums", false, 2, "Cannion"],
     ["Saxophone", true, 280, "RoundDoll"],
   ]),
-  buildSongGame(2, "March", "theme-2", [
+  buildSongGame(2, "March", "theme-14", [
     ["Bass", true, 105],
     ["Violin", true, 2],
     ["Trumpet", true, 2],
@@ -85,7 +85,7 @@ export const nutcrackerSongGames = [
     ["Timpani", false, 2],
     ["Saxophone", false, 2],
   ]),
-  buildSongGame(3, "Overture", "theme-1", [
+  buildSongGame(3, "Overture", "theme-16", [
     ["Bass", false, 2],
     ["Violin", false, 2],
     ["Trumpet", true, 136],
@@ -95,7 +95,7 @@ export const nutcrackerSongGames = [
     ["Drums", false, 2],
     ["Saxophone", true, 2],
   ]),
-  buildSongGame(4, "Trepak", "theme-4", [
+  buildSongGame(4, "Trepak", "theme-11", [
     ["Bass", false, 2],
     ["Violin", false, 2],
     ["Trumpet", false, 2],
@@ -105,7 +105,7 @@ export const nutcrackerSongGames = [
     ["Drums", true, 2],
     ["Saxophone", true, 2],
   ]),
-  buildSongGame(5, "Arabian Dance", "theme-5", [
+  buildSongGame(5, "Arabian Dance", "theme-12", [
     ["Bass", false, 2],
     ["Violin", true, 304],
     ["Trumpet", false, 2],
@@ -115,7 +115,7 @@ export const nutcrackerSongGames = [
     ["Drums", true, 2],
     ["Saxophone", false, 9],
   ]),
-  buildSongGame(6, "Chinese Dance", "theme-6", [
+  buildSongGame(6, "Chinese Dance", "theme-13", [
     ["Bass", false, 2],
     ["Violin", true, 137],
     ["Trumpet", false, 2],
@@ -125,7 +125,7 @@ export const nutcrackerSongGames = [
     ["Drums", true, 2],
     ["Saxophone", false, 2],
   ]),
-  buildSongGame(7, "Dance of the Reed Flutes", "theme-7", [
+  buildSongGame(7, "Dance of the Reed Flutes", "theme-15", [
     ["Bass", true, 2],
     ["Violin", false, 2],
     ["Trumpet", false, 2],
@@ -135,7 +135,7 @@ export const nutcrackerSongGames = [
     ["Drums", false, 2],
     ["Saxophone", false, 2],
   ]),
-  buildSongGame(8, "Waltz of the Flowers", "theme-8", [
+  buildSongGame(8, "Waltz of the Flowers", "theme-10", [
     ["Bass", true, 4],
     ["Violin", true, 559],
     ["Trumpet", false, 66],

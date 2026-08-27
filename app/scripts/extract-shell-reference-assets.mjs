@@ -15,6 +15,7 @@ const generatedRoot = join(appRoot, "generated/shell-reference-source-extract");
 const promotedRoot = join(appRoot, "src/assets/source-scenes");
 const projectorPath = join(projectRoot, "analysis/setup/app/Nutcracker2.exe");
 const introPath = join(projectRoot, "analysis/setup/app/flute_intro.swf");
+const musictionaryPath = join(projectRoot, "analysis/setup/app/activities/musictionary/musictionary.swf");
 const gramophonePath = join(projectRoot, "analysis/setup/app/activities/originals/gramophone.swf");
 const projectorChooseCapturePath = join(
   appRoot,
@@ -25,6 +26,47 @@ const projectorPlayRoomLayerCapturePath = join(
   "source-evidence/shell/projector-playroom-layer-source.png",
 );
 const readerCaptureRoot = join(appRoot, "source-evidence/readers");
+const jip820CaptureRoot = join(appRoot, "source-evidence/jip-820");
+const musictionaryCaptures = [
+  ["01-flute", "47f1d197064c459e72016f9fed6c8a04bd2f3e5580c5c29c9753953e906f2ff0"],
+  ["02-oboe", "9fc33fa64442e3eb25fe866c020ade20ae279abc665f3b72d7334fcad65b6422"],
+  ["03-clarinet", "44d9bb06a5288d5ae275ff6d44928ef5c574712684101680db488dee13387c4c"],
+  ["04-bassoon", "cfa9a58f3125bff4939f2e850fcdedbf5611f86955f0004efba23eea693f26fb"],
+  ["05-saxophone", "bfd199a46082068b8e45a4abad00aaf93d66420b01913b5faa10dc9f6ff05bd3"],
+  ["06-harp", "7f08972d9b7f0855987175e4565f93dcf9d4e30e468549a7403b5175cc339e79"],
+  ["07-piano", "0263f10823fa7e235315f19ecaadfb9b6096ea5009258ac80fa58cd014528eec"],
+  ["08-vibraphone", "d2c629aabd51fb5b0b12e61e9b76f0f058cbd86244c238b13a2de27b81ad05d2"],
+  ["09-timpani", "1d78daf1ae5427d0348f4a46f7d887667679692586c9656e784a28cd86f32d1b"],
+  ["10-cymbals", "ad4652e471981c2019a21c3c548ddfa76a8d1d988d7ec99131d4f29b802154dd"],
+  ["11-double-bass", "55339c2bbeef520d4a311a530f30b327608e0cdd0b3c9b7396f95a0fed6f0f0b"],
+  ["12-cello", "45eccd09c4d49d5580bcb9747daa20a858f78fc617890fc323d11da65246665d"],
+  ["13-violin", "5ed5da8d9b1552d2d3f4c27efbf80099d9e2f70c25a5ba578242e5c18db16f4d"],
+  ["14-viola", "d9b4d41589e0ea1f008072086fcab718b8cc69147160d0a343eb0929655c0728"],
+  ["15-trumpet", "fa73b87ec2721b408fa9659aeb638e9a704a281168246c4b7c765e51962919aa"],
+  ["16-trombone", "0d1620d7c9733497b7459f129d946f1ed43b79276755e5a7fef8502912ece3be"],
+  ["17-french-horn", "9778cc746ee9ac5fbe7c1cba3203c9d5a0681759be21cfb1872b449773beb76c"],
+  ["18-tuba", "e7f60ee58305d9a7f20e602dcd7f422b4003c838c866820c7017b2540f1fce43"],
+];
+const fullSceneCaptures = [
+  {
+    sourceName: "musictionary-help-source.png",
+    promotedName: "musictionary-help.png",
+    sha256: "ac1f9c5b66bdd5388d6329de35a4675b9b9cc5f597f5029aae72c27aa06ead1e",
+    sourceLocator: "projector playRoom to activities/musictionary/musictionary.swf help state; official Ruffle v0.5.0 source-runtime capture",
+  },
+  {
+    sourceName: "musictionary-help-fish-source.png",
+    promotedName: "musictionary-help-fish.png",
+    sha256: "c30d6f27c19d9efbac8df992450aaad6c0e01d1fb1e29565ff3b49867612596d",
+    sourceLocator: "projector playRoom to activities/musictionary/musictionary.swf help mascot state; official Ruffle v0.5.0 source-runtime capture",
+  },
+  {
+    sourceName: "gramophone-source.png",
+    promotedName: "listening-room-source.png",
+    sha256: "488d7a78e8c8545b83d8fddd630bfb419a5bdf72acbbb6cc79008ec111db3b47",
+    sourceLocator: "activities/originals/gramophone.swf neutral root state; official Ruffle v0.5.0 source-runtime capture",
+  },
+];
 const readerSources = [
   {
     name: "story",
@@ -108,6 +150,7 @@ const expected = {
   introSha256: "aa92b6b3022c3cf3030cecd7c06888aebd929a63bcc7b3ce18119f3f7476b782",
   introJpegId: 371,
   introStillSha256: "90185364eb26cb2b295084db962c23aeab64090d268ae09c89add44489d27e7d",
+  musictionarySha256: "c8ce65d2ee006afb6254e59e49b2867ad22cd4a5a6d5da004be53c28c632f7cd",
   gramophoneSha256: "76310a834c1ba3773bd429b594a20a1083b61c657d78de4fc9c1ac20cc58bbdf",
   gramophoneJpeg3Id: 45,
   gramophoneArtSha256: "e194eaf7018eedd3b980af3deadea6f70514cd99fbfa896145e364538981609d",
@@ -250,6 +293,7 @@ function extractJpeg3(sourceSwf, jpegId, targetPath, generatedName, pngComment) 
 
 requireFile(projectorPath);
 requireFile(introPath);
+requireFile(musictionaryPath);
 requireFile(gramophonePath);
 requireFile(projectorChooseCapturePath);
 requireFile(projectorPlayRoomLayerCapturePath);
@@ -260,6 +304,8 @@ readerSources.forEach((reader) =>
   ),
 );
 readerControlCaptures.forEach((capture) => requireFile(capture.sourcePath));
+musictionaryCaptures.forEach(([name]) => requireFile(join(jip820CaptureRoot, `musictionary-source-${name}.png`)));
+fullSceneCaptures.forEach((capture) => requireFile(join(jip820CaptureRoot, capture.sourceName)));
 mkdirSync(generatedRoot, { recursive: true });
 mkdirSync(promotedRoot, { recursive: true });
 
@@ -350,8 +396,40 @@ const introStillPath = join(promotedRoot, "flute-intro-garden.jpg");
 const introStill = extractJpeg(introPath, expected.introJpegId, introStillPath);
 assertEqual(sha256(introStill), expected.introStillSha256, "flute intro JPEG 371 SHA-256");
 
+const musictionary = readFileSync(musictionaryPath);
+assertEqual(sha256(musictionary), expected.musictionarySha256, "musictionary.swf SHA-256");
+for (const [suffix, flag] of [["actions", "-a"], ["placements", "-p"], ["text", "-t"]]) {
+  writeFileSync(
+    join(generatedRoot, `musictionary.${suffix}.txt`),
+    execFileSync("swfdump", [flag, musictionaryPath], { maxBuffer: 64 * 1024 * 1024 }),
+  );
+}
+
+const musictionaryScenes = musictionaryCaptures.map(([name, expectedSha256], index) => {
+  const sourcePath = join(jip820CaptureRoot, `musictionary-source-${name}.png`);
+  const sourceCapture = readFileSync(sourcePath);
+  assertEqual(sha256(sourceCapture), expectedSha256, `Musictionary frame ${index + 1} source capture SHA-256`);
+  const promotedPath = join(promotedRoot, `musictionary-frame-${index + 1}.png`);
+  writeFileSync(promotedPath, sourceCapture);
+  return { frame: index + 1, sourceCapture };
+});
+
+const promotedFullScenes = fullSceneCaptures.map((capture) => {
+  const sourcePath = join(jip820CaptureRoot, capture.sourceName);
+  const sourceCapture = readFileSync(sourcePath);
+  assertEqual(sha256(sourceCapture), capture.sha256, `${capture.sourceName} SHA-256`);
+  writeFileSync(join(promotedRoot, capture.promotedName), sourceCapture);
+  return { ...capture, sourceCapture };
+});
+
 const gramophone = readFileSync(gramophonePath);
 assertEqual(sha256(gramophone), expected.gramophoneSha256, "gramophone.swf SHA-256");
+for (const [suffix, flag] of [["actions", "-a"], ["placements", "-p"], ["text", "-t"]]) {
+  writeFileSync(
+    join(generatedRoot, `gramophone.${suffix}.txt`),
+    execFileSync("swfdump", [flag, gramophonePath], { maxBuffer: 64 * 1024 * 1024 }),
+  );
+}
 const gramophoneArtPath = join(promotedRoot, "listening-room-gramophone.png");
 const gramophoneArt = extractJpeg3(gramophone, expected.gramophoneJpeg3Id, gramophoneArtPath, "gramophone");
 assertEqual(sha256(gramophoneArt), expected.gramophoneArtSha256, "gramophone JPEG3 45 SHA-256");
@@ -464,6 +542,16 @@ const manifest = {
       path: "app/src/assets/source-scenes/flute-intro-garden.jpg",
       sha256: sha256(introStill),
     },
+    ...musictionaryScenes.map((scene) => ({
+      sourceLocator: `activities/musictionary/musictionary.swf root instrument ${scene.frame}; official Ruffle v0.5.0 stable fact-state source-runtime capture`,
+      path: `app/src/assets/source-scenes/musictionary-frame-${scene.frame}.png`,
+      sha256: sha256(scene.sourceCapture),
+    })),
+    ...promotedFullScenes.map((scene) => ({
+      sourceLocator: scene.sourceLocator,
+      path: `app/src/assets/source-scenes/${scene.promotedName}`,
+      sha256: sha256(scene.sourceCapture),
+    })),
     {
       sourceLocator: `activities/originals/gramophone.swf DEFINEBITSJPEG3 id ${expected.gramophoneJpeg3Id}`,
       path: "app/src/assets/source-scenes/listening-room-gramophone.png",
@@ -499,5 +587,5 @@ const manifest = {
 writeFileSync(join(generatedRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 
 console.log(
-  `Shell/reference extraction verified: projector byte ${embedded.offset}, source launcher, composed playRoom, intro JPEG ${expected.introJpegId}, gramophone JPEG3 ${expected.gramophoneJpeg3Id}, ${readerBooks.length} reader books, ${readerScenes.length} complete reader frames, and ${readerControls.length} source control states.`,
+  `Shell/reference extraction verified: projector byte ${embedded.offset}, source launcher, composed playRoom, intro JPEG ${expected.introJpegId}, ${musictionaryScenes.length} Musictionary frames, ${promotedFullScenes.length} full reference captures, gramophone JPEG3 ${expected.gramophoneJpeg3Id}, ${readerBooks.length} reader books, ${readerScenes.length} complete reader frames, and ${readerControls.length} source control states.`,
 );

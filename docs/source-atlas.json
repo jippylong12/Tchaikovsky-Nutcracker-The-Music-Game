@@ -249,13 +249,34 @@
       "title": "Musictionary",
       "routeIds": ["music-dictionary"],
       "lifecycle": "implemented-review",
-      "classifications": ["original source text", "documented fallback"],
+      "classifications": ["original asset", "original source text", "documented fallback"],
       "sourceInputs": [
         "analysis/setup/app/activities/musictionary/musictionary.swf",
         "app/src/data/referenceContent.ts",
         "app/public/local-media/audio/activities/musictionary"
       ],
-      "promotedAssets": [],
+      "promotedAssets": [
+        "app/src/assets/source-scenes/musictionary-frame-1.png",
+        "app/src/assets/source-scenes/musictionary-frame-2.png",
+        "app/src/assets/source-scenes/musictionary-frame-3.png",
+        "app/src/assets/source-scenes/musictionary-frame-4.png",
+        "app/src/assets/source-scenes/musictionary-frame-5.png",
+        "app/src/assets/source-scenes/musictionary-frame-6.png",
+        "app/src/assets/source-scenes/musictionary-frame-7.png",
+        "app/src/assets/source-scenes/musictionary-frame-8.png",
+        "app/src/assets/source-scenes/musictionary-frame-9.png",
+        "app/src/assets/source-scenes/musictionary-frame-10.png",
+        "app/src/assets/source-scenes/musictionary-frame-11.png",
+        "app/src/assets/source-scenes/musictionary-frame-12.png",
+        "app/src/assets/source-scenes/musictionary-frame-13.png",
+        "app/src/assets/source-scenes/musictionary-frame-14.png",
+        "app/src/assets/source-scenes/musictionary-frame-15.png",
+        "app/src/assets/source-scenes/musictionary-frame-16.png",
+        "app/src/assets/source-scenes/musictionary-frame-17.png",
+        "app/src/assets/source-scenes/musictionary-frame-18.png",
+        "app/src/assets/source-scenes/musictionary-help.png",
+        "app/src/assets/source-scenes/musictionary-help-fish.png"
+      ],
       "evidenceDocs": ["docs/shell-reference-source-map.md", "docs/agent-knowledge-base.md"],
       "followUpIssues": ["JIP-820"],
       "fallbackEvidence": [
@@ -273,18 +294,18 @@
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes a DOM display layer with exact source text, audio mappings, NEXT, and EXIT behavior.",
-            "retainedGap": "Full character animation and interactive Flash timeline playback remain unavailable."
+            "details": "The runtime displays 18 promoted complete source-runtime fact layers plus promoted help states, with exact source hit regions, audio mappings, NEXT, and EXIT behavior.",
+            "retainedGap": "Entry-preview, staged rhyme reveal, character animation, and full interactive timeline playback remain unavailable."
           },
           "evidenceDoc": "docs/shell-reference-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "Exact instrument prose, source audio-player ids, and source NEXT/EXIT progression are implemented; character animation remains documented."
+      "auditFinding": "All 18 complete source-runtime fact states, both exact help states, source hit regions, automatic embedded narration, and source NEXT/EXIT progression are implemented; entry-preview and character timeline motion remain documented and Marcus approval remains open."
     },
     {
       "id": "suite",
-      "title": "Nutcracker Suite gramophone player",
+      "title": "Listening Room gramophone player",
       "routeIds": ["suite"],
       "lifecycle": "implemented-review",
       "classifications": ["original asset", "original source text", "documented fallback"],
@@ -294,6 +315,7 @@
         "app/public/local-media/audio/activities/originals"
       ],
       "promotedAssets": [
+        "app/src/assets/source-scenes/listening-room-source.png",
         "app/src/assets/source-scenes/listening-room-gramophone.png",
         "app/src/assets/source-scenes/listening-room-frame.png",
         "app/src/assets/source-scenes/listening-room-record-lp1.png",
@@ -309,8 +331,8 @@
           "source": "analysis/setup/app/activities/originals/gramophone.swf",
           "sourceLocator": {
             "kind": "sprite-timeline",
-            "identifier": "sprite id 0048 and 0111; playLP frame 2; pauseLP frame 1",
-            "frameOrState": "root player state playLP frame 2 and pauseLP frame 1"
+            "identifier": "root lp1 through lp16; hole sprite id 0050; playLP frame 2; pauseLP frame 1",
+            "frameOrState": "neutral root state plus player state playLP frame 2 and pauseLP frame 1"
           },
           "toolLimitation": {
             "capability": "interactive-timeline-flattening",
@@ -319,14 +341,14 @@
           },
           "runtimeFallback": {
             "mechanism": "composed-promoted-layers",
-            "details": "The runtime composes promoted gramophone, ornamental-frame, and record layers with TypeScript audio state.",
-            "retainedGap": "Full interactive record and tonearm timeline playback remains unavailable."
+            "details": "The runtime displays the promoted complete source-runtime Listening Room layer with 16 source-positioned record hit targets, drag/drop, and TypeScript audio state.",
+            "retainedGap": "Record movement, dynamic visible labels, mascot motion, tonearm animation, and full interactive timeline playback remain unavailable."
           },
           "evidenceDoc": "docs/shell-reference-source-map.md"
         }
       ],
       "manualApproval": "required",
-      "auditFinding": "Correctly named gramophone/frame/record art, exact theme paths, an unselected initial state, dynamic disc labels, and play/pause states are implemented for review."
+      "auditFinding": "The complete source-runtime room, all 16 source records, exact Children’s Album and Nutcracker Suite title arrays, source placements, blank initial labels, drag/drop, and play/pause state are implemented; source-missing theme9-16 is explicit, the prior false Nutcracker labels are removed, and Marcus approval remains open."
     },
     {
       "id": "nutcracker-chooser",

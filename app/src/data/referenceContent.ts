@@ -16,6 +16,24 @@ import storyReaderFrame1Url from "../assets/source-scenes/story-reader-frame-1.p
 import storyReaderFrame2Url from "../assets/source-scenes/story-reader-frame-2.png";
 import storyReaderFrame3Url from "../assets/source-scenes/story-reader-frame-3.png";
 import storyReaderFrame4Url from "../assets/source-scenes/story-reader-frame-4.png";
+import musictionaryFrame1Url from "../assets/source-scenes/musictionary-frame-1.png";
+import musictionaryFrame2Url from "../assets/source-scenes/musictionary-frame-2.png";
+import musictionaryFrame3Url from "../assets/source-scenes/musictionary-frame-3.png";
+import musictionaryFrame4Url from "../assets/source-scenes/musictionary-frame-4.png";
+import musictionaryFrame5Url from "../assets/source-scenes/musictionary-frame-5.png";
+import musictionaryFrame6Url from "../assets/source-scenes/musictionary-frame-6.png";
+import musictionaryFrame7Url from "../assets/source-scenes/musictionary-frame-7.png";
+import musictionaryFrame8Url from "../assets/source-scenes/musictionary-frame-8.png";
+import musictionaryFrame9Url from "../assets/source-scenes/musictionary-frame-9.png";
+import musictionaryFrame10Url from "../assets/source-scenes/musictionary-frame-10.png";
+import musictionaryFrame11Url from "../assets/source-scenes/musictionary-frame-11.png";
+import musictionaryFrame12Url from "../assets/source-scenes/musictionary-frame-12.png";
+import musictionaryFrame13Url from "../assets/source-scenes/musictionary-frame-13.png";
+import musictionaryFrame14Url from "../assets/source-scenes/musictionary-frame-14.png";
+import musictionaryFrame15Url from "../assets/source-scenes/musictionary-frame-15.png";
+import musictionaryFrame16Url from "../assets/source-scenes/musictionary-frame-16.png";
+import musictionaryFrame17Url from "../assets/source-scenes/musictionary-frame-17.png";
+import musictionaryFrame18Url from "../assets/source-scenes/musictionary-frame-18.png";
 export type ReadingRouteId = "story" | "composer-biography" | "ballet-history";
 
 export type ReadingPageColumn = {
@@ -54,18 +72,18 @@ export type DictionaryInstrument = {
   readonly sourceAssetId: number;
   readonly sourceTextId: number;
   readonly audioPath: string;
+  readonly sceneImagePath: string;
 };
 
 export type SuiteTrack = {
   readonly id: string;
   readonly number: number;
   readonly title: string;
+  readonly collectionTitle: "The Children’s Album" | "The Nutcracker Suite";
   readonly originalPath: string;
-  readonly audioPath: string;
+  readonly audioPath: string | null;
   readonly durationSeconds: number | null;
 };
-
-const publicAudio = (originalPath: string) => findAudioByOriginalPath(mediaManifest, originalPath)?.publicPath ?? `/local-media/audio/${originalPath}`;
 
 const activityAudio = (activity: string, assetId: number) => `/local-media/audio/activities/${activity}/${assetId}.mp3`;
 
@@ -333,7 +351,7 @@ export const readingActivities: readonly ReadingActivity[] = [
   },
 ];
 
-const dictionaryInstrumentCatalog: readonly DictionaryInstrument[] = [
+const dictionaryInstrumentCatalog: readonly Omit<DictionaryInstrument, "sceneImagePath">[] = [
   {
     id: "flute",
     name: "Flute",
@@ -524,21 +542,53 @@ export const dictionaryInstruments: readonly DictionaryInstrument[] = dictionary
   if (!instrument) {
     throw new Error(`Missing Musictionary source frame ${instrumentId}`);
   }
-  return instrument;
+  return {
+    ...instrument,
+    sceneImagePath: [
+      musictionaryFrame1Url,
+      musictionaryFrame2Url,
+      musictionaryFrame3Url,
+      musictionaryFrame4Url,
+      musictionaryFrame5Url,
+      musictionaryFrame6Url,
+      musictionaryFrame7Url,
+      musictionaryFrame8Url,
+      musictionaryFrame9Url,
+      musictionaryFrame10Url,
+      musictionaryFrame11Url,
+      musictionaryFrame12Url,
+      musictionaryFrame13Url,
+      musictionaryFrame14Url,
+      musictionaryFrame15Url,
+      musictionaryFrame16Url,
+      musictionaryFrame17Url,
+      musictionaryFrame18Url,
+    ][dictionarySourceOrder.indexOf(instrumentId)],
+  };
 });
 
 export const dictionaryFamilies = ["Woodwinds", "Brass", "Strings", "Percussion", "Keyboard"] as const;
 
-export const suiteTracks: readonly SuiteTrack[] = [
-  "Overture",
-  "March",
+const sourceRecordTitles = [
+  "Waltz",
+  "Russian",
+  "Italian Song",
+  "Old French Song",
+  "German Song",
+  "Polka",
+  "Mazurka",
+  "Neapolitan Song",
   "Dance of the Sugar Plum Fairy",
-  "Trepak",
-  "Arabian Dance",
-  "Chinese Dance",
-  "Dance of the Reed Flutes",
   "Waltz of the Flowers",
-].map((title, index) => {
+  "Russian Dance",
+  "Arab Dance",
+  "Chinese Dance",
+  "March",
+  "Dance of the Reed-Flutes",
+  "Overture",
+] as const;
+
+export const suiteTracks: readonly SuiteTrack[] = sourceRecordTitles.map((title, index) => {
   const number = index + 1;
   const originalPath = `activities/originals/theme${number}.mp3`;
   const asset = findAudioByOriginalPath(mediaManifest, originalPath);
@@ -546,8 +596,9 @@ export const suiteTracks: readonly SuiteTrack[] = [
     id: `theme-${number}`,
     number,
     title,
+    collectionTitle: number <= 8 ? "The Children’s Album" : "The Nutcracker Suite",
     originalPath,
-    audioPath: publicAudio(originalPath),
+    audioPath: asset?.publicPath ?? null,
     durationSeconds: asset?.durationSeconds ?? null,
   };
 });

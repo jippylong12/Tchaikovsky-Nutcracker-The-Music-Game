@@ -15,8 +15,8 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 | `story` | Four complete Ruffle-recovered spreads, source page hit regions/hover states, narration, and EXIT fade; manual review open | `activities/story/story.swf` | JIP-819 |
 | `composer-biography` | Four complete Ruffle-recovered spreads with exact photos/text, source controls, narration, and EXIT fade; manual review open | `activities/biography/biography.swf` | JIP-819 |
 | `ballet-history` | Five complete Ruffle-recovered spreads with exact photos/text, source controls, narration, and EXIT fade; manual review open | `activities/ballet/ballet.swf` | JIP-819 |
-| `music-dictionary` | Exact source prose/audio ids and NEXT/EXIT sequence, character-timeline fallback, manual review open | `activities/musictionary/musictionary.swf` | JIP-820 |
-| `suite` | Promoted gramophone/frame children, exact theme/state actions, timeline fallback, manual review open | `activities/originals/gramophone.swf` | JIP-820 |
+| `music-dictionary` | Eighteen complete Ruffle-recovered fact states plus exact help/fish states, source hit regions, automatic narration, and NEXT/EXIT sequence; entry-preview/character timeline fallback and manual review open | `activities/musictionary/musictionary.swf` | JIP-820 |
+| `suite` | Complete Ruffle-recovered Listening Room, all 16 source records/titles/placements, drag/drop and play/pause state; source-missing theme9-16 and record/tonearm motion gap documented; manual review open | `activities/originals/gramophone.swf` | JIP-820 |
 | `nutcracker-chooser` | Source-backed, documented playback fallbacks, manual review open | `games/nutcrackergame/nutchooser.swf` | JIP-334, JIP-347, JIP-349, JIP-357, JIP-359 |
 | `song-1` … `song-8` | Source-backed, actor/timeline fallback and manual review open | `games/nutcrackergame/song*/` | JIP-335, JIP-347, JIP-349, JIP-357, JIP-358, JIP-359 |
 | `childrens-album` | Eight exact source patterns/titles, bundled song audio, saved doors and key 6; display-list fallback and manual review open | `games/childrensalbum/`, door/data files | JIP-836 → JIP-840 |
@@ -40,7 +40,7 @@ No route may start from generic UI when atlas evidence or recoverable source ass
 
 ## Audit conclusions
 
-- The opening shell now preserves the intro → source chooser → `playRoom` lifecycle, and the menu restores recoverable projector foreground art instead of showing the empty room JPEG. JIP-818 remains open for Marcus's visual approval; JIP-819 and JIP-820 retain their own manual approval gates.
+- The opening shell now preserves the intro → source chooser → `playRoom` lifecycle, and the menu restores recoverable projector foreground art instead of showing the empty room JPEG. The three readers, all 18 Musictionary fact/help states, and the 16-record Listening Room now use complete source-runtime captures instead of invented page/player chrome. JIP-818, JIP-819, and JIP-820 retain their own manual approval gates.
 - M06 chooser/song work has durable source classifications and approval evidence, but exact timeline/manual gates remain open.
 - M07 and M08 routes are source-backed review surfaces with exact automated evidence and retained Marcus approval gates. Alice and Nut House now use hash-locked official-Ruffle captures where SWFTools cannot resolve their full display lists; remaining static-capture motion/timeline gaps stay documented rather than being replaced with generic UI.
 - JIP-345 release QA remains blocked by JIP-360 and must use this matrix/contact sheet rather than rediscover route coverage at packaging time.

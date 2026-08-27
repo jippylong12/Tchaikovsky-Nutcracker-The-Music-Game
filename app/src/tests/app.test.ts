@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createAppShell } from "../app";
 import { createAudioService, type AudioElementLike } from "../audio/audioService";
 import { getCorrectNutcrackerTrackNumbers, nutcrackerSongGames } from "../data/nutcrackerSongGames";
-import { dictionaryInstruments, readingActivities } from "../data/referenceContent";
+import { dictionaryInstruments, readingActivities, suiteTracks } from "../data/referenceContent";
 import { createMemoryDeck, createTreeRounds, getMelodySequences } from "../data/m07Games";
 import {
   createProgressStore,
@@ -18,12 +18,17 @@ import { fileURLToPath } from "node:url";
 class FakeAudioElement implements AudioElementLike {
   static playCount = 0;
   static playedSources: string[] = [];
+  static instances: FakeAudioElement[] = [];
   src = "";
   loop = false;
   muted = false;
   volume = 1;
   preload = "";
   currentTime = 0;
+  private readonly listeners = new Map<string, Set<() => void>>();
+  constructor() {
+    FakeAudioElement.instances.push(this);
+  }
   play = () => {
     FakeAudioElement.playCount += 1;
     FakeAudioElement.playedSources.push(this.src);
@@ -31,7 +36,14 @@ class FakeAudioElement implements AudioElementLike {
   };
   pause = () => undefined;
   load = () => undefined;
-  addEventListener = () => undefined;
+  addEventListener = (type: string, listener: () => void) => {
+    const listeners = this.listeners.get(type) ?? new Set<() => void>();
+    listeners.add(listener);
+    this.listeners.set(type, listeners);
+  };
+  finish = () => {
+    this.listeners.get("ended")?.forEach((listener) => listener());
+  };
 }
 
 function lastPlayedSource(): string | undefined {
@@ -194,7 +206,8 @@ describe("desktop app shell", () => {
       ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     expect(mount.textContent).toContain("The Listening Room");
-    expect(mount.querySelector<HTMLImageElement>(".source-listening-frame")?.src).toContain("listening-room-frame");
+    expect(mount.querySelector<HTMLImageElement>(".source-listening-frame")?.src).toContain("listening-room-source");
+    expect(mount.querySelectorAll("[data-suite-track]")).toHaveLength(16);
     expect(mount.querySelector(".game-viewport")).not.toBeNull();
   });
 
@@ -303,22 +316,46 @@ describe("desktop app shell", () => {
     }
   });
 
-  it("selects music dictionary instruments and plays their recovered clips", () => {
+  it("cycles all 18 source-captured Musictionary facts, narration, help states, and source controls", () => {
     const mount = document.createElement("main");
     document.body.append(mount);
 
+    FakeAudioElement.playedSources = [];
     createTestShell(mount);
     mount.querySelector<HTMLButtonElement>('[data-route="music-dictionary"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    for (let index = 0; index < 8; index += 1) {
-      mount.querySelector<HTMLButtonElement>("[data-dictionary-next]")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    }
-    expect(document.activeElement).toBe(mount.querySelector("[data-dictionary-next]"));
-    mount.querySelector<HTMLButtonElement>("[data-dictionary-audio]")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(lastPlayedSource()).toContain("/local-media/audio/activities/musictionary/149.mp3");
+    expect(mount.querySelector<HTMLImageElement>(".source-musictionary-frame")?.src).toContain("musictionary-frame-1");
+    expect(mount.querySelector(".source-musictionary-card")).toBeNull();
+    expect(mount.querySelector("[data-dictionary-audio]")).toBeNull();
+    expect(mount.querySelectorAll(".source-musictionary-hit")).toHaveLength(3);
 
-    expect(mount.textContent).toContain("Timpani");
-    expect(mount.textContent).toContain("pitched percussion instruments");
-    expect(mount.querySelector<HTMLElement>(".source-musictionary-scene")?.dataset.sourcePlayer).toContain("527");
-    expect(mount.querySelector<HTMLElement>(".source-musictionary-scene")?.dataset.sourceTextId).toBe("528");
+    const visitedFrames = new Set<string>();
+    for (let index = 0; index < 18; index += 1) {
+      const frameSource = mount.querySelector<HTMLImageElement>(".source-musictionary-frame")?.src;
+      if (frameSource) visitedFrames.add(frameSource);
+      if (index < 17) {
+        mount
+          .querySelector<HTMLButtonElement>("[data-dictionary-next]")
+          ?.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+      }
+    }
+    expect(visitedFrames.size).toBe(18);
+    expect(mount.textContent).toContain("Tuba");
+    expect(lastPlayedSource()).toContain("/local-media/audio/activities/musictionary/854.mp3");
+
+    mount.querySelector<HTMLButtonElement>("[data-dictionary-next]")?.click();
+    expect(document.activeElement).toBe(mount.querySelector("[data-dictionary-next]"));
+    expect(mount.textContent).toContain("Flute");
+
+    mount.querySelector<HTMLButtonElement>("[data-dictionary-help]")?.click();
+    expect(mount.querySelector<HTMLImageElement>(".source-musictionary-frame")?.src).toContain("musictionary-help.png");
+    expect(mount.querySelectorAll(".source-musictionary-hit")).toHaveLength(2);
+    mount.querySelector<HTMLButtonElement>("[data-dictionary-help-fish]")?.click();
+    expect(mount.querySelector<HTMLImageElement>(".source-musictionary-frame")?.src).toContain("musictionary-help-fish");
+    mount.querySelector<HTMLButtonElement>("[data-dictionary-help-close]")?.click();
+
+    expect(mount.querySelector<HTMLImageElement>(".source-musictionary-frame")?.src).toContain("musictionary-frame-1");
+    expect(mount.querySelector<HTMLElement>(".source-musictionary-scene")?.dataset.sourcePlayer).toContain("149");
     mount.remove();
   });
 
@@ -342,33 +379,72 @@ describe("desktop app shell", () => {
     expect(mount.querySelector(".source-reader-images")).toBeNull();
   });
 
-  it("plays and stops Nutcracker Suite gramophone tracks", () => {
+  it("uses all 16 source gramophone records, exact titles, drag/drop, and explicit missing audio", async () => {
     const mount = document.createElement("main");
 
+    FakeAudioElement.playedSources = [];
     createTestShell(mount);
     mount.querySelector<HTMLButtonElement>('[data-route="suite"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(Array.from(mount.querySelectorAll<HTMLButtonElement>("[data-suite-track]")).every((record) => record.getAttribute("aria-pressed") === "false")).toBe(true);
+    expect(suiteTracks).toHaveLength(16);
+    expect(suiteTracks.slice(0, 8).every((track) => track.audioPath !== null)).toBe(true);
+    expect(suiteTracks.slice(8).every((track) => track.audioPath === null)).toBe(true);
+    expect(mount.querySelectorAll("[data-suite-track]")).toHaveLength(16);
+    expect(
+      Array.from(mount.querySelectorAll<HTMLButtonElement>("[data-suite-track]")).every(
+        (record) => record.getAttribute("draggable") === "true",
+      ),
+    ).toBe(true);
+    expect(mount.textContent).not.toContain("CHOOSE A RECORD");
     mount.querySelector<HTMLButtonElement>('[data-suite-track="theme-4"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(mount.textContent).toContain("Trepak");
-    expect(mount.textContent).toContain("PLAYING");
+    expect(mount.textContent).toContain("Old French Song");
+    expect(mount.textContent).toContain("Playing");
+    expect(lastPlayedSource()).toContain("/local-media/audio/activities/originals/theme4.mp3");
     expect(mount.querySelector<HTMLElement>('[data-suite-track="theme-4"]')?.dataset.sourcePlacement).toContain(
       "lp4 sprite id 0066",
     );
-    expect(mount.querySelector<HTMLButtonElement>(".suite-stop-button")?.getAttribute("aria-label")).toBe("Stop track");
+    expect(mount.querySelector<HTMLButtonElement>(".suite-stop-button")?.getAttribute("aria-label")).toBe("Pause Old French Song");
 
     mount.querySelector<HTMLButtonElement>('[data-action="suite-stop"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(mount.textContent).toContain("PAUSED");
-    expect(mount.textContent).toContain("Trepak");
+    expect(mount.textContent).toContain("Paused");
+    expect(mount.textContent).toContain("Old French Song");
     expect(mount.querySelector<HTMLButtonElement>('[data-suite-track="theme-4"]')?.getAttribute("aria-pressed")).toBe("true");
-    expect(mount.querySelector<HTMLButtonElement>(".suite-play-button")?.getAttribute("aria-label")).toBe("Play selected track");
+    expect(mount.querySelector<HTMLButtonElement>(".suite-play-button")?.getAttribute("aria-label")).toBe("Play Old French Song");
 
     mount.querySelector<HTMLButtonElement>('[data-action="suite-play"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-    expect(mount.textContent).toContain("PLAYING");
-    expect(mount.textContent).toContain("Trepak");
+    expect(mount.textContent).toContain("Playing");
+    expect(mount.textContent).toContain("Old French Song");
     expect(mount.querySelector<HTMLButtonElement>('[data-suite-track="theme-4"]')?.getAttribute("aria-pressed")).toBe("true");
+
+    FakeAudioElement.instances[FakeAudioElement.instances.length - 1]?.finish();
+    await Promise.resolve();
+    expect(mount.textContent).toContain("Paused");
+    expect(mount.querySelector<HTMLButtonElement>(".suite-play-button")?.getAttribute("aria-label")).toBe("Play Old French Song");
+
+    const playCountBeforeMissingRecord = FakeAudioElement.playedSources.length;
+    mount.querySelector<HTMLButtonElement>('[data-suite-track="theme-9"]')?.click();
+    expect(FakeAudioElement.playedSources).toHaveLength(playCountBeforeMissingRecord);
+    expect(mount.textContent).toContain("Dance of the Sugar Plum Fairy");
+    expect(mount.textContent).toContain("source audio theme9.mp3 is missing");
+    expect(mount.querySelector('[data-suite-track="theme-9"]')?.getAttribute("aria-pressed")).toBe("true");
+    expect(mount.querySelector('[data-suite-track="theme-9"]')?.getAttribute("data-source-audio")).toBe("missing");
+
+    const transferValues = new Map<string, string>();
+    const transfer = {
+      getData: (type: string) => transferValues.get(type) ?? "",
+      setData: (type: string, value: string) => transferValues.set(type, value),
+      setDragImage: () => undefined,
+    };
+    const dragStart = new Event("dragstart", { bubbles: true }) as DragEvent;
+    Object.defineProperty(dragStart, "dataTransfer", { value: transfer });
+    mount.querySelector<HTMLButtonElement>('[data-suite-track="theme-2"]')?.dispatchEvent(dragStart);
+    const drop = new Event("drop", { bubbles: true, cancelable: true }) as DragEvent;
+    Object.defineProperty(drop, "dataTransfer", { value: transfer });
+    mount.querySelector<HTMLElement>("[data-suite-drop]")?.dispatchEvent(drop);
+    expect(mount.textContent).toContain("The Children’s Album: Russian. Playing.");
+    expect(lastPlayedSource()).toContain("/local-media/audio/activities/originals/theme2.mp3");
   });
 
   it("renders route map as a full desktop control panel", () => {
@@ -575,7 +651,14 @@ describe("desktop app shell", () => {
     expect(mount.textContent).toContain("Main Menu");
     mount.querySelector<HTMLButtonElement>('[data-route="nutcracker-chooser"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
+    const playCountBeforeChooserPreview = FakeAudioElement.playedSources.length;
     mount.querySelector<HTMLButtonElement>('[data-nutcracker-preview="1"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(FakeAudioElement.playedSources.slice(playCountBeforeChooserPreview)).toEqual([
+      "/local-media/audio/games/nutcrackergame/song1/track1.mp3",
+      "/local-media/audio/games/nutcrackergame/song1/track2.mp3",
+      "/local-media/audio/games/nutcrackergame/song1/track5.mp3",
+      "/local-media/audio/games/nutcrackergame/song1/track8.mp3",
+    ]);
     mount.querySelector<HTMLButtonElement>('[data-nutcracker-door="1"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     expect(mount.textContent).toContain("Dance of the Sugar Plum Fairy");
@@ -586,6 +669,14 @@ describe("desktop app shell", () => {
     expect(mount.textContent).toContain("HINT");
     expect(mount.textContent).toContain("LISTEN");
     expect(mount.textContent).toContain("EXIT");
+    const playCountBeforeSongPreview = FakeAudioElement.playedSources.length;
+    mount.querySelector<HTMLButtonElement>('[data-source-control="songChooser"]')?.click();
+    expect(FakeAudioElement.playedSources.slice(playCountBeforeSongPreview)).toEqual([
+      "/local-media/audio/games/nutcrackergame/song1/track1.mp3",
+      "/local-media/audio/games/nutcrackergame/song1/track2.mp3",
+      "/local-media/audio/games/nutcrackergame/song1/track5.mp3",
+      "/local-media/audio/games/nutcrackergame/song1/track8.mp3",
+    ]);
     const hintButton = mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]');
     expect(hintButton?.dataset.songAction).toBe("hint-song");
     expect(hintButton?.dataset.sourceBody).toContain("shape id 0119");
@@ -727,6 +818,19 @@ describe("desktop app shell", () => {
     expect(magicKey?.hidden).toBe(false);
     expect(magicKey?.dataset.sourceVisible).toBe("true");
     expect(magicKey?.src).toContain("chooser-magic-key");
+  });
+
+  it("maps Nutcracker songs to their matching gramophone records", () => {
+    expect(nutcrackerSongGames.map((song) => song.suiteTrackId)).toEqual([
+      "theme-9",
+      "theme-14",
+      "theme-16",
+      "theme-11",
+      "theme-12",
+      "theme-13",
+      "theme-15",
+      "theme-10",
+    ]);
   });
 
   it("renders recovered JPEG3 scenery on source-backed Nutcracker song scenes", () => {

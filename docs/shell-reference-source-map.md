@@ -17,6 +17,7 @@ Locked evidence:
 - `Nutcracker2.exe` SHA-256 `79e464b0af7452697e0d63c71a6829848834f6fe3d7a311129c82e0b08935bab`
 - final valid embedded `FWS` at byte `864256`, Flash 6, declared length `6085533`
 - `flute_intro.swf` SHA-256 `aa92b6b3022c3cf3030cecd7c06888aebd929a63bcc7b3ce18119f3f7476b782`
+- `musictionary.swf` SHA-256 `c8ce65d2ee006afb6254e59e49b2867ad22cd4a5a6d5da004be53c28c632f7cd`
 - `gramophone.swf` SHA-256 `76310a834c1ba3773bd429b594a20a1083b61c657d78de4fc9c1ac20cc58bbdf`
 - official Ruffle `v0.5.0` self-hosted archive SHA-256 `4e0d44ba990f9fe3434d7848f740348299bd6c473db59fb5f8606b750fcc5760`
 - root-frame-1268 source-runtime capture SHA-256 `d3cae55ce2e93c21bc461f7e6ccf8a5f5f83d6d001f6b9f32a63b906b9b093e5`
@@ -94,23 +95,56 @@ Each source movie starts its narration once at the first labeled spread (`Define
 
 ## Musictionary
 
-`activities/musictionary/musictionary.swf` uses a dark `#003366` root background, source `EXIT` text ids `0073`-`0075`, source `NEXT` text id `0086`, and one `instPlayer` sprite per instrument. The remake advances through the exact root-frame sequence `flute`, `oboe`, `clarnet`, `bassoon`, `sax`, `harp`, `piano`, `vibraphone`, `timpani`, `cymbals`, `kontrabas`, `cello`, `violin`, `viola`, `trumpet`, `trombon`, `horn`, `tuba`; exits with `EXIT`; and plays the recovered audio mapped to each `instPlayer` id. The runtime keeps normalized display names such as Clarinet and Double Bass while preserving the source frame order. NEXT restores focus after the DOM frame replacement.
+`activities/musictionary/musictionary.swf` uses source `EXIT` text ids `0073`-`0075`, source `NEXT` text id `0086`, and one `instPlayer` sprite per instrument. Its exact root-frame sequence is `flute`, `oboe`, `clarnet`, `bassoon`, `sax`, `harp`, `piano`, `vibraphone`, `timpani`, `cymbals`, `kontrabas`, `cello`, `violin`, `viola`, `trumpet`, `trombon`, `horn`, `tuba`. The runtime keeps normalized accessible display names such as Clarinet and Double Bass while preserving that source order.
 
-The visible instrument prose is exact `DEFINETEXT` content. Representative mappings are flute player `0149` / text `0152`, clarinet player `0305` / text `0307`, timpani player `0527` / text `0528`, and tuba player `0854` / text `0855`. The full movie cannot be flattened by the local SWF renderer, so unrecovered character/vector animation remains a documented display-list gap rather than invented art.
+SWFTools crashes while flattening the full movie, but official Ruffle `v0.5.0` running through the recovered `Nutcracker2.exe` projector resolves all 18 complete stable fact states. The 640 x 480 captures under `app/source-evidence/jip-820/` are hash-locked by `assets:shell-reference` and promoted as `musictionary-frame-1.png` through `musictionary-frame-18.png`. The runtime displays those exact frames directly, so the source border, animal musicians, instrument silhouettes, fonts, rhyme, prose, wrapping, `?`, `EXIT`, and `NEXT` pixels no longer depend on a DOM approximation.
+
+Representative audio/text mappings are flute player `0149` / text `0152`, clarinet player `0305` / text `0307`, timpani player `0527` / text `0528`, and tuba player `0854` / text `0855`. The recovered embedded narration starts on route entry and after every `NEXT`; it stops on help or exit. Transparent hit targets cover only the three visible source controls: help x `0-72`, y `0-73`; exit x `568-640`, y `0-75`; and next x `267-375`, y `315-390`. Pointer activation does not manufacture a focus state; keyboard activation restores focus to `NEXT` after the frame replacement.
+
+The source question control opens the shared blue/pink hallway help state. Its question control at x `537-583`, y `140-184` reveals the recovered fish mascot, and its `EXIT` at x `566-640`, y `450-480` returns to the current instrument. Both complete help states are hash-locked and promoted as `musictionary-help.png` and `musictionary-help-fish.png`. The entry-preview, staged rhyme reveal, and character/instrument motion remain the documented timeline gap; the prior generic cream text card and invented play button have been removed.
 
 ## Listening Room
 
-`activities/originals/gramophone.swf` loads `activities/originals/theme{iam}.mp3`, uses root player labels `pauseLP` and `playLP`, and populates dynamic `discTitle` / `discName` fields. The runtime keeps those eight exact theme paths and state transitions. Before the user chooses a record, `discTitle` reads `CHOOSE A RECORD`, `discName` is empty, and every record exposes `aria-pressed="false"`; theme 1 is not preselected.
+`activities/originals/gramophone.swf` loads `activities/originals/theme{iam}.mp3`, uses root player labels `pauseLP` and `playLP`, and populates dynamic `discTitle` / `discName` fields after a record is dragged to the `hole` target. The root has 16 draggable records, not eight. Its exact `discName` order is Waltz, Russian, Italian Song, Old French Song, German Song, Polka, Mazurka, Neapolitan Song, Dance of the Sugar Plum Fairy, Waltz of the Flowers, Russian Dance, Arab Dance, Chinese Dance, March, Dance of the Reed-Flutes, Overture. `discTitle` is `The Children’s Album` for records 1-8 and `The Nutcracker Suite` for records 9-16.
+
+The initial source fields are blank; there is no source `CHOOSE A RECORD` initialization. The runtime therefore starts with every record unpressed and no invented label. The recovered source tree contains `theme1.mp3` through `theme8.mp3` only, so those paths correctly belong to the eight Children’s Album records. `theme9.mp3` through `theme16.mp3` are absent everywhere in the authoritative tree. The final eight records remain selectable and expose an accessible source-missing status, but the remake does not relabel or substitute unrelated audio.
+
+The Nutcracker chooser and song-game previews are independent of this gramophone catalog and must not fall back to the unrelated Children’s Album audio in `theme1.mp3` through `theme8.mp3`. The song SWF's `previewSong()` composes the four recovered valid `track#.mp3` stems; the remake preserves that exact available path for the in-song `LISTEN` control and uses it as the documented fallback for the chooser's separate embedded preview mixes.
+
+Official Ruffle resolves the complete neutral 640 x 480 Listening Room scene. The hash-locked capture is promoted as `listening-room-source.png` and is the runtime visual, preserving the exact border, title, gramophone, mascot, record artwork, and source overlap. Transparent source-positioned controls preserve pointer, keyboard, and drag/drop selection; the platter drop target is anchored to `hole` sprite id `0050` at x `151.20`, y `334.30`, scale `1.525`. Selecting an available record starts its recovered file once; the platter control pauses or resumes it; `EXIT` returns to `playRoom`.
+
+Exact root placements:
+
+| Record | Instance / sprite | Depth | x | y | Matrix a/d |
+| --- | --- | ---: | ---: | ---: | --- |
+| 1 | `lp1` / `0063` | 43 | 450.55 | 384.20 | 1.243 / 0.562 |
+| 2 | `lp2` / `0070` | 61 | 559.65 | 439.85 | 1.243 / 0.562 |
+| 3 | `lp3` / `0072` | 79 | 548.90 | 393.10 | 1.347 / 0.272 |
+| 4 | `lp4` / `0066` | 52 | 327.75 | 445.45 | 1.134 / 0.500 |
+| 5 | `lp5` / `0059` | 32 | 548.90 | 333.25 | 1.254 / 0.575 |
+| 6 | `lp6` / `0070` | 88 | 349.30 | 389.25 | 1.005 / 0.478 |
+| 7 | `lp7` / `0072` | 70 | 444.95 | 449.90 | 1.410 / 0.262 |
+| 8 | `lp8` / `0070` | 97 | 453.65 | 335.85 | 1.005 / 0.478 |
+| 9 | `lp9` / `0076` | 106 | 453.65 | 132.85 | 1.005 / 0.478 |
+| 10 | `lp10` / `0076` | 115 | 557.60 | 133.25 | 1.005 / 0.478 |
+| 11 | `lp11` / `0076` | 124 | 453.65 | 175.65 | 1.005 / 0.478 |
+| 12 | `lp12` / `0076` | 133 | 557.60 | 226.05 | 1.005 / 0.478 |
+| 13 | `lp13` / `0076` | 142 | 557.60 | 179.45 | 1.005 / 0.478 |
+| 14 | `lp14` / `0076` | 151 | 453.65 | 225.85 | 1.005 / 0.478 |
+| 15 | `lp15` / `0038` | 1 | 547.15 | 173.25 | 1.005 / 0.478 |
+| 16 | `lp16` / `0076` | 160 | 557.60 | 277.65 | 1.005 / 0.478 |
+
+`lp13` and `lp15` overlap in the source. The runtime keeps the exact neutral pixels, splits their invisible pointer hit regions, and leaves both controls keyboard reachable.
 
 Recovered visual children:
 
 - gramophone JPEG3 id `0045`, placed through sprite `0048` at scale `0.570`, x `13.70`, y `95.25`; promoted as `listening-room-gramophone.png`
 - lossless ornamental frame id `0108`, placed through sprite `0111` at depth `0180`, centered x `319.60`, y `238.90`; promoted as `listening-room-frame.png`
-- source record sprites `0063` (`lp1`), `0070` (`lp2/lp6/lp8`), `0072` (`lp3/lp7`), `0066` (`lp4`), and `0059` (`lp5`); each unique sprite is promoted under its source-local `listening-room-record-lp#.png` name and the runtime retains the root depth/matrix/coordinate for all eight instances
+- source record sprites `0063`, `0070`, `0072`, `0066`, and `0059`; the earlier isolated promotions remain forensic child evidence, but the runtime now uses the complete source scene rather than recomposing those children
 
 The earlier public path `activities/originals/gramophone/108.png` was misleading: id `0108` is the ornamental frame, not the gramophone. Runtime imports now use correctly named source-local promotions.
 
-Direct `swfextract -j 45`, `-j 78`, `-j 84`, `-j 88`, `-j 92`, and `-j 104` all fail locally with `No JPEG support compiled in` and `Zlib error -3`. The deterministic extractor reads JPEG3 and alpha payloads directly, repairs the legacy JPEG marker pair, inflates the alpha channel, and writes a stable PNG with time/date chunks removed. Isolated record sprites warn about unknown button-state child ids, but their visible pause-state source shapes render intact in a translated wrapper and are promoted with hash gates. Full interactive record/tonearm timeline playback remains the documented gap.
+Direct `swfextract -j 45`, `-j 78`, `-j 84`, `-j 88`, `-j 92`, and `-j 104` all fail locally with `No JPEG support compiled in` and `Zlib error -3`. The deterministic extractor still preserves those recoverable children for provenance. Full record movement, mascot motion, dynamic visible disc labels, and tonearm animation remain the documented timeline gap over the exact neutral source capture.
 
 ## Manual approval gate
 

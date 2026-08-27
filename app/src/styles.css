@@ -3719,202 +3719,129 @@ button {
   }
 }
 
-.source-musictionary-controls button,
-.source-listening-exit {
-  min-width: 58px;
-  min-height: 26px;
-  padding: 3px 8px;
-  color: #ffffff;
-  border: 1px solid #8fb4dd;
-  background: #083b7a;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.source-musictionary-controls button:hover,
-.source-listening-exit:hover {
-  color: #ffff00;
-}
-
 .source-musictionary-scene {
-  color: #000000;
-  background: #003366;
-}
-
-.source-musictionary-card {
-  position: absolute;
-  left: 70px;
-  top: 52px;
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
-  width: 500px;
-  height: 350px;
-  padding: 24px 28px 20px;
   overflow: hidden;
-  border: 5px solid #ff9966;
-  background: #fff6d8;
-  box-shadow: 0 10px 0 rgba(0, 0, 0, 0.32);
+  background: #000033;
 }
 
-.source-musictionary-family,
-.source-musictionary-card h1,
-.source-musictionary-copy {
-  margin: 0;
-}
-
-.source-musictionary-family {
-  color: #663399;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.source-musictionary-card h1 {
-  margin: 2px 0 12px;
-  color: #003366;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 32px;
-}
-
-.source-musictionary-copy {
-  min-height: 0;
-  overflow: auto;
-  font-size: 15px;
-  line-height: 1.42;
-}
-
-.source-musictionary-play {
-  justify-self: end;
-  width: 42px;
-  height: 32px;
-  color: #ffffff;
-  border: 0;
-  border-radius: 50%;
-  background: #663399;
-  cursor: pointer;
-}
-
-.source-musictionary-controls {
-  position: absolute;
-  right: 16px;
-  bottom: 12px;
-  left: 16px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.source-listening-room {
-  color: #1b1610;
-  background: #f2e8ce;
-}
-
+.source-musictionary-frame,
 .source-listening-frame {
   position: absolute;
-  left: 2px;
-  top: 1px;
-  z-index: 4;
-  width: 636px;
-  height: 478px;
+  inset: 0;
+  width: 640px;
+  height: 480px;
+  object-fit: fill;
   pointer-events: none;
 }
 
-.source-listening-gramophone {
-  position: absolute;
-  left: 14px;
-  top: 76px;
-  width: 350px;
-  height: 390px;
-}
-
-.source-listening-gramophone > img {
-  position: absolute;
-  inset: 19px 0 0;
-  width: 349px;
-  height: 389px;
-  object-fit: fill;
-}
-
-.source-listening-gramophone h1 {
-  position: absolute;
-  top: -58px;
-  left: 24px;
-  margin: 0;
-  color: #5a321f;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 28px;
-}
-
-.source-disc-title,
-.source-disc-name {
+.source-musictionary-hit,
+.source-listening-platter,
+.source-listening-exit,
+.source-record {
   position: absolute;
   z-index: 2;
-  left: 64px;
-  width: 190px;
+  display: block;
   margin: 0;
-  text-align: center;
-}
-
-.source-disc-title {
-  top: -4px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.source-disc-name {
-  top: 12px;
-  font-size: 13px;
-}
-
-.source-listening-playback {
-  position: absolute;
-  z-index: 3;
-  left: 145px;
-  bottom: 62px;
-  width: 38px;
-  height: 30px;
-  color: #ffffff;
-  border: 1px solid #401d13;
-  border-radius: 50%;
-  background: #7e3020;
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
+}
+
+.source-musictionary-hit:focus-visible,
+.source-listening-platter:focus-visible,
+.source-listening-exit:focus-visible,
+.source-record:focus-visible {
+  outline: 2px dashed #ffff66;
+  outline-offset: 1px;
+}
+
+.source-musictionary-help {
+  left: 0;
+  top: 0;
+  width: 72px;
+  height: 73px;
+  border-radius: 0 0 60% 0;
+}
+
+.source-musictionary-exit {
+  left: 568px;
+  top: 0;
+  width: 72px;
+  height: 75px;
+  border-radius: 0 0 0 60%;
+}
+
+.source-musictionary-next {
+  left: 267px;
+  top: 315px;
+  width: 108px;
+  height: 75px;
+  border-radius: 48%;
+}
+
+.source-musictionary-help-question {
+  left: 537px;
+  top: 140px;
+  width: 46px;
+  height: 44px;
+  border-radius: 50%;
+}
+
+.source-musictionary-help-exit {
+  left: 566px;
+  top: 450px;
+  width: 74px;
+  height: 30px;
+}
+
+.source-listening-room {
+  overflow: hidden;
+  background: #102d46;
+}
+
+.source-listening-frame {
+  z-index: 1;
 }
 
 .source-record-shelf {
   position: absolute;
   inset: 0;
+  z-index: 2;
 }
 
 .source-record {
-  position: absolute;
-  z-index: 2;
-  width: max-content;
-  height: max-content;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  transform: translate(-50%, -50%) matrix(var(--source-a), var(--source-b), var(--source-c), var(--source-d), 0, 0);
+  width: var(--source-hit-width);
+  height: 44px;
+  border-radius: 50%;
+  cursor: grab;
+  transform: translate(-50%, -50%);
 }
 
-.source-record[aria-pressed="true"] {
-  filter: drop-shadow(0 0 5px #ffff00);
+.source-record:active {
+  cursor: grabbing;
 }
 
-.source-record:hover,
-.source-record:focus-visible {
-  filter: drop-shadow(0 0 5px #66ccff);
-  outline: 0;
+.source-listening-platter {
+  left: 104px;
+  top: 294px;
+  z-index: 3;
+  width: 96px;
+  height: 83px;
+  border-radius: 50%;
+}
+
+.source-listening-platter::before {
+  content: none;
 }
 
 .source-listening-exit {
-  position: absolute;
-  right: 20px;
-  bottom: 12px;
-  z-index: 5;
-  color: #5a321f;
-  border-color: #5a321f;
-  background: #f2e8ce;
+  left: 575px;
+  top: 0;
+  z-index: 3;
+  width: 65px;
+  height: 74px;
+  border-radius: 0 0 0 58%;
 }
 
 @media (max-width: 1120px) {

@@ -47,14 +47,10 @@ import songWarningYesLabelUrl from "./assets/nutcracker-source/song-warning-yes-
 import songWarningframeTalkerUrl from "./assets/nutcracker-source/song-warningframe-talker.png";
 import songYesLabelUrl from "./assets/nutcracker-source/song-yes-label.png";
 import fluteIntroGardenUrl from "./assets/source-scenes/flute-intro-garden.jpg";
-import listeningRoomFrameUrl from "./assets/source-scenes/listening-room-frame.png";
-import listeningRoomGramophoneUrl from "./assets/source-scenes/listening-room-gramophone.png";
-import listeningRoomRecordLp1Url from "./assets/source-scenes/listening-room-record-lp1.png";
-import listeningRoomRecordLp2Url from "./assets/source-scenes/listening-room-record-lp2.png";
-import listeningRoomRecordLp3Url from "./assets/source-scenes/listening-room-record-lp3.png";
-import listeningRoomRecordLp4Url from "./assets/source-scenes/listening-room-record-lp4.png";
-import listeningRoomRecordLp5Url from "./assets/source-scenes/listening-room-record-lp5.png";
+import listeningRoomSourceUrl from "./assets/source-scenes/listening-room-source.png";
 import mainPlayRoomCompositeUrl from "./assets/source-scenes/main-playroom-source-composite.png";
+import musictionaryHelpFishUrl from "./assets/source-scenes/musictionary-help-fish.png";
+import musictionaryHelpUrl from "./assets/source-scenes/musictionary-help.png";
 import projectorChooseSourceUrl from "./assets/source-scenes/projector-choose-source.png";
 import readerControlExitHoverBalletUrl from "./assets/source-scenes/reader-control-exit-hover-ballet.png";
 import readerControlExitHoverUrl from "./assets/source-scenes/reader-control-exit-hover.png";
@@ -137,6 +133,8 @@ type ShellState = {
   pendingNutcrackerSongExit: NutcrackerSongId | null;
   readingPages: Record<ReadingRouteId, number>;
   activeDictionaryInstrumentId: string;
+  musictionaryHelpOpen: boolean;
+  musictionaryHelpFishVisible: boolean;
   activeSuiteTrackId: string | null;
   nutcrackerSelections: Record<NutcrackerSongId, NutcrackerTrackNumber[]>;
   nutcrackerFeedback: Record<NutcrackerSongId, string | null>;
@@ -214,7 +212,9 @@ type SuiteRecordPlacement = {
   readonly x: number;
   readonly y: number;
   readonly matrix: readonly [number, number, number, number];
-  readonly imageUrl: string;
+  readonly hitX?: number;
+  readonly hitY?: number;
+  readonly hitWidth?: number;
 };
 
 const mainRoomHotspots: readonly MainRoomHotspot[] = [
@@ -234,14 +234,22 @@ const mainRoomHotspots: readonly MainRoomHotspot[] = [
 ];
 
 const suiteRecordPlacements: readonly SuiteRecordPlacement[] = [
-  { trackNumber: 1, sourceSpriteId: 63, sourceInstance: "lp1", depth: 43, x: 450.55, y: 384.2, matrix: [1.243, 0, 0, 0.562], imageUrl: listeningRoomRecordLp1Url },
-  { trackNumber: 2, sourceSpriteId: 70, sourceInstance: "lp2", depth: 61, x: 559.65, y: 439.85, matrix: [1.243, 0.012, 0, 0.562], imageUrl: listeningRoomRecordLp2Url },
-  { trackNumber: 3, sourceSpriteId: 72, sourceInstance: "lp3", depth: 79, x: 548.9, y: 393.1, matrix: [1.347, 0, 0, 0.272], imageUrl: listeningRoomRecordLp3Url },
-  { trackNumber: 4, sourceSpriteId: 66, sourceInstance: "lp4", depth: 52, x: 327.75, y: 445.45, matrix: [1.134, 0, 0, 0.5], imageUrl: listeningRoomRecordLp4Url },
-  { trackNumber: 5, sourceSpriteId: 59, sourceInstance: "lp5", depth: 32, x: 548.9, y: 333.25, matrix: [1.254, 0, 0, 0.575], imageUrl: listeningRoomRecordLp5Url },
-  { trackNumber: 6, sourceSpriteId: 70, sourceInstance: "lp6", depth: 88, x: 349.3, y: 389.25, matrix: [1.005, 0, 0, 0.478], imageUrl: listeningRoomRecordLp2Url },
-  { trackNumber: 7, sourceSpriteId: 72, sourceInstance: "lp7", depth: 70, x: 444.95, y: 449.9, matrix: [1.41, 0, 0, 0.262], imageUrl: listeningRoomRecordLp3Url },
-  { trackNumber: 8, sourceSpriteId: 70, sourceInstance: "lp8", depth: 97, x: 453.65, y: 335.85, matrix: [1.005, 0, 0, 0.478], imageUrl: listeningRoomRecordLp2Url },
+  { trackNumber: 1, sourceSpriteId: 63, sourceInstance: "lp1", depth: 43, x: 450.55, y: 384.2, matrix: [1.243, 0, 0, 0.562] },
+  { trackNumber: 2, sourceSpriteId: 70, sourceInstance: "lp2", depth: 61, x: 559.65, y: 439.85, matrix: [1.243, 0.012, 0, 0.562] },
+  { trackNumber: 3, sourceSpriteId: 72, sourceInstance: "lp3", depth: 79, x: 548.9, y: 393.1, matrix: [1.347, 0, 0, 0.272] },
+  { trackNumber: 4, sourceSpriteId: 66, sourceInstance: "lp4", depth: 52, x: 327.75, y: 445.45, matrix: [1.134, 0, 0, 0.5] },
+  { trackNumber: 5, sourceSpriteId: 59, sourceInstance: "lp5", depth: 32, x: 548.9, y: 333.25, matrix: [1.254, 0, 0, 0.575] },
+  { trackNumber: 6, sourceSpriteId: 70, sourceInstance: "lp6", depth: 88, x: 349.3, y: 389.25, matrix: [1.005, 0, 0, 0.478] },
+  { trackNumber: 7, sourceSpriteId: 72, sourceInstance: "lp7", depth: 70, x: 444.95, y: 449.9, matrix: [1.41, 0, 0, 0.262] },
+  { trackNumber: 8, sourceSpriteId: 70, sourceInstance: "lp8", depth: 97, x: 453.65, y: 335.85, matrix: [1.005, 0, 0, 0.478] },
+  { trackNumber: 9, sourceSpriteId: 76, sourceInstance: "lp9", depth: 106, x: 453.65, y: 132.85, matrix: [1.005, 0, 0, 0.478] },
+  { trackNumber: 10, sourceSpriteId: 76, sourceInstance: "lp10", depth: 115, x: 557.6, y: 133.25, matrix: [1.005, 0, 0, 0.478] },
+  { trackNumber: 11, sourceSpriteId: 76, sourceInstance: "lp11", depth: 124, x: 453.65, y: 175.65, matrix: [1.005, 0, 0, 0.478] },
+  { trackNumber: 12, sourceSpriteId: 76, sourceInstance: "lp12", depth: 133, x: 557.6, y: 226.05, matrix: [1.005, 0, 0, 0.478] },
+  { trackNumber: 13, sourceSpriteId: 76, sourceInstance: "lp13", depth: 142, x: 557.6, y: 179.45, matrix: [1.005, 0, 0, 0.478], hitX: 532, hitY: 179.45, hitWidth: 34 },
+  { trackNumber: 14, sourceSpriteId: 76, sourceInstance: "lp14", depth: 151, x: 453.65, y: 225.85, matrix: [1.005, 0, 0, 0.478] },
+  { trackNumber: 15, sourceSpriteId: 38, sourceInstance: "lp15", depth: 1, x: 547.15, y: 173.25, matrix: [1.005, 0, 0, 0.478], hitX: 575, hitY: 179.45, hitWidth: 34 },
+  { trackNumber: 16, sourceSpriteId: 76, sourceInstance: "lp16", depth: 160, x: 557.6, y: 277.65, matrix: [1.005, 0, 0, 0.478] },
 ];
 
 const m08Assets = {
@@ -383,7 +391,7 @@ export type AppShellOptions = {
   exitApp?: () => void;
 };
 
-const defaultPreviewAudioPath = suiteTracks[0].audioPath;
+const defaultPreviewAudioPath = suiteTracks.find((track) => track.audioPath)?.audioPath ?? "";
 const sourceReaderPreviousButtonIds: Record<ReadingRouteId, readonly (number | null)[]> = {
   story: [null, 34, 39, 44],
   "composer-biography": [null, 35, 43, 50],
@@ -436,6 +444,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       "ballet-history": 0,
     },
     activeDictionaryInstrumentId: dictionaryInstruments[0].id,
+    musictionaryHelpOpen: false,
+    musictionaryHelpFishVisible: false,
     activeSuiteTrackId: null,
     nutcrackerSelections: createNutcrackerSelectionState(),
     nutcrackerFeedback: createNutcrackerFeedbackState(),
@@ -698,37 +708,90 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       button.addEventListener("click", () => {
         const instrumentId = button.dataset.dictionaryEntry;
         if (instrumentId) {
-          shellState.activeDictionaryInstrumentId = getDictionaryInstrument(instrumentId).id;
+          const instrument = getDictionaryInstrument(instrumentId);
+          shellState.activeDictionaryInstrumentId = instrument.id;
+          audio.stopSceneAudio();
+          shellState.activeAudioId = audio.playOneShot(instrument.audioPath).id;
           render();
         }
       });
     });
 
-    mount.querySelector<HTMLButtonElement>("[data-dictionary-next]")?.addEventListener("click", () => {
+    mount.querySelector<HTMLButtonElement>("[data-dictionary-next]")?.addEventListener("click", (event) => {
       const activeIndex = dictionaryInstruments.findIndex((instrument) => instrument.id === shellState.activeDictionaryInstrumentId);
       const nextIndex = (Math.max(activeIndex, 0) + 1) % dictionaryInstruments.length;
-      shellState.activeDictionaryInstrumentId = dictionaryInstruments[nextIndex].id;
-      render("[data-dictionary-next]", "[data-source-musictionary-heading]");
+      const nextInstrument = dictionaryInstruments[nextIndex];
+      shellState.activeDictionaryInstrumentId = nextInstrument.id;
+      audio.stopSceneAudio();
+      shellState.activeAudioId = audio.playOneShot(nextInstrument.audioPath).id;
+      if (event.detail === 0) {
+        render("[data-dictionary-next]", "[data-source-musictionary-heading]");
+      } else {
+        render();
+      }
     });
 
-    mount.querySelectorAll<HTMLButtonElement>("[data-dictionary-audio]").forEach((button) => {
-      button.addEventListener("click", () => {
-        const audioPath = button.dataset.dictionaryAudio;
-        if (audioPath) {
-          playSceneAudio(audioPath, false);
-        }
-      });
+    mount.querySelector<HTMLButtonElement>("[data-dictionary-help]")?.addEventListener("click", (event) => {
+      audio.stopSceneAudio();
+      shellState.activeAudioId = null;
+      shellState.musictionaryHelpOpen = true;
+      shellState.musictionaryHelpFishVisible = false;
+      if (event.detail === 0) {
+        render("[data-dictionary-help-fish]", "[data-source-musictionary-heading]");
+      } else {
+        render();
+      }
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-dictionary-help-fish]")?.addEventListener("click", (event) => {
+      shellState.musictionaryHelpFishVisible = !shellState.musictionaryHelpFishVisible;
+      if (event.detail === 0) {
+        render("[data-dictionary-help-fish]", "[data-source-musictionary-heading]");
+      } else {
+        render();
+      }
+    });
+
+    mount.querySelector<HTMLButtonElement>("[data-dictionary-help-close]")?.addEventListener("click", (event) => {
+      shellState.musictionaryHelpOpen = false;
+      shellState.musictionaryHelpFishVisible = false;
+      if (event.detail === 0) {
+        render("[data-dictionary-help]", "[data-source-musictionary-heading]");
+      } else {
+        render();
+      }
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-suite-track]").forEach((button) => {
       button.addEventListener("click", () => {
         const trackId = button.dataset.suiteTrack;
         if (trackId) {
-          const track = getSuiteTrack(trackId);
-          shellState.activeSuiteTrackId = track.id;
-          playSceneAudio(track.audioPath, true);
+          selectSuiteTrack(trackId);
         }
       });
+      button.addEventListener("dragstart", (event) => {
+        const trackId = button.dataset.suiteTrack;
+        if (trackId) {
+          event.dataTransfer?.setData("text/plain", trackId);
+          event.dataTransfer?.setData("application/x-listening-room-record", trackId);
+          event.dataTransfer?.setDragImage(button, 12, 12);
+        }
+      });
+    });
+
+    mount.querySelector<HTMLElement>("[data-suite-drop]")?.addEventListener("dragover", (event) => {
+      event.preventDefault();
+    });
+
+    mount.querySelector<HTMLElement>("[data-suite-drop]")?.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const trackId =
+        event.dataTransfer?.getData("application/x-listening-room-record") ||
+        event.dataTransfer?.getData("text/plain") ||
+        "";
+      if (suiteTracks.some((track) => track.id === trackId)) {
+        selectSuiteTrack(trackId);
+      }
     });
 
     mount.querySelectorAll<HTMLButtonElement>("[data-nutcracker-door]").forEach((button) => {
@@ -746,9 +809,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         if (isNutcrackerSongId(songId)) {
           const song = nutcrackerSongGames.find((item) => item.id === songId);
           if (song) {
-            const track = getSuiteTrack(song.suiteTrackId);
-            shellState.activeSuiteTrackId = track.id;
-            playSceneAudio(track.audioPath, true);
+            playNutcrackerSongPreview(song);
           }
         }
       });
@@ -1585,6 +1646,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     if (routeChanged && isReadingRouteId(routeId)) {
       shellState.readingPages[routeId] = 0;
     }
+    if (routeChanged && routeId === "music-dictionary") {
+      shellState.activeDictionaryInstrumentId = dictionaryInstruments[0].id;
+    }
     if (routeChanged && routeId === "nut-house") {
       shellState.nutHouseRoom = 11 + Math.min(progress.getSnapshot().nutHouse.openDoor, 7);
       shellState.nutHousePhase = progress.getSnapshot().nutHouse.openDoor === 0 ? "tutorial" : "prompt";
@@ -1592,6 +1656,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
     shellState.routeId = routeId;
     shellState.helpOpen = false;
+    shellState.musictionaryHelpOpen = false;
+    shellState.musictionaryHelpFishVisible = false;
     shellState.nutcrackerChooserWarningOpen = false;
     shellState.pendingNutcrackerSongChange = null;
     shellState.pendingNutcrackerSongExit = null;
@@ -1607,6 +1673,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       if (narrationPath) {
         shellState.activeAudioId = audio.playOneShot(narrationPath).id;
       }
+    }
+    if (routeId === "music-dictionary") {
+      shellState.activeAudioId = audio.playOneShot(getDictionaryInstrument(shellState.activeDictionaryInstrumentId).audioPath).id;
     }
     if (routeId === "waltz") {
       audio.playOneShot(getM08Asset("/audio/waltz/MP3Wedding3.wav"));
@@ -1641,9 +1710,25 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     shellState.activeAudioId = audio.playTrack(track.audioPath, getNutcrackerTrackStartSeconds(track)).id;
   };
 
+  const playNutcrackerSongPreview = (song: NutcrackerSongGame) => {
+    audio.stopSceneAudio();
+    shellState.activeSuiteTrackId = null;
+    const handles = song.tracks.filter((track) => track.valid).map((track) => audio.playOneShot(track.audioPath));
+    shellState.activeAudioId = handles[0]?.id ?? null;
+    render();
+  };
+
   const playSceneAudio = (audioPath: string, loop: boolean, startTimeSeconds = 0) => {
     audio.stopSceneAudio();
     shellState.activeAudioId = loop ? audio.playTrack(audioPath, startTimeSeconds).id : audio.playOneShot(audioPath).id;
+    render();
+  };
+
+  const selectSuiteTrack = (trackId: string) => {
+    const track = getSuiteTrack(trackId);
+    audio.stopSceneAudio();
+    shellState.activeSuiteTrackId = track.id;
+    shellState.activeAudioId = track.audioPath ? audio.playOneShot(track.audioPath).id : null;
     render();
   };
 
@@ -1832,6 +1917,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     if (action === "back") {
       shellState.routeId = shellState.routeStack.pop() ?? "main-menu";
       shellState.helpOpen = false;
+      shellState.musictionaryHelpOpen = false;
+      shellState.musictionaryHelpFishVisible = false;
       shellState.nutcrackerChooserWarningOpen = false;
       shellState.pendingNutcrackerSongChange = null;
       shellState.pendingNutcrackerSongExit = null;
@@ -1974,7 +2061,13 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     if (action === "suite-play") {
       const track = getSuiteTrack(shellState.activeSuiteTrackId ?? suiteTracks[0].id);
       shellState.activeSuiteTrackId = track.id;
-      playSceneAudio(track.audioPath, true);
+      if (track.audioPath) {
+        playSceneAudio(track.audioPath, false);
+      } else {
+        audio.stopSceneAudio();
+        shellState.activeAudioId = null;
+        render();
+      }
       return;
     }
 
@@ -1997,9 +2090,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         stopSceneAudio();
         return;
       }
-      const track = getSuiteTrack(song.suiteTrackId);
-      shellState.activeSuiteTrackId = track.id;
-      playSceneAudio(track.audioPath, true);
+      playNutcrackerSongPreview(song);
       return;
     }
 
@@ -2086,6 +2177,21 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     mount.querySelector<HTMLButtonElement>(selector)?.click();
   });
 
+  let audioIdleUpdateScheduled = false;
+  audio.subscribe((audioState) => {
+    if (audioState.activeTrackCount !== 0 || shellState.activeAudioId === null || audioIdleUpdateScheduled) {
+      return;
+    }
+    audioIdleUpdateScheduled = true;
+    queueMicrotask(() => {
+      audioIdleUpdateScheduled = false;
+      if (audio.getState().activeTrackCount === 0 && shellState.activeAudioId !== null) {
+        shellState.activeAudioId = null;
+        render();
+      }
+    });
+  });
+
   render();
 }
 
@@ -2103,7 +2209,11 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
   }
 
   if (route.id === "music-dictionary") {
-    return renderMusicDictionary(getDictionaryInstrument(shellState.activeDictionaryInstrumentId));
+    return renderMusicDictionary(
+      getDictionaryInstrument(shellState.activeDictionaryInstrumentId),
+      shellState.musictionaryHelpOpen,
+      shellState.musictionaryHelpFishVisible,
+    );
   }
 
   if (route.id === "suite") {
@@ -2406,7 +2516,39 @@ function renderReadingActivity(routeId: ReadingRouteId, pageIndex: number): stri
   `;
 }
 
-function renderMusicDictionary(activeInstrument: DictionaryInstrument): string {
+function renderMusicDictionary(
+  activeInstrument: DictionaryInstrument,
+  helpOpen: boolean,
+  helpFishVisible: boolean,
+): string {
+  if (helpOpen) {
+    return `
+      <div
+        class="scene-body source-musictionary-scene source-musictionary-help-scene"
+        data-source-swf="analysis/setup/app/activities/musictionary/musictionary.swf"
+        data-source-state="shared help hallway${helpFishVisible ? "; question mascot visible" : ""}"
+        data-source-capture="official Ruffle v0.5.0 source-runtime capture through the recovered Nutcracker2 projector"
+      >
+        <img class="source-musictionary-frame" src="${helpFishVisible ? musictionaryHelpFishUrl : musictionaryHelpUrl}" alt="" aria-hidden="true" />
+        <h1 class="sr-only" tabindex="-1" data-source-musictionary-heading>Musictionary help</h1>
+        <button
+          class="source-musictionary-hit source-musictionary-help-question"
+          type="button"
+          data-dictionary-help-fish
+          aria-label="${helpFishVisible ? "Hide" : "Show"} the Musictionary help character"
+          data-source-hit-bounds="x 537-583 y 140-184"
+        ></button>
+        <button
+          class="source-musictionary-hit source-musictionary-help-exit"
+          type="button"
+          data-dictionary-help-close
+          aria-label="Exit Musictionary help"
+          data-source-hit-bounds="x 566-640 y 450-480"
+        ></button>
+      </div>
+    `;
+  }
+
   return `
     <div
       class="scene-body source-musictionary-scene"
@@ -2414,56 +2556,75 @@ function renderMusicDictionary(activeInstrument: DictionaryInstrument): string {
       data-source-player="instPlayer sprite id ${activeInstrument.sourceAssetId}"
       data-source-text-id="${activeInstrument.sourceTextId}"
       data-source-controls="EXIT text ids 0073-0075; NEXT text id 0086"
-      data-source-fallback="the full SWF render crashes locally; the runtime retains exact source prose, instrument audio, NEXT/EXIT behavior, and explicit display-list provenance in a DOM composition"
+      data-source-capture="official Ruffle v0.5.0 stable fact-state source-runtime capture through the recovered Nutcracker2 projector"
+      data-source-retained-gap="the source entry-preview, rhyme reveal, and character/instrument timeline motion are not reconstructed; the complete stable fact state and embedded narration are preserved"
     >
-      <section class="source-musictionary-card" aria-label="${escapeHtml(activeInstrument.name)}">
-        <p class="source-musictionary-family">${escapeHtml(activeInstrument.family)}</p>
-        <h1>${escapeHtml(activeInstrument.name)}</h1>
-        <p class="source-musictionary-copy">${escapeHtml(activeInstrument.summary)}</p>
-        <button class="source-musictionary-play" type="button" data-dictionary-audio="${activeInstrument.audioPath}" aria-label="Play ${escapeHtml(activeInstrument.name)} audio">▶</button>
-      </section>
-      <div class="source-musictionary-controls">
-        <button type="button" data-action="exit">EXIT</button>
-        <button type="button" data-dictionary-next>NEXT</button>
-      </div>
+      <img class="source-musictionary-frame" src="${activeInstrument.sceneImagePath}" alt="" aria-hidden="true" />
+      <h1 class="sr-only" tabindex="-1" data-source-musictionary-heading>${escapeHtml(activeInstrument.name)}</h1>
+      <p class="sr-only">${escapeHtml(activeInstrument.family)}. ${escapeHtml(activeInstrument.summary)}</p>
+      <button
+        class="source-musictionary-hit source-musictionary-help"
+        type="button"
+        data-dictionary-help
+        aria-label="Open Musictionary help"
+        data-source-hit-bounds="x 0-72 y 0-73"
+      ></button>
+      <button
+        class="source-musictionary-hit source-musictionary-exit"
+        type="button"
+        data-action="exit"
+        aria-label="Exit Musictionary"
+        data-source-hit-bounds="x 568-640 y 0-75"
+      ></button>
+      <button
+        class="source-musictionary-hit source-musictionary-next"
+        type="button"
+        data-dictionary-next
+        aria-label="Next instrument after ${escapeHtml(activeInstrument.name)}"
+        data-source-hit-bounds="x 267-375 y 315-390"
+      ></button>
     </div>
   `;
 }
 
 function renderSuitePlayer(activeTrackId: string | null, isPlaying: boolean): string {
   const activeTrack = activeTrackId ? getSuiteTrack(activeTrackId) : null;
-  const playbackLabel = activeTrackId ? (isPlaying ? "PLAYING" : "PAUSED") : "CHOOSE A RECORD";
+  const playbackLabel = activeTrack
+    ? activeTrack.audioPath
+      ? `${activeTrack.collectionTitle}: ${activeTrack.title}. ${isPlaying ? "Playing" : "Paused"}.`
+      : `${activeTrack.collectionTitle}: ${activeTrack.title}. Recovered source audio theme${activeTrack.number}.mp3 is missing.`
+    : "Choose one of the sixteen source records.";
+  const platterAction = activeTrack?.audioPath ? (isPlaying ? "suite-stop" : "suite-play") : "";
+  const platterLabel = activeTrack?.audioPath
+    ? isPlaying
+      ? `Pause ${activeTrack.title}`
+      : `Play ${activeTrack.title}`
+    : "Drop a record on the gramophone";
 
   return `
     <div
       class="scene-body source-listening-room"
       data-source-swf="analysis/setup/app/activities/originals/gramophone.swf"
-      data-source-frame="lossless frame border id 0108; gramophone JPEG3 id 0045"
-      data-source-action="record actions load activities/originals/theme{iam}.mp3; player states are pauseLP and playLP; dynamic labels are discTitle and discName"
-      data-source-fallback="root rendering fails because the local swfextract build has no JPEG support and reports Zlib error -3; the runtime composes recovered JPEG3/lossless children with TypeScript audio state"
+      data-source-frame="official Ruffle v0.5.0 neutral root-state source-runtime capture"
+      data-source-action="16 draggable lp instances load activities/originals/theme{iam}.mp3; player states are pauseLP and playLP; dynamic labels are discTitle and discName"
+      data-source-missing-audio="the recovered source tree contains theme1.mp3 through theme8.mp3 only; theme9.mp3 through theme16.mp3 remain selectable but cannot play"
+      data-source-retained-gap="record movement and tonearm animation are not reconstructed over the exact neutral source capture"
     >
-      <img class="source-listening-frame" src="${listeningRoomFrameUrl}" alt="" aria-hidden="true" />
-      <section class="source-listening-gramophone" aria-label="The Listening Room">
-        <img src="${listeningRoomGramophoneUrl}" alt="" aria-hidden="true" />
-        <h1>The Listening Room</h1>
-        <p class="source-disc-title">${playbackLabel}</p>
-        <p class="source-disc-name">${activeTrack ? escapeHtml(activeTrack.title) : ""}</p>
-        ${
-          activeTrackId
-            ? `<button
-                class="source-listening-playback ${isPlaying ? "suite-stop-button" : "suite-play-button"}"
-                type="button"
-                data-action="${isPlaying ? "suite-stop" : "suite-play"}"
-                aria-label="${isPlaying ? "Stop track" : "Play selected track"}"
-                title="${isPlaying ? "Stop track" : "Play selected track"}"
-              >${isPlaying ? "■" : "▶"}</button>`
-            : ""
-        }
-      </section>
-      <section class="source-record-shelf" aria-label="Suite records">
+      <img class="source-listening-frame" src="${listeningRoomSourceUrl}" alt="" aria-hidden="true" />
+      <h1 class="sr-only">The Listening Room</h1>
+      <p class="sr-only" aria-live="polite" data-suite-status>${escapeHtml(playbackLabel)}</p>
+      <section class="source-record-shelf" aria-label="Sixteen source records">
         ${suiteTracks.map((track) => renderSuiteTrackButton(track, activeTrack?.id ?? null)).join("")}
       </section>
-      <button class="source-listening-exit" type="button" data-action="exit">EXIT</button>
+      <button
+        class="source-listening-platter ${isPlaying ? "suite-stop-button" : "suite-play-button"}"
+        type="button"
+        data-suite-drop
+        ${platterAction ? `data-action="${platterAction}"` : ""}
+        aria-label="${escapeHtml(platterLabel)}"
+        data-source-instance="hole sprite id 0050 at x 151.20 y 334.30 scale 1.525"
+      ></button>
+      <button class="source-listening-exit" type="button" data-action="exit" aria-label="Exit the Listening Room"><span class="sr-only">EXIT</span></button>
     </div>
   `;
 }
@@ -2474,19 +2635,23 @@ function renderSuiteTrackButton(track: SuiteTrack, activeTrackId: string | null)
     throw new Error(`Missing source placement for suite track ${track.number}`);
   }
   const [scaleX, skewY, skewX, scaleY] = placement.matrix;
+  const hitX = placement.hitX ?? placement.x;
+  const hitY = placement.hitY ?? placement.y;
+  const hitWidth = placement.hitWidth ?? 86;
   return `
     <button
       class="source-record"
       type="button"
+      draggable="true"
       data-suite-track="${track.id}"
       aria-pressed="${track.id === activeTrackId}"
-      aria-label="${track.number}. ${escapeHtml(track.title)}"
-      style="left: ${placement.x}px; top: ${placement.y}px; --source-a: ${scaleX}; --source-b: ${skewY}; --source-c: ${skewX}; --source-d: ${scaleY}"
+      aria-label="${track.number}. ${escapeHtml(track.collectionTitle)}, ${escapeHtml(track.title)}${track.audioPath ? "" : "; recovered source audio is missing"}"
+      style="left: ${hitX}px; top: ${hitY}px; --source-hit-width: ${hitWidth}px"
       data-source-placement="${placement.sourceInstance} sprite id ${String(placement.sourceSpriteId).padStart(4, "0")} at depth ${String(placement.depth).padStart(4, "0")} matrix ${scaleX} ${skewX} ${skewY} ${scaleY} x ${placement.x.toFixed(2)} y ${placement.y.toFixed(2)}"
       data-source-action="loads activities/originals/theme${track.number}.mp3 and updates discTitle/discName"
+      data-source-audio="${track.audioPath ? "recovered" : "missing"}"
     >
-      <img src="${placement.imageUrl}" alt="" aria-hidden="true" />
-      <span class="sr-only">${track.number}. ${escapeHtml(track.title)} · ${formatDuration(track.durationSeconds)}</span>
+      <span class="sr-only">${track.number}. ${escapeHtml(track.collectionTitle)}, ${escapeHtml(track.title)}${track.audioPath ? `, ${formatDuration(track.durationSeconds)}` : ", source audio missing"}</span>
     </button>
   `;
 }
