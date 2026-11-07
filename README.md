@@ -51,7 +51,20 @@ npm install
 npm run package:mac
 ```
 
-The installer lands in `app/src-tauri/target/release/bundle/dmg/`. It is about 260 MB. It is ad-hoc signed, not notarized, so the first time you open it, right-click the app and choose **Open**.
+The installer lands in `app/src-tauri/target/release/bundle/dmg/` and is about 260 MB. This local build is ad-hoc signed, so on another Mac you have to right-click the app and choose **Open** the first time.
+
+To share it, build the notarized version instead. It is signed with the JippylongTwelve LLC Developer ID, notarized by Apple and stapled, so it opens with a normal double-click on any Mac. Save the notarization login in the keychain once (it asks for an app-specific password from appleid.apple.com):
+
+```sh
+xcrun notarytool store-credentials nutcracker-notary --apple-id <your Apple ID> --team-id B959VQL59F
+```
+
+Then build:
+
+```sh
+cd app
+npm run package:mac:release
+```
 
 **Windows (`.exe`)** is built by GitHub Actions (`.github/workflows/windows-build.yml`) on a Windows machine. Start it from the repository's **Actions** tab (**Windows build**, then **Run workflow**), or push a tag such as `v0.1.0`. When the run finishes, download the `windows-installer` artifact. It contains the setup `.exe`. Windows SmartScreen may warn because the installer is unsigned; choose **More info**, then **Run anyway**.
 

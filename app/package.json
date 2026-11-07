@@ -23,6 +23,7 @@
     "build": "npm run setup:cd && npm run assets:ruffle && npm run assets:projector-install && npm run typecheck && vite build && npm run validate:reader-bundle",
     "verify:release": "node scripts/validate-release-candidate.mjs",
     "verify:package:mac": "node scripts/verify-macos-package.mjs",
+    "package:mac:release": "node scripts/package-mac-release.mjs",
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",

@@ -40,8 +40,16 @@ assert(fileOutput.includes(process.arch === "arm64" ? "arm64" : "x86_64"), "pack
 
 const codeSign = run("codesign", ["-dv", "--verbose=4", appBundle], { allowNonZero: true });
 const signatureOutput = `${codeSign.stdout}\n${codeSign.stderr}`;
-assert(signatureOutput.includes("Signature=adhoc"), "private package should have only an ad-hoc signature");
-assert(signatureOutput.includes("TeamIdentifier=not set"), "private package unexpectedly has a signing team");
+// package:mac makes an ad-hoc build; package:mac:release (NUTCRACKER_RELEASE_TEAM set) a Developer ID build for notarization.
+const releaseTeam = process.env.NUTCRACKER_RELEASE_TEAM;
+if (releaseTeam) {
+  assert(signatureOutput.includes("Authority=Developer ID Application"), "release package is not signed with a Developer ID Application certificate");
+  assert(signatureOutput.includes(`TeamIdentifier=${releaseTeam}`), `release package is not signed by team ${releaseTeam}`);
+  assert(/flags=0x[0-9a-f]*\(runtime\)/.test(signatureOutput), "release package lacks the hardened runtime notarization requires");
+} else {
+  assert(signatureOutput.includes("Signature=adhoc"), "private package should have only an ad-hoc signature");
+  assert(signatureOutput.includes("TeamIdentifier=not set"), "private package unexpectedly has a signing team");
+}
 run("codesign", ["--verify", "--deep", "--strict", "--verbose=2", appBundle]);
 run("hdiutil", ["verify", dmg]);
 
@@ -81,7 +89,7 @@ const manifest = {
   version: config.version,
   identifier: config.identifier,
   architecture: process.arch,
-  signature: "ad-hoc, not notarized",
+  signature: releaseTeam ? `Developer ID (team ${releaseTeam}), hardened runtime; notarized by package:mac:release` : "ad-hoc, not notarized",
   app: describeArtifact(appBundle),
   dmg: describeArtifact(dmg),
   frontend: { files: distFiles.length, audioFiles: audioFiles.length, imageFiles: imageFiles.length },
