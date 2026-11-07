@@ -29,7 +29,7 @@ Automated/package QA may move M09 work to **In Review**, but the release candida
 
 | Surface | Resettable check | Approval issue |
 | --- | --- | --- |
-| Overture | Launch, confirm source garden/skip path, then enter the main room | JIP-818 |
+| Overture | Launch on the source launcher; open the Musical Friends preview and confirm the intro skip path returns to the launcher; open the Alice preview and confirm it returns; then Play Featured Game into the main room | JIP-818 |
 | Main Menu | Verify source room art, hotspots, locked Nutcracker gate, and no debug chrome | JIP-818 |
 | Story | Traverse all four spreads; verify exact source prose, book art, NEXT/PREV/EXIT | JIP-819 |
 | Composer Biography | Traverse all four spreads, including both frame-3 images | JIP-819 |

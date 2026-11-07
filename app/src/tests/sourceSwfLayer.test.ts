@@ -245,6 +245,27 @@ describe("overture plays flute_intro.swf through Ruffle", () => {
     expect(fluteIntroHandoffMs).toBe(84400);
   });
 
+  it("Given the overture route is re-entered from the route map, then it lands on the launcher without replaying the intro", async () => {
+    const fake = createFakeRuffle();
+    const mount = document.createElement("main");
+    document.body.append(mount);
+    createAppShell(mount, {
+      progress: createProgressStore(createMemoryPersistence()),
+      audio: createAudioService({ createAudioElement: () => new SilentAudio() }),
+      showDeveloperPanel: true,
+      sourceSwfLayer: createSourceSwfLayer(fake.loader),
+    });
+    mount.querySelector<HTMLButtonElement>('[data-action="play-featured-game"]')?.click();
+    expect(mount.querySelector(".source-projector-launcher")).toBeNull();
+    mount.querySelector<HTMLButtonElement>('[data-route="overture"]')?.click();
+    await flush();
+
+    expect(mount.querySelector(".source-projector-launcher")).not.toBeNull();
+    expect(mount.querySelector(".source-intro-scene")).toBeNull();
+    expect(fake.loads).toHaveLength(0);
+    mount.remove();
+  });
+
   it("Given the Musical Friends preview, then the source intro movie loads and the fallback skip leaves the tab order", async () => {
     const fake = createFakeRuffle();
     const mount = createShell(fake.loader);
