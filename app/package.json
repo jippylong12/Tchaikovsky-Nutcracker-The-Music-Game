@@ -1,7 +1,7 @@
 {
   "name": "nutcracker-music-game",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "predev": "node scripts/restore-original-cd.mjs && node scripts/prepare-ruffle.mjs && node scripts/prepare-projector-install.mjs",

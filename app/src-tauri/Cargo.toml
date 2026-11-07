@@ -1,6 +1,6 @@
 [package]
 name = "nutcracker_music_game"
-version = "0.1.0"
+version = "1.0.0"
 description = "Local desktop remake shell for Tchaikovsky's Nutcracker: The Music Game"
 authors = ["Marcus Salinas"]
 edition = "2021"
