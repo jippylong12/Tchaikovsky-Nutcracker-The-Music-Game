@@ -8,6 +8,7 @@ import {
   buildProjectorReturnStubSwf,
   normalizeProjectorPath,
   patchProjectorStartFrame,
+  patchProjectorWebsiteTarget,
   projectorBaseUrl,
   projectorStartFrames,
   projectorStartGotoOffset,
@@ -123,6 +124,23 @@ describe("projector movie start frame", () => {
     expect(projectorMovie[projectorStartGotoOffset + 3]).toBe(0xf3);
     const differing = patched.reduce((count, byte, index) => count + (byte === projectorMovie[index] ? 0 : 1), 0);
     expect(differing).toBe(2);
+  });
+
+  it("Given the website prompt's getURL, then the runtime copy targets _blank so Ruffle calls window.open", () => {
+    const patched = patchProjectorWebsiteTarget(projectorMovie);
+    const view = new DataView(patched.buffer, patched.byteOffset, patched.byteLength);
+    const text = new TextDecoder("latin1").decode(patched.subarray(392726, 392726 + 40));
+
+    expect(patched.length).toBe(projectorMovie.length + 6);
+    expect(view.getUint32(4, true)).toBe(patched.length);
+    expect(text).toContain("http://www.kidsmusicstage.com\u0000_blank\u0000");
+    expect(view.getUint16(392727, true)).toBe(37);
+    expect(view.getUint32(392722, true)).toBe(41);
+    expect(view.getUint32(392328, true)).toBe(490);
+    // Bytes after the insertion are the original bytes, shifted by 6.
+    expect([...patched.subarray(392766, 392866)]).toEqual([...projectorMovie.subarray(392760, 392860)]);
+    // The start-frame patch still applies to the retargeted copy.
+    expect(() => patchProjectorStartFrame(patched, projectorStartFrames.nutIni)).not.toThrow();
   });
 
   it("Given bytes that are not the projector, then patching refuses", () => {

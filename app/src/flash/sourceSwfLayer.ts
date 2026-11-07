@@ -8,6 +8,8 @@
 export type RuffleApi = {
   load(options: Record<string, unknown>): Promise<void>;
   addFSCommandHandler?(handler: (command: string, args: string) => void): void;
+  /** Ruffle 0.5.0's v1 API pauses with `suspend()`; `pause()` is kept for other builds. */
+  suspend?(): void;
   pause?(): void;
   resume?(): void;
   play?(): void;
@@ -186,7 +188,10 @@ export function createSourceSwfLayer(loadRuffle: RuffleLoader = loadBundledRuffl
   const callPlayer = (method: "pause" | "resume") => {
     try {
       const api = player?.ruffle();
-      if (method === "pause") api?.pause?.();
+      if (method === "pause") {
+        if (api?.suspend) api.suspend();
+        else api?.pause?.();
+      }
       else if (api?.resume) api.resume();
       else api?.play?.();
     } catch (error) {

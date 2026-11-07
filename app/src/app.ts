@@ -56,6 +56,7 @@ import {
   connectProjectorBoundary,
   notFoundResponse,
   patchProjectorStartFrame,
+  patchProjectorWebsiteTarget,
   projectorBaseUrl,
   projectorReturnPath,
   projectorStartFrames,
@@ -269,7 +270,10 @@ const projectorResetCommands = {
 
 let projectorMoviePromise: Promise<Uint8Array> | null = null;
 
-/** The unmodified projector, fetched once; a start frame other than `choose` is patched into a copy. */
+/**
+ * The projector, fetched once, with its website getURL retargeted to `_blank`; a start frame other than
+ * `choose` is patched into a further copy.
+ */
 function loadProjectorMovie(startFrame: number): Promise<Uint8Array> {
   if (!projectorMoviePromise) {
     projectorMoviePromise = window.fetch(projectorNutcracker2SwfUrl)
@@ -277,7 +281,8 @@ function loadProjectorMovie(startFrame: number): Promise<Uint8Array> {
         if (!response.ok) throw new Error(`Could not load ${projectorNutcracker2SwfUrl}: HTTP ${response.status}`);
         return response.arrayBuffer();
       })
-      .then((buffer) => new Uint8Array(buffer))
+      // The website YES must reach window.open (see patchProjectorWebsiteTarget).
+      .then((buffer) => patchProjectorWebsiteTarget(new Uint8Array(buffer)))
       .catch((error: unknown) => {
         projectorMoviePromise = null;
         throw error;

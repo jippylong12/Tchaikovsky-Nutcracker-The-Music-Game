@@ -51,6 +51,60 @@ export function patchProjectorStartFrame(projector: Uint8Array, zeroBasedFrame: 
   return patched;
 }
 
+/**
+ * `warningMSG_mc` (sprite 0064, tag at byte 392326) frame 3 runs `getURL("http://www.kidsmusicstage.com", "")`
+ * from a long-form DOACTION at byte 392720. In the standalone projector an empty target opened the default
+ * browser. Ruffle 0.5.0 refuses an empty (current-tab) target without script access and would otherwise
+ * call `location.assign`, which can't be intercepted. So the runtime copy uses the target `_blank`, which
+ * Ruffle sends to `window.open`, where the boundary hands it to the desktop opener. Nothing else changes:
+ * the action, DOACTION, DEFINESPRITE, and SWF header lengths each grow by 6 bytes.
+ */
+export const projectorWebsiteGetUrl = {
+  spriteTag: 392326,
+  doActionTag: 392720,
+  action: 392726,
+  url: "http://www.kidsmusicstage.com",
+  target: "_blank",
+} as const;
+
+function readU32(bytes: Uint8Array, at: number): number {
+  return (bytes[at] | (bytes[at + 1] << 8) | (bytes[at + 2] << 16) | (bytes[at + 3] << 24)) >>> 0;
+}
+
+function writeU32(bytes: Uint8Array, at: number, value: number): void {
+  bytes.set(u32(value), at);
+}
+
+export function patchProjectorWebsiteTarget(projector: Uint8Array): Uint8Array {
+  const { spriteTag, doActionTag, action, url, target } = projectorWebsiteGetUrl;
+  const urlBytes = textEncoder.encode(url);
+  const oldLength = urlBytes.length + 2;
+  const expectedAction = [0x83, oldLength & 0xff, oldLength >> 8, ...urlBytes, 0x00, 0x00];
+  const spriteHeader = projector[spriteTag] | (projector[spriteTag + 1] << 8);
+  const actionHeader = projector[doActionTag] | (projector[doActionTag + 1] << 8);
+  if (
+    spriteHeader !== ((39 << 6) | 0x3f) ||
+    (projector[spriteTag + 6] | (projector[spriteTag + 7] << 8)) !== 64 ||
+    actionHeader !== ((12 << 6) | 0x3f) ||
+    !expectedAction.every((byte, index) => projector[action + index] === byte)
+  ) {
+    throw new Error("Projector warningMSG_mc getURL not found where expected");
+  }
+  const added = textEncoder.encode(target);
+  const insertAt = action + 3 + urlBytes.length + 1;
+  const patched = new Uint8Array(projector.length + added.length);
+  patched.set(projector.subarray(0, insertAt), 0);
+  patched.set(added, insertAt);
+  patched.set(projector.subarray(insertAt), insertAt + added.length);
+  const newLength = oldLength + added.length;
+  patched[action + 1] = newLength & 0xff;
+  patched[action + 2] = newLength >> 8;
+  writeU32(patched, doActionTag + 2, readU32(projector, doActionTag + 2) + added.length);
+  writeU32(patched, spriteTag + 2, readU32(projector, spriteTag + 2) + added.length);
+  writeU32(patched, 4, readU32(projector, 4) + added.length);
+  return patched;
+}
+
 const gameKeyNumbers: readonly GameKey[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 /** `games/data/gamekeys.txt` in the original install format, from the remake's saved keys. */

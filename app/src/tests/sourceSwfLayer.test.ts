@@ -226,7 +226,8 @@ describe("source SWF layer: interactive projector session", () => {
               return Promise.resolve();
             },
             addFSCommandHandler: (handler: (command: string, args: string) => void) => fsHandlers.push(handler),
-            pause: () => calls.push("pause"),
+            // Ruffle 0.5.0's v1 API: suspend()/resume(), no pause().
+            suspend: () => calls.push("suspend"),
             resume: () => calls.push("resume"),
           };
           element.ruffle = () => api;
@@ -304,7 +305,7 @@ describe("source SWF layer: interactive projector session", () => {
     layer.play(stage, projector());
 
     expect(layer.isSuspended()).toBe(false);
-    expect(fake.calls).toEqual(["pause", "resume"]);
+    expect(fake.calls).toEqual(["suspend", "resume"]);
     expect(fake.players).toHaveLength(1);
     expect(layer.activeSession()).toBe("projector@1267");
     layer.stop();
