@@ -394,3 +394,99 @@ export function variablesResponse(text: string): Response {
 export function notFoundResponse(): Response {
   return new Response(null, { status: 404 });
 }
+
+// ---- Listening Room: synchronous loadSound ------------------------------------------------------------
+
+/** The Listening Room movie, which the room's gramophone hotspot loads into `_level1`. */
+export const gramophoneInstallPath = "activities/originals/gramophone.swf";
+
+/** Large enough that no record stops before its MP3 has loaded (one day, in ms). */
+const gramophonePendingDurationMs = 86_400_000;
+
+function actionDefineFunction(params: readonly string[], body: readonly number[]): number[] {
+  const header = [
+    0x00,
+    ...u16(params.length),
+    ...params.flatMap((param) => [...textEncoder.encode(param), 0x00]),
+    ...u16(body.length),
+  ];
+  return [0x9b, ...u16(header.length), ...header, ...body];
+}
+
+const pushNull = [0x96, ...u16(1), 0x02];
+
+/**
+ * Patches `gramophone.swf` for Ruffle's asynchronous `Sound.loadSound`.
+ *
+ * Dropping a record runs `loadSound("activities/originals/themeN.mp3", true)`, `start()`, then
+ * `_root.stopAt = getTimer() + thisTheme.duration`. A per-frame check (sprite `0060`, depth `0041`) runs
+ * `stopAllSounds()` and pauses every record once `getTimer() > _root.stopAt`. The Windows projector loaded
+ * local files synchronously, so `duration` was already known. Ruffle on the web loads them in the
+ * background, so `duration` is undefined (0 in SWF 6) and the record stops on the next frame, before any
+ * music plays.
+ *
+ * The patch renames the four `duration` constant-pool strings (one per record sprite) to the same-length
+ * `durDelay`, and inserts one frame-1 action that defines `Sound.prototype.durDelay`. While the MP3
+ * loads, it returns one day, and it gives the sound an `onLoad` that resets
+ * `_root.stopAt = getTimer() + this.duration`. Ruffle autoplays the streaming sound when the load
+ * completes, so the record now plays through to the end of its song.
+ */
+export function patchGramophoneSoundDuration(original: Uint8Array): Uint8Array {
+  const signature = String.fromCharCode(...original.subarray(0, 3));
+  if (signature !== "FWS" || original[3] !== 6) throw new Error("gramophone.swf: expected an uncompressed SWF 6");
+  const from = textEncoder.encode("\0duration\0");
+  const to = textEncoder.encode("\0durDelay\0");
+  const bytes = new Uint8Array(original);
+  let renamed = 0;
+  for (let i = 0; i <= bytes.length - from.length; i += 1) {
+    if (from.every((value, k) => bytes[i + k] === value)) {
+      bytes.set(to, i);
+      renamed += 1;
+      i += from.length - 1;
+    }
+  }
+  if (renamed !== 4) throw new Error(`gramophone.swf: expected 4 duration constants, found ${renamed}`);
+
+  const getMember = 0x4e;
+  const onLoad = [
+    ...actionPush("_root"),
+    ...op.getVariable,
+    ...actionPush("stopAt"),
+    0x34, // getTimer()
+    ...actionPush("this"),
+    ...op.getVariable,
+    ...actionPush("duration"),
+    getMember,
+    0x47, // Add2
+    ...op.setMember, // _root.stopAt = getTimer() + this.duration
+  ];
+  const getter = [
+    ...actionPush("this"),
+    ...op.getVariable,
+    ...actionPush("onLoad"),
+    ...actionDefineFunction(["ok"], onLoad),
+    ...op.setMember,
+    ...actionPush(gramophonePendingDurationMs),
+    0x3e, // return
+  ];
+  const install = doAction([
+    ...pushNull,
+    ...actionDefineFunction([], getter),
+    ...actionPush("durDelay", 3, "Sound"),
+    ...op.getVariable,
+    ...actionPush("prototype"),
+    getMember,
+    ...actionPush("addProperty"),
+    ...op.callMethod,
+    ...op.pop,
+  ]);
+
+  const nbits = bytes[8] >> 3;
+  const headerLength = 8 + Math.ceil((5 + 4 * nbits) / 8) + 4;
+  const patched = new Uint8Array(bytes.length + install.length);
+  patched.set(bytes.subarray(0, headerLength), 0);
+  patched.set(install, headerLength);
+  patched.set(bytes.subarray(headerLength), headerLength + install.length);
+  new DataView(patched.buffer).setUint32(4, patched.length, true);
+  return patched;
+}

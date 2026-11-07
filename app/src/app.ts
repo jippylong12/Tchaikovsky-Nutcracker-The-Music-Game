@@ -57,7 +57,9 @@ import {
   buildNutHouseRoomsVariables,
   buildProjectorReturnStubSwf,
   connectProjectorBoundary,
+  gramophoneInstallPath,
   notFoundResponse,
+  patchGramophoneSoundDuration,
   patchProjectorStartFrame,
   parseProjectorExec,
   parseProjectorInstallIndex,
@@ -1795,6 +1797,10 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       const realPath = (await loadProjectorInstallIndex()).get(path);
       if (realPath) {
         const response = await window.fetch(projectorInstallFileUrl(realPath));
+        if (response.ok && realPath === gramophoneInstallPath) {
+          // The Listening Room needs the projector's synchronous loadSound (patchGramophoneSoundDuration).
+          return swfResponse(patchGramophoneSoundDuration(new Uint8Array(await response.arrayBuffer())));
+        }
         if (response.ok) return response;
         console.warn(`The projector install file ${realPath} could not be served: HTTP ${response.status}`);
       }

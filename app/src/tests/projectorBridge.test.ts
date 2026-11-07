@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createAppShell, projectorGameRoutes, resetProjectorInstallIndexForTests } from "../app";
@@ -9,7 +9,9 @@ import {
   buildNutDoorsVariables,
   buildProjectorReturnStubSwf,
   normalizeProjectorPath,
+  gramophoneInstallPath,
   parseProjectorExec,
+  patchGramophoneSoundDuration,
   parseProjectorInstallIndex,
   projectorInstallFileUrl,
   patchProjectorStartFrame,
@@ -121,7 +123,7 @@ afterEach(() => {
 let restoreFetch: (() => void) | null = null;
 
 /** Serves a mirrored recovered install (public/projector-install/) with the given files. */
-function mirrorInstall(files: Record<string, string>) {
+function mirrorInstall(files: Record<string, string | Uint8Array>) {
   resetProjectorInstallIndexForTests();
   const previous = window.fetch;
   const served: string[] = [];
@@ -137,7 +139,8 @@ function mirrorInstall(files: Record<string, string>) {
     const match = Object.keys(files).find((real) => url.endsWith(projectorInstallFileUrl(real)));
     if (match) {
       served.push(match);
-      return Promise.resolve(new Response(files[match], { status: 200 }));
+      const body = files[match];
+      return Promise.resolve(new Response(typeof body === "string" ? body : new Uint8Array(body), { status: 200 }));
     }
     return previous(input, init);
   };
@@ -291,6 +294,50 @@ describe("original games from the recovered CD", () => {
     expect(await (await request("games/data/nutdoors.txt")).text()).toContain("&door3=1&");
     expect(await (await request("games/data/childrensDoors.txt")).text()).toContain("&cadoor2=1&");
     expect(await (await request("games/data/nuthouserooms.txt")).text()).toBe("&openDoor=0&EOF=1");
+  });
+});
+
+const gramophoneSourcePath = path.join(process.cwd(), "../analysis/setup/app", gramophoneInstallPath);
+const hasRecoveredInstall = existsSync(gramophoneSourcePath);
+
+describe("Listening Room under Ruffle's asynchronous loadSound", () => {
+  it.skipIf(!hasRecoveredInstall)(
+    "Given the CD's gramophone.swf, then records keep playing until their MP3 loads: duration reads go through Sound.prototype.durDelay",
+    () => {
+      const original = new Uint8Array(readFileSync(gramophoneSourcePath));
+      const patched = patchGramophoneSoundDuration(original);
+      const text = (bytes: Uint8Array) => Buffer.from(bytes).toString("latin1");
+
+      // The four record sprites' constant pools now read durDelay (plus the injected addProperty name);
+      // only the injected onLoad reads duration.
+      expect(text(original).split("\0duration\0")).toHaveLength(5);
+      expect(text(patched).split("\0durDelay\0")).toHaveLength(6);
+      expect(text(patched).split("\0duration\0")).toHaveLength(2);
+      // Header length grows with the inserted frame-1 DOACTION, which comes before every original tag.
+      expect(new DataView(patched.buffer).getUint32(4, true)).toBe(patched.length);
+      const nbits = patched[8] >> 3;
+      const firstTag = 8 + Math.ceil((5 + 4 * nbits) / 8) + 4;
+      expect((patched[firstTag] | (patched[firstTag + 1] << 8)) >> 6).toBe(12);
+      expect(text(patched)).toContain("addProperty");
+      // Everything after the insertion is the original movie, except the four renamed constants.
+      const insertedLength = patched.length - original.length;
+      const tail = text(patched.subarray(firstTag + insertedLength)).split("\0durDelay\0").join("\0duration\0");
+      expect(tail).toBe(text(original.subarray(firstTag)));
+    },
+  );
+
+  it("refuses a movie that is not the SWF 6 gramophone", () => {
+    expect(() => patchGramophoneSoundDuration(new Uint8Array([0x43, 0x57, 0x53, 6, 0, 0, 0, 0]))).toThrow();
+  });
+
+  it.skipIf(!hasRecoveredInstall)("Given the room's gramophone hotspot, then the boundary serves the patched Listening Room", async () => {
+    const original = new Uint8Array(readFileSync(gramophoneSourcePath));
+    mirrorInstall({ [gramophoneInstallPath]: original });
+    const { request } = launch();
+
+    const served = new Uint8Array(await (await request(gramophoneInstallPath)).arrayBuffer());
+
+    expect(served).toEqual(patchGramophoneSoundDuration(original));
   });
 });
 
