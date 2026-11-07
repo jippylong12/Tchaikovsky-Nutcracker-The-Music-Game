@@ -407,13 +407,36 @@ const sourceReaderExitButtonIds: Record<ReadingRouteId, number> = {
   "ballet-history": 32,
 };
 
+function isDeveloperPanelRequested(): boolean {
+  if (import.meta.env.VITE_DEV_PANEL === "1") return true;
+  try {
+    return new URLSearchParams(window.location.search).get("devpanel") === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** Height of the band reserved under the stage for the external certificate action, so it never overlaps the 640 x 480 source viewport. */
+const releaseCertificateBandHeight = 56;
+
+function fitStageToWindow(mount: HTMLElement): () => void {
+  const apply = () => {
+    const reservedHeight = mount.querySelector(".release-certificate-actions") ? releaseCertificateBandHeight : 0;
+    const scale = Math.min(window.innerWidth / 640, (window.innerHeight - reservedHeight) / 480);
+    mount.style.setProperty("--stage-scale", String(Math.max(scale, 0.25)));
+  };
+  apply();
+  window.addEventListener("resize", apply);
+  return apply;
+}
+
 export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}): void {
   const progress = options.progress ?? createProgressStore();
   const audio = options.audio ?? createAudioService();
   const previewAudioPath = options.previewAudioPath ?? defaultPreviewAudioPath;
   const printCertificate = options.printCertificate ?? (() => window.print());
   const random = options.random ?? Math.random;
-  const showDeveloperPanel = options.showDeveloperPanel ?? import.meta.env.DEV;
+  const showDeveloperPanel = options.showDeveloperPanel ?? isDeveloperPanelRequested();
   const openExternal = options.openExternal ?? ((url: string) => {
     if ("__TAURI_INTERNALS__" in window) {
       void import("@tauri-apps/plugin-opener").then(({ openUrl }) => openUrl(url));
@@ -533,6 +556,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     shellState.toyPlaybackKind = null;
   };
 
+  let refitStage: (() => void) | null = null;
+
   const render = (focusSelector?: string, fallbackFocusSelector?: string) => {
     const route = getRouteById(shellState.routeId);
     const progressSnapshot = progress.getSnapshot();
@@ -637,6 +662,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         ${progressSnapshot.gameKeys[1] ? renderNutcrackerCertificatePrintSurface() : ""}
       </section>
     `;
+    refitStage?.();
 
     mount.querySelectorAll<HTMLButtonElement>("[data-route]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -1615,8 +1641,11 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
 
     const viewportRect = viewport.getBoundingClientRect();
     const sourceRect = sourceHelpElement.getBoundingClientRect();
-    const sourceX = event ? event.clientX - viewportRect.left : sourceRect.left + sourceRect.width / 2 - viewportRect.left;
-    const sourceY = event ? event.clientY - viewportRect.top : sourceRect.top - viewportRect.top;
+    // The release shell scales the 640-wide stage with a CSS transform; pointer coordinates are in
+    // screen pixels, while style.left/top are in unscaled stage pixels, so divide out the scale.
+    const renderedScale = viewportRect.width > 0 ? viewportRect.width / 640 : 1;
+    const sourceX = (event ? event.clientX - viewportRect.left : sourceRect.left + sourceRect.width / 2 - viewportRect.left) / renderedScale;
+    const sourceY = (event ? event.clientY - viewportRect.top : sourceRect.top - viewportRect.top) / renderedScale;
     const left = Math.min(Math.max(sourceX + 14, 8), 488);
     const top = Math.min(Math.max(sourceY - 34, 8), 438);
     flyingHelp.style.left = `${left}px`;
@@ -2253,6 +2282,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   });
 
   render();
+  if (!showDeveloperPanel) {
+    refitStage = fitStageToWindow(mount);
+  }
 }
 
 function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreController["getSnapshot"]>, shellState: ShellState): string {

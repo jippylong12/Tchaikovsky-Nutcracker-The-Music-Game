@@ -14,10 +14,11 @@
     "windows": [
       {
         "title": "Tchaikovsky Nutcracker: The Music Game",
-        "width": 900,
-        "height": 620,
-        "minWidth": 760,
-        "minHeight": 600,
+        "width": 1280,
+        "height": 960,
+        "minWidth": 640,
+        "minHeight": 480,
+        "center": true,
         "resizable": true
       }
     ],

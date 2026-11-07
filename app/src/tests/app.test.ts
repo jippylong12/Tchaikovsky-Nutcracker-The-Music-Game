@@ -109,6 +109,111 @@ describe("desktop app shell", () => {
     expect(mount.textContent).toContain("Local desktop package only");
   });
 
+  it("hides the developer route map by default and scales the stage to the window", () => {
+    const mount = document.createElement("main");
+    createAppShell(mount, {
+      progress: createProgressStore(createMemoryPersistence()),
+      audio: createAudioService({
+        createAudioElement: () => new FakeAudioElement(),
+      }),
+    });
+
+    expect(mount.querySelector(".route-panel")).toBeNull();
+    expect(mount.querySelector(".release-shell")).not.toBeNull();
+    expect(mount.querySelector(".game-viewport")).not.toBeNull();
+    expect(mount.style.getPropertyValue("--stage-scale")).not.toBe("");
+  });
+
+  it("shows the developer panel only for devpanel=1 or VITE_DEV_PANEL=1", () => {
+    const makeMount = () => {
+      const mount = document.createElement("main");
+      createAppShell(mount, {
+        progress: createProgressStore(createMemoryPersistence()),
+        audio: createAudioService({
+          createAudioElement: () => new FakeAudioElement(),
+        }),
+      });
+      return mount;
+    };
+
+    window.history.replaceState({}, "", "/?devpanel=0");
+    expect(makeMount().querySelector(".route-panel")).toBeNull();
+
+    window.history.replaceState({}, "", "/?devpanel=1");
+    const queryMount = makeMount();
+    expect(queryMount.querySelector(".route-panel")).not.toBeNull();
+    expect(queryMount.querySelector(".release-shell")).toBeNull();
+
+    window.history.replaceState({}, "", "/");
+    vi.stubEnv("VITE_DEV_PANEL", "1");
+    try {
+      expect(makeMount().querySelector(".route-panel")).not.toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+    expect(makeMount().querySelector(".route-panel")).toBeNull();
+  });
+
+  it("scales the stage to the window and reserves a band for the unlocked certificate action", () => {
+    window.history.replaceState({}, "", "/");
+    const progress = createProgressStore(createMemoryPersistence());
+    const mount = document.createElement("main");
+    createAppShell(mount, {
+      progress,
+      audio: createAudioService({
+        createAudioElement: () => new FakeAudioElement(),
+      }),
+    });
+
+    window.innerWidth = 1280;
+    window.innerHeight = 960;
+    window.dispatchEvent(new Event("resize"));
+    expect(Number(mount.style.getPropertyValue("--stage-scale"))).toBeCloseTo(2, 5);
+
+    window.innerWidth = 1920;
+    window.innerHeight = 600;
+    window.dispatchEvent(new Event("resize"));
+    expect(Number(mount.style.getPropertyValue("--stage-scale"))).toBeCloseTo(600 / 480, 5);
+
+    window.innerWidth = 1280;
+    window.innerHeight = 960;
+    progress.markGameKey(1);
+    mount.querySelector<HTMLButtonElement>('[data-action="start"]')?.click();
+    expect(mount.querySelector(".release-certificate-actions")).not.toBeNull();
+    expect(Number(mount.style.getPropertyValue("--stage-scale"))).toBeCloseTo((960 - 56) / 480, 5);
+  });
+
+  it("places the flying help in stage coordinates when the release stage is scaled", () => {
+    window.history.replaceState({}, "", "/");
+    const mount = document.createElement("main");
+    const progress = createProgressStore(createMemoryPersistence());
+    ([1, 2, 3, 4, 5, 6, 7, 8, 9] as const satisfies readonly GameKey[]).forEach((key) => progress.markGameKey(key));
+    createAppShell(mount, {
+      progress,
+      audio: createAudioService({
+        createAudioElement: () => new FakeAudioElement(),
+      }),
+    });
+    mount.querySelector<HTMLButtonElement>('[data-action="start"]')?.click();
+    mount.querySelector<HTMLButtonElement>('[data-action="play-featured-game"]')?.click();
+    mount.querySelector<HTMLButtonElement>('[data-scene-route="nutcracker-chooser"]')?.click();
+
+    const viewport = mount.querySelector<HTMLElement>(".game-viewport");
+    expect(viewport).not.toBeNull();
+    viewport!.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 1280, height: 960, right: 1280, bottom: 960, x: 0, y: 0, toJSON: () => ({}) }) as DOMRect;
+
+    const helpButton = mount.querySelector<HTMLButtonElement>('[data-source-control="helpButton"]');
+    expect(helpButton).not.toBeNull();
+    helpButton!.dispatchEvent(new PointerEvent("pointerenter", { clientX: 600, clientY: 320, bubbles: false }));
+
+    const flyingHelp = mount.querySelector<HTMLElement>(".source-flying-help");
+    // Screen (600, 320) at scale 2 is stage (300, 160); the help sits at +14 / -34 from there.
+    // Without the scale correction it would land at (614, 286) and clamp to the stage corner.
+    expect(flyingHelp?.style.left).toBe("314px");
+    expect(flyingHelp?.style.top).toBe("126px");
+  });
+
   it("follows the recovered projector launcher sequence and wires every visible launcher button", () => {
     const openExternal = vi.fn();
     const exitApp = vi.fn();

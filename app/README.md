@@ -28,6 +28,8 @@ Run the desktop app shell:
 npm run tauri:dev
 ```
 
+Both commands show only the game, with the native 640 x 480 stage scaled to fill the window. The developer route map, progress cheats, and audio diagnostics are hidden by default; add `?devpanel=1` to the Vite URL or set the `VITE_DEV_PANEL` environment variable to `1` to show them.
+
 ## Validation
 
 Run these before packaging or larger feature changes:

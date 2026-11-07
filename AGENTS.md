@@ -28,7 +28,14 @@
 - If a full sprite/frame render fails, inspect its child shapes/text/bitmaps before accepting a broad fallback. Promote recoverable child layers and document the remaining display-list or tooling gap in the source map and knowledge base.
 - If a source button cannot be flattened as one symbol, compose recoverable source child layers rather than falling back to label-only or CSS-only UI. Example: chooser `quiter` uses shape id `0205` plus text id `0204` because button id `0206` renders locally as a 1 x 1 placeholder.
 - For completion, reward, unlock, or progress visuals, inspect hidden/root-gated source instances before creating new badges or indicators. Example: chooser `magicKey` is sprite id `0213`, hidden until `nutDoorsVisited == 8`, and should be promoted from source art rather than replaced by generic completion UI.
-- Keep `JIP-349` open for UI approval unless Marcus explicitly approves the UI. UI code changes should not be marked Done from automated checks alone.
+- UI code changes should not be marked Done from automated checks alone. Only Marcus approves a stage, by playing it in the running app.
+
+## Linear Tracking
+
+- The live tracker is the JIP project `Nutcracker Remake: Stages` (P-JIP-471). One milestone is one stage; stages are worked in order (Stage 0 clean shell, Stage 1 overture, Stage 2 launcher, Stage 3 main room, Stage 4 Nutcracker chooser and songs, Stage 5 activities and mini-games, Stage 6 package and ship).
+- The earlier project `Tchaikovsky Nutcracker Music Game Desktop Remake` (P-JIP-48) was canceled on 2026-11-06. Do not reopen or work its issues; their source pointers were carried into the new project.
+- Stage 1 opens with a Ruffle-in-Tauri spike (JIP-1532). Its outcome decides whether later stages play source SWFs through Ruffle or keep reconstructing scenes by hand. Read that issue before starting any later stage.
+- The developer route map and cheats are hidden by default. Enable them with `?devpanel=1` on the Vite URL or `VITE_DEV_PANEL=1` in the environment. Never ship or screenshot the game with them visible.
 
 ## Source-Reconstruction Loop
 
