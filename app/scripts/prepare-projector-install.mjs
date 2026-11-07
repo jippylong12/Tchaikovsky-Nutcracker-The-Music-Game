@@ -5,7 +5,7 @@
 // Windows CD was case-insensitive and the movies ask for "Games/Melody/Snd/Melody.txt" and
 // "games/data/childrensDoors.txt".
 //
-// The recovered install is local-only (analysis/ is git-ignored). Without it this writes an empty
+// The recovered install is unpacked from original-cd/ by scripts/restore-original-cd.mjs (analysis/ itself is git-ignored). Without it this writes an empty
 // index and the shell falls back to the hand-made routes.
 import console from "node:console";
 import { copyFileSync, existsSync, linkSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";

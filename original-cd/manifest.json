@@ -1,0 +1,32 @@
+{
+  "description": "Recovered Tchaikovsky Nutcracker CD install (analysis/setup/app) and Internet Archive scans (base/)",
+  "tarSha256": "c565d02a8424c8ee541cbe371e463f972589cfc692a3d0853a5d1e68539036c1",
+  "tarSize": 245831680,
+  "parts": [
+    {
+      "name": "original-cd.tar.br.part01",
+      "size": 47185920,
+      "sha256": "32ef964fa686a3c6825e83e5b765027714f54499cf90d7c78ff3b064a4043960"
+    },
+    {
+      "name": "original-cd.tar.br.part02",
+      "size": 47185920,
+      "sha256": "49a738d7848a6093376d82a855e38f41d88001b14578ad8b1197197ed4356249"
+    },
+    {
+      "name": "original-cd.tar.br.part03",
+      "size": 47185920,
+      "sha256": "d52eeac032583e9817da3103b1ed0a778d4790004be5b37809f81e3ac55c07cb"
+    },
+    {
+      "name": "original-cd.tar.br.part04",
+      "size": 47185920,
+      "sha256": "9f2a038662d6b159180e4757fe7d04da75ebe98e45a0fd79672920f7a387ae03"
+    },
+    {
+      "name": "original-cd.tar.br.part05",
+      "size": 3293318,
+      "sha256": "046cf4b2a69217e1761df0a0e824e434dea6e3baa7834ec2f064df92d10af878"
+    }
+  ]
+}

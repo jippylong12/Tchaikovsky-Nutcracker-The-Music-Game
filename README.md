@@ -16,7 +16,15 @@ The game was never rebuilt by hand. The app plays the **original Flash movies fr
   - quitting closes the app.
 - **Ruffle fixes:** where Ruffle behaves differently from the 2003 Flash projector, the shell patches only that spot and documents it. One example is that the Listening Room expected its songs to load instantly.
 
-The CD's own media is not stored in this repository. A local copy of the recovered install is expected under `analysis/setup/app/`, and the app mirrors what it needs from there.
+## The original game files
+
+The original CD files are in this repository under `original-cd/`, compressed and split into parts under 50 MB. They are the 480 files the CD installed (every movie, sound, and text file, unchanged), plus the Internet Archive scans of the disc and sleeve.
+
+They unpack into `analysis/setup/app/` (the game) and `base/` (the scans). The unpacked folders are not committed. Every part and the whole archive are checked against SHA-256 checksums, so a damaged download fails loudly instead of running a broken game. Unpacking needs only Node, with no unzip or tar.
+
+The raw disc image (`.iso`) is not included because it holds the same files a second time and the app never reads it. It is the Internet Archive item [`tchaikovsky-nutcracker-the-music-game-quaint-interactive`](https://archive.org/details/tchaikovsky-nutcracker-the-music-game-quaint-interactive): 244,436,992 bytes, SHA-256 `549cb5ea511f30c961483a2a6a84bdf11ae73663214510ffaedb8cbdced9e217`.
+
+Maintainers who change the recovered files repack them with `node app/scripts/pack-original-cd.mjs`.
 
 ## Status
 
@@ -37,12 +45,15 @@ Stage 6 turns this into a normal desktop application. On a Mac that means a `.ap
 
 ## Running it (development)
 
-You need Node.js, Rust, and the recovered install under `analysis/setup/app/`.
+You need Node.js and Rust.
 
 ```sh
 cd app
 npm install
+npm run setup:cd
 npm run tauri:dev
 ```
+
+`npm run setup:cd` unpacks the original game files once (about 250 MB, under a minute). `dev` and `build` also run it automatically, and it skips the work when the files are already unpacked.
 
 More detail for developers is in [app/README.md](app/README.md) and under [docs/](docs/).
