@@ -392,6 +392,10 @@ for (const [suffix, flag] of [["actions", "-a"], ["placements", "-p"], ["text", 
     execFileSync("swfdump", [flag, introPath], { maxBuffer: 64 * 1024 * 1024 }),
   );
 }
+// The whole source intro movie is promoted byte-for-byte so the runtime can play it through Ruffle.
+const introMoviePath = join(promotedRoot, "flute-intro.swf");
+writeFileSync(introMoviePath, intro);
+assertEqual(sha256(readFileSync(introMoviePath)), expected.introSha256, "promoted flute-intro.swf SHA-256");
 const introStillPath = join(promotedRoot, "flute-intro-garden.jpg");
 const introStill = extractJpeg(introPath, expected.introJpegId, introStillPath);
 assertEqual(sha256(introStill), expected.introStillSha256, "flute intro JPEG 371 SHA-256");
@@ -536,6 +540,11 @@ const manifest = {
       sourceLocator: `embedded main SWF root frame 2378 label playRoom; official Ruffle v0.5.0 render of the extracted frame composited over DEFINEBITSJPEG id ${expected.playRoomJpegId}`,
       path: "app/src/assets/source-scenes/main-playroom-source-composite.png",
       sha256: sha256(playRoomComposite),
+    },
+    {
+      sourceLocator: "analysis/setup/app/flute_intro.swf complete 800 x 600, 15 fps, 1277-frame movie played through bundled Ruffle v0.5.0",
+      path: "app/src/assets/source-scenes/flute-intro.swf",
+      sha256: expected.introSha256,
     },
     {
       sourceLocator: `flute_intro.swf DEFINEBITSJPEG id ${expected.introJpegId}`,

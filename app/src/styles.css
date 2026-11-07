@@ -3516,6 +3516,40 @@ body:has(.release-shell) {
   cursor: pointer;
 }
 
+/* Persistent Ruffle layer for source SWF playback. It sits outside the re-rendered #app mount (Ruffle
+   destroys its player when disconnected) and is pinned in real screen pixels over the stage rect, so the
+   canvas renders at full resolution instead of being upscaled by the stage transform. */
+.source-swf-layer {
+  position: fixed;
+  z-index: 50;
+  overflow: hidden;
+  background: #000000;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.source-swf-player {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* The intro movie has no interactive objects; the projector's own mouse-up skip is handled by the layer. */
+  pointer-events: none;
+}
+
+.source-swf-skip-target {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.source-swf-skip-target:focus-visible {
+  outline: 1px solid #ffff00;
+  outline-offset: 1px;
+}
+
 .source-intro-skip:focus-visible {
   color: #ffff00;
   outline: 1px solid #ffff00;

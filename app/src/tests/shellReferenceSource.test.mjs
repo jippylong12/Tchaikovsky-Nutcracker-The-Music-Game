@@ -36,6 +36,9 @@ describe("shell and reference source reconstruction", () => {
   });
 
   it("locks the promoted projector, intro, and Listening Room children", () => {
+    expect(sha256("flute-intro.swf")).toBe(
+      "aa92b6b3022c3cf3030cecd7c06888aebd929a63bcc7b3ce18119f3f7476b782",
+    );
     expect(sha256("projector-choose-source.png")).toBe(
       "d0bf34493f250904056468eae4525f039da4e55797282ae2d97d7246c54ecaf0",
     );

@@ -26,14 +26,32 @@ Locked evidence:
 
 ## Projector introduction
 
-The main projector loads `flute_intro.swf`. That movie is an 800 x 600, 15 fps, 1277-frame timeline with a source `skip` text control at the lower-right edge. The projector root binds both the intro mouse-up path and `skipBTN.onRelease` to `gotoAndStop("choose")`. The runtime preserves that phase change, scales one promoted source garden layer from `DEFINEBITSJPEG id 0371`, and does not claim to reproduce the full intro timeline.
+The main projector loads `flute_intro.swf`. That movie is an 800 x 600, 15 fps, 1277-frame timeline with streamed music (`SOUNDSTREAMHEAD` + per-frame `SOUNDSTREAMBLOCK`) and a source `skip` text, text id `0004` (font `0003`, 12 px, `#cccccc`), placed at depth `0265`, x `770.95`, y `572.50`. The skip text is plain text, not a button, and the movie has no `stop()` at its end.
 
-Local probes are an explicit fallback boundary:
+Since Stage 1 (JIP-1532/JIP-1533) the runtime plays the complete original movie through the bundled official Ruffle `v0.5.0` web build instead of a static layer.
 
-- `swfextract -f 1`, `-f 300`, `-f 900`, `-f 1200`, and `-f 1277` produced blank 573-byte PNG renders.
-- frame probes `-f 100` and `-f 600` crashed the local renderer with exit 139.
+Projector root evidence (`nutcracker2-main.actions.txt` / `-p` placements of the embedded main SWF):
 
-The runtime records this evidence on `.source-intro-scene` through `data-source-*` attributes.
+| Evidence | Source | Remake equivalent |
+| --- | --- | --- |
+| Movie load | root frame 1 `DOACTION`: `_quality = "MEDIUM"`, `FSCommand:fullscreen true`, `FSCommand:allowscale false`, `FSCommand:showmenu false`, then `loadMovie("flute_intro.swf", "bigloader")` | Ruffle `load({ url: flute-intro.swf, quality: "medium", contextMenu: "off", menu: false })` |
+| Loader placement | sprite id `0018` named `bigloader`, depth `0002`, matrix scale `1.000`, translate `-77.00, -60.00`, placed before root frame 2 (`MFIntro`) | see scaling below |
+| Skip | `_root.onMouseUp = function () { trace("skip done!"); _root.gotoAndStop("choose"); delete _root.onMouseUp; }` | any primary mouse release over the movie, or the transparent keyboard target over the skip pixels, sets `overturePhase = "launcher"` |
+| End of intro | root frames 3-1267 are empty; frame 1268 removes depth `0002` (the loader) and is labeled `choose` | hand-off timer of 1266 frames / 15 fps = 84 400 ms after Ruffle's `loadedmetadata` |
+| Replay | launcher `MFBtn.onRelease = _root.gotoAndPlay("MFintro")` (root frame 2) | `preview-musical-friends` re-enters the intro phase and starts the movie from frame 1 |
+| `skipBTN` | button id `0066` named `skipBTN` exists only from root frame 1268 (ratio `1268`, x `583.25`, y `21.45`) | not part of the intro; its frame-1 `onRelease` binding has no effect during the intro |
+
+Scaling: the projector does not shrink the movie. It runs fullscreen with `allowscale false`, so the 640 x 480 stage sits 1:1 in the middle of the display and the 800 x 600 intro, offset by (-77, -60), overflows past the stage edges. On the era's 800 x 600 display the intro therefore filled the entire screen (within 3 px of centred) and its `skip` text sat at the screen's lower-right corner, which is 54 px outside the 640 x 480 stage rectangle. A strict 640 x 480 crop would hide the source skip control, so the remake shows what players saw: the full 800 x 600 movie fitted uniformly (0.8) into the 640 x 480 stage (same 4:3 aspect, no bars), then scaled with the stage to the window.
+
+Integration shape (code: `app/src/flash/sourceSwfLayer.ts`, `syncSourceSwf` in `app/src/app.ts`):
+
+- Runtime: `app/vendor/ruffle/ruffle-0.5.0-web-selfhosted.zip` (committed, SHA-256 `4e0d44ba990f9fe3434d7848f740348299bd6c473db59fb5f8606b750fcc5760`). `npm run assets:ruffle` (also run by `predev` and `build`) verifies the hash and unpacks it without source maps into ignored `app/public/ruffle/`; Vite copies it to `dist/ruffle/`, so Tauri bundles it. No network at runtime.
+- Movie: `app/src/assets/source-scenes/flute-intro.swf`, a byte-identical promotion of `analysis/setup/app/flute_intro.swf` written and hash-checked by `assets:shell-reference`; imported with `?url` so Vite fingerprints it.
+- Loading: the shell injects `/ruffle/ruffle.js` once with `RufflePlayer.config = { polyfills: false, publicPath: "/ruffle/" }`, then `RufflePlayer.newest().createPlayer()` and `player.ruffle().load(...)` with `autoplay: "on"`, `unmuteOverlay: "hidden"`, `splashScreen: false`, `contextMenu: "off"`, `allowNetworking: "none"`, `openUrlMode: "deny"`.
+- Hosting: Ruffle's `<ruffle-player>` destroys itself on DOM disconnect and the shell re-renders `#app` with `innerHTML`, so the player lives in a persistent `.source-swf-layer` on `document.body`, pinned with `position: fixed` over `.source-intro-scene`'s bounding rect after every render, after the initial stage fit, and on resize. The layer is sized in real screen pixels, so Ruffle renders at full resolution rather than being upscaled by the stage transform.
+- Fallback: if Ruffle fails to load, the layer is removed and the previous static source scene (`DEFINEBITSJPEG id 0371` garden plus a tabbable `skip`) stays.
+
+SWFTools still cannot render this movie (`swfextract -f 1`, `-f 300`, `-f 900`, `-f 1200`, `-f 1277` blank 573-byte PNGs; `-f 100`, `-f 600` exit 139); that is why every earlier scene was a static capture.
 
 ## Projector source chooser
 

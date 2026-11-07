@@ -9,3 +9,6 @@ app/generated/
 app/public/local-media/audio/
 app/public/local-media/text/
 app/public/local-media/visual/
+
+# Unpacked from the committed vendor/ruffle archive by scripts/prepare-ruffle.mjs.
+app/public/ruffle/

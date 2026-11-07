@@ -5,6 +5,6 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: ["dist", "generated", "public/local-media", "src/data/generated", "src-tauri/target"],
+    ignores: ["dist", "generated", "public/local-media", "public/ruffle", "src/data/generated", "src-tauri/target"],
   },
 );

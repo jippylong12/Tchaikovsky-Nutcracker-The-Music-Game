@@ -22,3 +22,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# ...but not Flash movies promoted from the recovered source (flute-intro.swf).
+!*.swf

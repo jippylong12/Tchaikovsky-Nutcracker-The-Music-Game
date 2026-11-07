@@ -35,6 +35,7 @@ import songWarningYesLabelUrl from "./assets/nutcracker-source/song-warning-yes-
 import songWarningframeTalkerUrl from "./assets/nutcracker-source/song-warningframe-talker.png";
 import songYesLabelUrl from "./assets/nutcracker-source/song-yes-label.png";
 import fluteIntroGardenUrl from "./assets/source-scenes/flute-intro-garden.jpg";
+import fluteIntroSwfUrl from "./assets/source-scenes/flute-intro.swf?url";
 import listeningRoomSourceUrl from "./assets/source-scenes/listening-room-source.png";
 import mainPlayRoomCompositeUrl from "./assets/source-scenes/main-playroom-source-composite.png";
 import musictionaryHelpFishUrl from "./assets/source-scenes/musictionary-help-fish.png";
@@ -46,6 +47,7 @@ import readerControlNextHoverUrl from "./assets/source-scenes/reader-control-nex
 import readerControlPrevHoverUrl from "./assets/source-scenes/reader-control-prev-hover.png";
 import stageMarkUrl from "./assets/stage-mark.svg";
 import { createAudioService, type AudioService } from "./audio/audioService";
+import { createSourceSwfLayer, type SourceSwfLayer } from "./flash/sourceSwfLayer";
 import {
   dictionaryInstruments,
   getDictionaryInstrument,
@@ -388,7 +390,14 @@ export type AppShellOptions = {
   showDeveloperPanel?: boolean;
   openExternal?: (url: string) => void;
   exitApp?: () => void;
+  sourceSwfLayer?: SourceSwfLayer;
 };
+
+// Projector root frame 1 loads flute_intro.swf into `bigloader`; the root timeline removes it and
+// reaches `choose` at frame 1268, i.e. 1266 frames of intro at 15 fps (84.4 s).
+export const fluteIntroHandoffMs = Math.round((1266 / 15) * 1000);
+// flute_intro.swf text id 0004 "skip" at x 770.95, y 572.50 (12 px font) on the 800 x 600 movie.
+const fluteIntroSkipTarget = { left: 764 / 800, top: 566 / 600, width: 36 / 800, height: 30 / 600 } as const;
 
 const defaultPreviewAudioPath = suiteTracks.find((track) => track.audioPath)?.audioPath ?? "";
 const sourceReaderPreviousButtonIds: Record<ReadingRouteId, readonly (number | null)[]> = {
@@ -451,6 +460,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
     window.close();
   });
+  const sourceSwfLayer = options.sourceSwfLayer ?? createSourceSwfLayer();
+  let overtureSourceSwfFailed = false;
   const shellState: ShellState = {
     routeId: "overture",
     routeStack: [],
@@ -578,7 +589,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
                     <p class="status-label">${progressSnapshot.completedGameCount} of 9 keys</p>
                   </header>`
             }
-            ${renderScene(route, progressSnapshot, shellState)}
+            ${renderScene(route, progressSnapshot, shellState, !overtureSourceSwfFailed)}
             ${
               sourceFrameRoute
                 ? ""
@@ -1579,6 +1590,30 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         : null;
       (usableTarget ?? fallbackTarget)?.focus();
     }
+    syncSourceSwf();
+  };
+
+  // The overture intro plays the original flute_intro.swf through Ruffle in a persistent layer over the
+  // stage. The static source scene underneath stays as the fallback if Ruffle cannot start.
+  const syncSourceSwf = () => {
+    const introStage = mount.querySelector<HTMLElement>(".source-intro-scene");
+    if (!introStage || overtureSourceSwfFailed) {
+      sourceSwfLayer.stop();
+      return;
+    }
+    sourceSwfLayer.play(introStage, {
+      swfUrl: fluteIntroSwfUrl,
+      handoffAfterMs: fluteIntroHandoffMs,
+      quality: "medium",
+      skipTarget: fluteIntroSkipTarget,
+      onSkip: () => handleAction("start"),
+      onEnd: () => handleAction("start"),
+      onError: (error) => {
+        console.warn("flute_intro.swf could not start through Ruffle; keeping the static source scene", error);
+        overtureSourceSwfFailed = true;
+        render();
+      },
+    });
   };
 
   const isNutcrackerSongInteractionBlocked = (songId: NutcrackerSongId): boolean =>
@@ -2284,12 +2319,19 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   render();
   if (!showDeveloperPanel) {
     refitStage = fitStageToWindow(mount);
+    // The first render measured the stage before the window scale applied; re-pin the SWF layer.
+    syncSourceSwf();
   }
 }
 
-function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreController["getSnapshot"]>, shellState: ShellState): string {
+function renderScene(
+  route: RouteDefinition,
+  progress: ReturnType<ProgressStoreController["getSnapshot"]>,
+  shellState: ShellState,
+  sourceSwfActive: boolean,
+): string {
   if (route.id === "overture") {
-    return renderSourceOverture(shellState.overturePhase);
+    return renderSourceOverture(shellState.overturePhase, sourceSwfActive);
   }
 
   if (route.id === "main-menu") {
@@ -2391,7 +2433,7 @@ function renderScene(route: RouteDefinition, progress: ReturnType<ProgressStoreC
   `;
 }
 
-function renderSourceOverture(phase: ShellState["overturePhase"]): string {
+function renderSourceOverture(phase: ShellState["overturePhase"], sourceSwfActive: boolean): string {
   if (phase === "launcher") {
     return `
       <div
@@ -2461,11 +2503,17 @@ function renderSourceOverture(phase: ShellState["overturePhase"]): string {
       data-source-frame="root frame 1 through 1277 at 15 fps"
       data-source-image="DEFINEBITSJPEG id 0371 promoted as the recovered garden layer"
       data-source-control="source text skip at the lower-right edge; root gotoAndStop choose"
-      data-source-fallback="full root probes at frames 1, 300, 900, 1200, and 1277 rendered blank; frames 100 and 600 crashed the local SWF renderer, so the runtime holds one promoted source layer instead of claiming full timeline playback"
+      data-source-runtime="${sourceSwfActive ? "flute_intro.swf plays through bundled Ruffle v0.5.0 in the source-swf layer; full 800 x 600 movie fitted to the 640 x 480 stage" : "static fallback"}"
+      data-source-fallback="if Ruffle cannot start, the runtime holds the promoted DEFINEBITSJPEG id 0371 garden layer; SWFTools renders every root frame blank or crashes"
     >
       <img class="source-intro-garden" src="${fluteIntroGardenUrl}" alt="" aria-hidden="true" />
       <h1 class="sr-only">Recovered projector introduction</h1>
-      <button class="source-intro-skip" type="button" data-action="start">skip</button>
+      <button
+        class="source-intro-skip"
+        type="button"
+        data-action="start"
+        ${sourceSwfActive ? 'tabindex="-1" aria-hidden="true"' : ""}
+      >skip</button>
     </div>
   `;
 }

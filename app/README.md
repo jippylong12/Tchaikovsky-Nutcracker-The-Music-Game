@@ -30,6 +30,8 @@ npm run tauri:dev
 
 Both commands show only the game, with the native 640 x 480 stage scaled to fill the window. The developer route map, progress cheats, and audio diagnostics are hidden by default; add `?devpanel=1` to the Vite URL or set the `VITE_DEV_PANEL` environment variable to `1` to show them.
 
+The intro plays the original `flute_intro.swf` through the bundled Ruffle v0.5.0 Flash player. `npm run dev` and `npm run build` first run `npm run assets:ruffle`, which checks the committed `vendor/ruffle/ruffle-0.5.0-web-selfhosted.zip` against its pinned SHA-256 and unpacks it into the ignored `public/ruffle/` folder. Nothing is downloaded at runtime.
+
 ## Validation
 
 Run these before packaging or larger feature changes:
