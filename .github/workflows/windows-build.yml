@@ -35,7 +35,8 @@ jobs:
       # Unpacks the original CD files from original-cd/ (also run by `npm run build`, kept as its own step for a clear log).
       - run: npm run setup:cd
 
-      - run: npm test
+      # No `npm test` here: several tests read app/public/local-media/, which npm run assets:pipeline makes
+      # with swftools on the dev machine. The installer does not need that folder.
 
       # beforeBuildCommand runs `npm run build` (Ruffle, original games mirror, typecheck, Vite).
       - run: npx tauri build --bundles nsis
