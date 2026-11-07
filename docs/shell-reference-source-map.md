@@ -28,13 +28,13 @@ Locked evidence:
 
 The main projector loads `flute_intro.swf`. That movie is an 800 x 600, 15 fps, 1277-frame timeline with streamed music (`SOUNDSTREAMHEAD` + per-frame `SOUNDSTREAMBLOCK`) and a source `skip` text, text id `0004` (font `0003`, 12 px, `#cccccc`), placed at depth `0265`, x `770.95`, y `572.50`. The skip text is plain text, not a button, and the movie has no `stop()` at its end.
 
-Since Stage 1 (JIP-1532/JIP-1533) the runtime plays the complete original movie through the bundled official Ruffle `v0.5.0` web build instead of a static layer.
+Since Stage 1 (JIP-1532/JIP-1533) the runtime plays the complete original movie through the bundled official Ruffle `v0.5.0` web build instead of a static layer. It plays only from the launcher's Musical Friends preview; the app opens on the launcher (see "Projector start frame").
 
 Projector root evidence (`nutcracker2-main.actions.txt` / `-p` placements of the embedded main SWF):
 
 | Evidence | Source | Remake equivalent |
 | --- | --- | --- |
-| Movie load | root frame 1 `DOACTION`: `_quality = "MEDIUM"`, `FSCommand:fullscreen true`, `FSCommand:allowscale false`, `FSCommand:showmenu false`, then `loadMovie("flute_intro.swf", "bigloader")` | Ruffle `load({ url: flute-intro.swf, quality: "medium", contextMenu: "off", menu: false })` |
+| Movie load | root frame 2 (`MFIntro`) `DOACTION`, reached from `MFBtn`: `_quality = "MEDIUM"`, `FSCommand:fullscreen true`, `FSCommand:allowscale false`, `FSCommand:showmenu false`, then `loadMovie("flute_intro.swf", "bigloader")` | Ruffle `load({ url: flute-intro.swf, quality: "medium", contextMenu: "off", menu: false })` |
 | Loader placement | sprite id `0018` named `bigloader`, depth `0002`, matrix scale `1.000`, translate `-77.00, -60.00`, placed before root frame 2 (`MFIntro`) | see scaling below |
 | Skip | `_root.onMouseUp = function () { trace("skip done!"); _root.gotoAndStop("choose"); delete _root.onMouseUp; }` | any primary mouse release over the movie, or the transparent keyboard target over the skip pixels, sets `overturePhase = "launcher"` |
 | End of intro | root frames 3-1267 are empty; frame 1268 removes depth `0002` (the loader) and is labeled `choose` | hand-off timer of 1266 frames / 15 fps = 84 400 ms after Ruffle's `loadedmetadata` |
@@ -77,7 +77,7 @@ The source text objects remain baked into the recovered frame: text `0030` is `P
 
 ## Projector start frame
 
-Projector root frame 1 (`DOACTION` at byte `79408`, 113 bytes) sets `_quality = "MEDIUM"`, sends `FSCommand:fullscreen true`, `allowscale false`, and `showmenu false`, then runs `GotoFrame 1267` (zero-based, so root frame 1268, label `choose`) and `Play`. The loader action for `flute_intro.swf` belongs to root frame 2, label `MFIntro`, which the projector reaches only through `MFBtn.onRelease = _root.gotoAndPlay("MFintro")`. So the original projector opened on the launcher. The flute intro is the Musical Friends preview, not a startup intro. The remake currently plays it at launch, as Stage 1 requested; whether launch should go straight to the launcher is waiting on Marcus.
+Projector root frame 1 (`DOACTION` at byte `79408`, 113 bytes) sets `_quality = "MEDIUM"`, sends `FSCommand:fullscreen true`, `allowscale false`, and `showmenu false`, then runs `GotoFrame 1267` (zero-based, so root frame 1268, label `choose`) and `Play`. The loader action for `flute_intro.swf` belongs to root frame 2, label `MFIntro`, which the projector reaches only through `MFBtn.onRelease = _root.gotoAndPlay("MFintro")`. So the original projector opened on the launcher. The flute intro is the Musical Friends preview, not a startup intro. Since 2026-11-06 the remake matches this, on Marcus's rule that the remake does what the original did wherever the source shows it: the app opens with `overturePhase = "launcher"`, and re-entering the overture route also lands on the launcher. The flute intro plays only from the Musical Friends preview.
 
 ## Projector Alice preview
 

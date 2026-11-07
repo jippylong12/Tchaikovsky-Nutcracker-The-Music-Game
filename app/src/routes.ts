@@ -16,7 +16,7 @@ export const routes = [
     title: "Overture",
     heading: "Tchaikovsky's Nutcracker: The Music Game",
     summary:
-      "The original flute_intro.swf movie played through bundled Ruffle, with the projector's mouse-up skip and its frame-1268 hand-off to the launcher.",
+      "The recovered projector: it opens on the source launcher (root frame 1268 choose), and its previews play the original flute_intro.swf and aliceIntro trailer through bundled Ruffle.",
     group: "menu",
     levelTarget: "_level0",
     mainMenu: false,

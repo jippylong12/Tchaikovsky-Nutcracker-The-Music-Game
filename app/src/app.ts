@@ -394,7 +394,7 @@ export type AppShellOptions = {
   sourceSwfLayer?: SourceSwfLayer;
 };
 
-// Projector root frame 1 loads flute_intro.swf into `bigloader`; the root timeline removes it and
+// Projector root frame 2 (MFIntro, reached from MFBtn) loads flute_intro.swf into `bigloader`; the root timeline removes it and
 // reaches `choose` at frame 1268, i.e. 1266 frames of intro at 15 fps (84.4 s).
 export const fluteIntroHandoffMs = Math.round((1266 / 15) * 1000);
 // flute_intro.swf text id 0004 "skip" at x 770.95, y 572.50 (12 px font) on the 800 x 600 movie.
@@ -470,7 +470,9 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   const shellState: ShellState = {
     routeId: "overture",
     routeStack: [],
-    overturePhase: "intro",
+    // Projector root frame 1: GotoFrame 1267 (label choose). The original opens on the launcher; the
+    // flute intro is the Musical Friends preview (frame 2, MFIntro), reached only from MFBtn.
+    overturePhase: "launcher",
     helpOpen: false,
     nutcrackerChooserWarningOpen: false,
     activeAudioId: null,
@@ -1764,7 +1766,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       shellState.aliceFeedback = null;
     }
     if (routeChanged && routeId === "overture") {
-      shellState.overturePhase = "intro";
+      shellState.overturePhase = "launcher";
     }
     if (routeChanged && isReadingRouteId(routeId)) {
       shellState.readingPages[routeId] = 0;

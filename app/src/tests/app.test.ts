@@ -101,6 +101,10 @@ describe("desktop app shell", () => {
     createTestShell(mount);
 
     expect(mount.querySelector(".game-viewport")).not.toBeNull();
+    // Projector root frame 1 jumps straight to choose: the original opens on the launcher.
+    expect(mount.querySelector(".source-projector-launcher")).not.toBeNull();
+    expect(mount.querySelector(".source-intro-scene")).toBeNull();
+    mount.querySelector<HTMLButtonElement>('[data-action="preview-musical-friends"]')?.click();
     expect(mount.querySelector<HTMLElement>(".source-intro-scene")?.dataset.sourceSwf).toContain("flute_intro.swf");
     expect(mount.querySelector<HTMLImageElement>(".source-intro-garden")?.src).toContain("flute-intro-garden");
     expect(mount.textContent).toContain("skip");
@@ -178,6 +182,8 @@ describe("desktop app shell", () => {
     window.innerWidth = 1280;
     window.innerHeight = 960;
     progress.markGameKey(1);
+    // Re-render through the source Musical Friends preview and back.
+    mount.querySelector<HTMLButtonElement>('[data-action="preview-musical-friends"]')?.click();
     mount.querySelector<HTMLButtonElement>('[data-action="start"]')?.click();
     expect(mount.querySelector(".release-certificate-actions")).not.toBeNull();
     expect(Number(mount.style.getPropertyValue("--stage-scale"))).toBeCloseTo((960 - 56) / 480, 5);

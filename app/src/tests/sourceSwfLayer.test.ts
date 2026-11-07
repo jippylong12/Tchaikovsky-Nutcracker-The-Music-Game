@@ -211,7 +211,7 @@ describe("source SWF layer (Ruffle)", () => {
 });
 
 describe("overture plays flute_intro.swf through Ruffle", () => {
-  function createShell(loader: RuffleLoader) {
+  function launchShell(loader: RuffleLoader) {
     const mount = document.createElement("main");
     document.body.append(mount);
     createAppShell(mount, {
@@ -223,11 +223,29 @@ describe("overture plays flute_intro.swf through Ruffle", () => {
     return mount;
   }
 
+  // The intro is the launcher's Musical Friends preview (MFBtn -> root frame 2 MFIntro).
+  function createShell(loader: RuffleLoader) {
+    const mount = launchShell(loader);
+    mount.querySelector<HTMLButtonElement>('[data-action="preview-musical-friends"]')?.click();
+    return mount;
+  }
+
+  it("Given app launch, then the launcher shows and no movie plays (projector frame 1 jumps to choose)", async () => {
+    const fake = createFakeRuffle();
+    const mount = launchShell(fake.loader);
+    await flush();
+
+    expect(mount.querySelector(".source-projector-launcher")).not.toBeNull();
+    expect(fake.loads).toHaveLength(0);
+    expect(document.querySelector(".source-swf-layer")).toBeNull();
+    mount.remove();
+  });
+
   it("hands off after the projector's 1266 intro frames at 15 fps", () => {
     expect(fluteIntroHandoffMs).toBe(84400);
   });
 
-  it("Given app launch, then the source intro movie loads and the fallback skip leaves the tab order", async () => {
+  it("Given the Musical Friends preview, then the source intro movie loads and the fallback skip leaves the tab order", async () => {
     const fake = createFakeRuffle();
     const mount = createShell(fake.loader);
     await flush();
