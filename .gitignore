@@ -12,3 +12,6 @@ app/public/local-media/visual/
 
 # Unpacked from the committed vendor/ruffle archive by scripts/prepare-ruffle.mjs.
 app/public/ruffle/
+
+# Mirrored from the local recovered install by scripts/prepare-projector-install.mjs.
+app/public/projector-install/

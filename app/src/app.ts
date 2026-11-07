@@ -51,13 +51,21 @@ import stageMarkUrl from "./assets/stage-mark.svg";
 import { createAudioService, type AudioService } from "./audio/audioService";
 import { createSourceSwfLayer, type SourceSwfLayer } from "./flash/sourceSwfLayer";
 import {
+  buildChildrensDoorsVariables,
   buildGameKeysVariables,
+  buildNutDoorsVariables,
+  buildNutHouseRoomsVariables,
   buildProjectorReturnStubSwf,
   connectProjectorBoundary,
   notFoundResponse,
   patchProjectorStartFrame,
+  parseProjectorExec,
+  parseProjectorInstallIndex,
   patchProjectorWebsiteTarget,
   projectorBaseUrl,
+  projectorInstallFileUrl,
+  projectorInstallRoot,
+  type ProjectorInstallIndex,
   projectorReturnPath,
   projectorStartFrames,
   swfResponse,
@@ -260,13 +268,35 @@ export const projectorGameRoutes: ReadonlyMap<string, RouteId> = new Map<string,
   ["games/nutcrackergame/nutchooser.swf", "nutcracker-chooser"],
 ]);
 
-/** `FSCommand:exec` reset helpers the projector's holdToReset prompt runs, mapped to the progress store. */
+/** `FSCommand:exec reset*` helpers (holdToReset prompt), mapped to the progress store. */
 const projectorResetCommands = {
-  "resetgamekeys.exe": "resetGameKeys",
-  "resetcadoors.exe": "resetChildrensDoors",
-  "resetopendoors.exe": "resetNutHouseRooms",
-  "resetdoorskeys.exe": "resetNutDoors",
+  gameKeys: "resetGameKeys",
+  childrensDoors: "resetChildrensDoors",
+  nutHouseRooms: "resetNutHouseRooms",
+  nutDoors: "resetNutDoors",
 } as const;
+
+let projectorInstallIndexPromise: Promise<ProjectorInstallIndex> | null = null;
+
+/** The recovered CD's file index; empty when the install was not mirrored (then the hand-made routes run). */
+function loadProjectorInstallIndex(): Promise<ProjectorInstallIndex> {
+  if (!projectorInstallIndexPromise) {
+    projectorInstallIndexPromise = window
+      .fetch(`${projectorInstallRoot}index.json`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((json: unknown) => parseProjectorInstallIndex(json))
+      .catch(() => {
+        projectorInstallIndexPromise = null;
+        return parseProjectorInstallIndex(null);
+      });
+  }
+  return projectorInstallIndexPromise;
+}
+
+/** Test hook: forget the cached install index. */
+export function resetProjectorInstallIndexForTests(): void {
+  projectorInstallIndexPromise = null;
+}
 
 let projectorMoviePromise: Promise<Uint8Array> | null = null;
 
@@ -1690,9 +1720,12 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
       return;
     }
     if (name === "exec") {
-      const helper = args.trim().toLowerCase() as keyof typeof projectorResetCommands;
-      const reset = projectorResetCommands[helper];
-      if (reset) progress[reset]();
+      // The CD's helper programs wrote games/data/*.txt; the remake writes the progress store instead.
+      const helper = parseProjectorExec(args);
+      if (helper.kind === "gameKey") progress.markGameKey(helper.key);
+      else if (helper.kind === "nutDoor") progress.markNutDoor(helper.door);
+      else if (helper.kind === "childrensDoor") progress.markChildrensDoor(helper.door);
+      else if (helper.kind === "reset") progress[projectorResetCommands[helper.target]]();
       else console.info(`Projector FSCommand exec ${args} has no desktop equivalent`);
       return;
     }
@@ -1733,6 +1766,15 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         }
         return variablesResponse(buildGameKeysVariables(progress.getSnapshot().gameKeys));
       }
+      if (path === "games/data/nutdoors.txt") {
+        return variablesResponse(buildNutDoorsVariables(progress.getSnapshot().nutDoors));
+      }
+      if (path === "games/data/childrensdoors.txt") {
+        return variablesResponse(buildChildrensDoorsVariables(progress.getSnapshot().childrensDoors));
+      }
+      if (path === "games/data/nuthouserooms.txt") {
+        return variablesResponse(buildNutHouseRoomsVariables(progress.getSnapshot().nutHouse.openDoor));
+      }
       if (path === projectorReturnPath) {
         if (projectorReturnRequested) {
           projectorReturnRequested = false;
@@ -1748,6 +1790,15 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
         window.setTimeout(() => handleAction("preview-musical-friends"), 0);
         return notFoundResponse();
       }
+      // The original games, activities, and everything they load, straight from the recovered CD. A game
+      // runs in the projector's _level1 and returns through comeAgain on its own, as on the CD.
+      const realPath = (await loadProjectorInstallIndex()).get(path);
+      if (realPath) {
+        const response = await window.fetch(projectorInstallFileUrl(realPath));
+        if (response.ok) return response;
+        console.warn(`The projector install file ${realPath} could not be served: HTTP ${response.status}`);
+      }
+      // Without the mirrored install, open the hand-made route behind a stand-in movie instead.
       const routeId = projectorGameRoutes.get(path);
       if (routeId) {
         projectorPosition = "away";

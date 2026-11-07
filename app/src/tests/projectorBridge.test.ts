@@ -1,12 +1,17 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createAppShell, projectorGameRoutes } from "../app";
+import { createAppShell, projectorGameRoutes, resetProjectorInstallIndexForTests } from "../app";
 import { createAudioService, type AudioElementLike } from "../audio/audioService";
 import {
+  buildChildrensDoorsVariables,
   buildGameKeysVariables,
+  buildNutDoorsVariables,
   buildProjectorReturnStubSwf,
   normalizeProjectorPath,
+  parseProjectorExec,
+  parseProjectorInstallIndex,
+  projectorInstallFileUrl,
   patchProjectorStartFrame,
   patchProjectorWebsiteTarget,
   projectorBaseUrl,
@@ -108,7 +113,36 @@ function launch(options: { progress?: ProgressStoreController; showDeveloperPane
 
 afterEach(() => {
   document.body.innerHTML = "";
+  restoreFetch?.();
+  restoreFetch = null;
+  resetProjectorInstallIndexForTests();
 });
+
+let restoreFetch: (() => void) | null = null;
+
+/** Serves a mirrored recovered install (public/projector-install/) with the given files. */
+function mirrorInstall(files: Record<string, string>) {
+  resetProjectorInstallIndexForTests();
+  const previous = window.fetch;
+  const served: string[] = [];
+  restoreFetch = () => {
+    window.fetch = previous;
+  };
+  window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+    if (url.endsWith("/projector-install/index.json")) {
+      const index = Object.fromEntries(Object.keys(files).map((real) => [real.toLowerCase(), real]));
+      return Promise.resolve(new Response(JSON.stringify({ files: index }), { status: 200 }));
+    }
+    const match = Object.keys(files).find((real) => url.endsWith(projectorInstallFileUrl(real)));
+    if (match) {
+      served.push(match);
+      return Promise.resolve(new Response(files[match], { status: 200 }));
+    }
+    return previous(input, init);
+  };
+  return served;
+}
 
 describe("projector movie start frame", () => {
   it("Given the promoted projector, then its frame-1 GotoFrame targets choose (1267) at the documented byte", () => {
@@ -183,6 +217,83 @@ describe("projector data and stand-in movie", () => {
   });
 });
 
+describe("original games from the recovered CD", () => {
+  it("refreshes the mirrored install before both dev and release builds, so they serve the same games", () => {
+    const scripts = (JSON.parse(readFileSync(path.join(process.cwd(), "package.json"), "utf8")) as {
+      scripts: Record<string, string>;
+    }).scripts;
+    expect(scripts["assets:projector-install"]).toBe("node scripts/prepare-projector-install.mjs");
+    expect(scripts.predev).toContain("prepare-projector-install.mjs");
+    expect(scripts.build).toMatch(/assets:projector-install.*vite build/);
+  });
+
+  it("maps every CD save helper to the progress it wrote, and leaves the printables unsupported", () => {
+    expect(parseProjectorExec("saveKey9.exe")).toEqual({ kind: "gameKey", key: 9 });
+    expect(parseProjectorExec("saveNutDoor3.exe")).toEqual({ kind: "nutDoor", door: 3 });
+    expect(parseProjectorExec("saveCADoor8.exe")).toEqual({ kind: "childrensDoor", door: 8 });
+    expect(parseProjectorExec("resetDoorsKeys.exe")).toEqual({ kind: "reset", target: "nutDoors" });
+    expect(parseProjectorExec("fscommand\\saveKey1.exe")).toEqual({ kind: "gameKey", key: 1 });
+    expect(parseProjectorExec("saveNutDoor9.exe")).toEqual({ kind: "unsupported", helper: "savenutdoor9.exe" });
+    expect(parseProjectorExec("nc_certificate.exe").kind).toBe("unsupported");
+  });
+
+  it("serves the door files in the original install format", () => {
+    const doors = { 1: false, 2: true, 3: false, 4: false, 5: false, 6: false, 7: false, 8: true } as const;
+    expect(buildNutDoorsVariables(doors)).toBe("&door1=0&door2=1&door3=0&door4=0&door5=0&door6=0&door7=0&door8=1&EOF=1");
+    expect(buildChildrensDoorsVariables(doors)).toContain("&cadoor2=1&cadoor3=0&");
+  });
+
+  it("indexes the mirrored install case-insensitively and keeps the real spelling in the URL", () => {
+    const index = parseProjectorInstallIndex({ files: { "games/melody/snd/melody.txt": "games/melody/Snd/Melody.txt" } });
+    expect(index.get("games/melody/snd/melody.txt")).toBe("games/melody/Snd/Melody.txt");
+    expect(projectorInstallFileUrl("games/nutcrackergame/song1/track 1.swf")).toBe(
+      "/projector-install/games/nutcrackergame/song1/track%201.swf",
+    );
+    expect(parseProjectorInstallIndex(null).size).toBe(0);
+  });
+
+  it("Given the install is mirrored, when a room hotspot loads a game, then the projector gets the original movie and stays in the room", async () => {
+    const served = mirrorInstall({ "games/trivia/trivia.swf": "ORIGINAL-TRIVIA" });
+    const { mount, layer, request } = launch();
+    await request("games/data/gamekeys.txt");
+    await tick();
+
+    const response = await request("games/trivia/trivia.swf");
+    await tick();
+
+    expect(await response.text()).toBe("ORIGINAL-TRIVIA");
+    expect(served).toEqual(["games/trivia/trivia.swf"]);
+    expect(mount.querySelector(".source-playroom-scene")).not.toBeNull();
+    expect(layer.suspended).toBe(false);
+  });
+
+  it("Given a game asks for a file in another case (Games/Melody/Snd/Melody.txt), then the CD's spelling is served", async () => {
+    const served = mirrorInstall({ "games/melody/Snd/Melody.txt": "&seq1=1" });
+    const { request } = launch();
+
+    const response = await request("Games/Melody/Snd/Melody.txt");
+
+    expect(await response.text()).toBe("&seq1=1");
+    expect(served).toEqual(["games/melody/Snd/Melody.txt"]);
+  });
+
+  it("Given the games save through the CD helpers, then keys and doors reach progress and the data files the games read", async () => {
+    mirrorInstall({});
+    const { lastPlay, progress, request } = launch();
+
+    lastPlay()?.onFSCommand?.("exec", "saveKey9.exe");
+    lastPlay()?.onFSCommand?.("exec", "saveNutDoor3.exe");
+    lastPlay()?.onFSCommand?.("exec", "saveCADoor2.exe");
+
+    expect(progress.getSnapshot().gameKeys[9]).toBe(true);
+    expect(progress.getSnapshot().nutDoors[3]).toBe(true);
+    expect(progress.getSnapshot().childrensDoors[2]).toBe(true);
+    expect(await (await request("games/data/nutdoors.txt")).text()).toContain("&door3=1&");
+    expect(await (await request("games/data/childrensDoors.txt")).text()).toContain("&cadoor2=1&");
+    expect(await (await request("games/data/nuthouserooms.txt")).text()).toBe("&openDoor=0&EOF=1");
+  });
+});
+
 describe("live projector launcher and room", () => {
   it("Given app launch, then the unmodified projector plays interactively with the shell boundary as its base", async () => {
     const { mount, lastPlay } = launch();
@@ -210,7 +321,7 @@ describe("live projector launcher and room", () => {
     expect(layer.suspended).toBe(false);
   });
 
-  it("Given a room hotspot loads a movie, then the shell opens that route behind a stand-in movie, and returning sends the projector to comeAgain", async () => {
+  it("Given no mirrored install, when a room hotspot loads a movie, then the shell opens that route behind a stand-in movie, and returning sends the projector to comeAgain", async () => {
     const progress = createProgressStore(createMemoryPersistence());
     const { mount, layer, request } = launch({ progress });
     await request("games/data/gamekeys.txt");

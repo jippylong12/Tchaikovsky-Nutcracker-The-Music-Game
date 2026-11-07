@@ -10,6 +10,9 @@ const originalFetch = window.fetch.bind(window);
 window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
   const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
   if (/\.swf(?:[?#]|$)/i.test(url) && !url.includes("/__projector/")) return new Promise<Response>(() => {});
+  // No recovered install is mirrored under test, so the room falls back to the hand-made routes. Tests that
+  // exercise the original games stub these fetches themselves.
+  if (url.includes("/projector-install/")) return Promise.resolve(new Response(null, { status: 404 }));
   return originalFetch(input, init);
 };
 

@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "predev": "node scripts/prepare-ruffle.mjs",
+    "predev": "node scripts/prepare-ruffle.mjs && node scripts/prepare-projector-install.mjs",
+    "assets:projector-install": "node scripts/prepare-projector-install.mjs",
     "dev": "vite",
     "assets:pipeline": "node scripts/generate-asset-pipeline.mjs",
     "assets:certificates": "node scripts/extract-certificate-projectors.mjs",
@@ -20,7 +21,7 @@
     "validate:reader-bundle": "node scripts/validate-reader-bundle-provenance.mjs",
     "lint": "eslint .",
     "test": "vitest run",
-    "build": "npm run assets:ruffle && npm run typecheck && vite build && npm run validate:reader-bundle",
+    "build": "npm run assets:ruffle && npm run assets:projector-install && npm run typecheck && vite build && npm run validate:reader-bundle",
     "verify:release": "node scripts/validate-release-candidate.mjs",
     "verify:package:mac": "node scripts/verify-macos-package.mjs",
     "preview": "vite preview",

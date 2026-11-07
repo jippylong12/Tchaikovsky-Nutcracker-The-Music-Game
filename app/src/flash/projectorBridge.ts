@@ -7,12 +7,17 @@
 //
 // - Ruffle resolves the projector's relative URLs against `projectorBaseUrl()`; a `window.fetch` wrapper
 //   hands those requests to the active shell handler instead of the network.
-// - A game load is answered with a tiny generated stand-in movie (`buildProjectorReturnStubSwf`) while
-//   the shell opens the matching reconstructed route. When the shell returns to the room, the stand-in
-//   copies the current keys into `_level0` and runs `_level0.gotoAndPlay("comeAgain")`, as the games did.
+// - A game load is answered with the original movie from the recovered CD (mirrored into
+//   public/projector-install/ by scripts/prepare-projector-install.mjs), so the real game runs in
+//   `_level1` and returns through `comeAgain` itself. The games/data/*.txt files are generated from the
+//   progress store, and the `FSCommand:exec save*` helpers write back to it (`parseProjectorExec`).
+// - Only when the original file is missing is a game load answered with a tiny generated stand-in movie
+//   (`buildProjectorReturnStubSwf`) while the shell opens the matching hand-made route. When the shell
+//   returns to the room, the stand-in copies the current keys into `_level0` and runs
+//   `_level0.gotoAndPlay("comeAgain")`, as the games did.
 // - `getURL("http://...")` reaches Ruffle's `window.open` call, which the wrapper sends to the shell.
 
-import type { GameKey } from "../state/progressStore";
+import type { DoorKey, GameKey } from "../state/progressStore";
 
 /** Virtual folder the projector's relative paths resolve against. Nothing is served from it. */
 export const projectorBasePath = "/__projector/";
@@ -110,6 +115,83 @@ const gameKeyNumbers: readonly GameKey[] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 /** `games/data/gamekeys.txt` in the original install format, from the remake's saved keys. */
 export function buildGameKeysVariables(gameKeys: Readonly<Record<GameKey, boolean>>): string {
   return `${gameKeyNumbers.map((key) => `&gameKey${key}=${gameKeys[key] ? 1 : 0}`).join("")}&EOF=1`;
+}
+
+const doorNumbers: readonly DoorKey[] = [1, 2, 3, 4, 5, 6, 7, 8];
+
+/** `games/data/nutdoors.txt` (read by the Nutcracker chooser), from the remake's opened song doors. */
+export function buildNutDoorsVariables(nutDoors: Readonly<Record<DoorKey, boolean>>): string {
+  return `${doorNumbers.map((door) => `&door${door}=${nutDoors[door] ? 1 : 0}`).join("")}&EOF=1`;
+}
+
+/** `games/data/childrensDoors.txt` (read by the Children's Album game), from the remake's opened doors. */
+export function buildChildrensDoorsVariables(childrensDoors: Readonly<Record<DoorKey, boolean>>): string {
+  return `${doorNumbers.map((door) => `&cadoor${door}=${childrensDoors[door] ? 1 : 0}`).join("")}&EOF=1`;
+}
+
+/** `games/data/nuthouserooms.txt`, from the remake's NutHouse progress. */
+export function buildNutHouseRoomsVariables(openDoor: number): string {
+  return `&openDoor=${openDoor}&EOF=1`;
+}
+
+/**
+ * What one of the CD's `FSCommand:exec` helpers did. The `save*` helpers each set one flag to 1 in a
+ * games/data/*.txt file (saveKeyN: gamekeys.txt, saveNutDoorN: nutdoors.txt, saveCADoorN:
+ * childrensDoors.txt); the `reset*` helpers cleared a whole file. The `n_*`/`nc_*`/`ncc_*` helpers opened
+ * printable certificates and activity sheets, which have no desktop equivalent yet.
+ */
+export type ProjectorExecHelper =
+  | { kind: "gameKey"; key: GameKey }
+  | { kind: "nutDoor"; door: DoorKey }
+  | { kind: "childrensDoor"; door: DoorKey }
+  | { kind: "reset"; target: "gameKeys" | "childrensDoors" | "nutHouseRooms" | "nutDoors" }
+  | { kind: "unsupported"; helper: string };
+
+export function parseProjectorExec(args: string): ProjectorExecHelper {
+  const helper = args.trim().toLowerCase().replace(/^.*[\\/]/, "");
+  const save = helper.match(/^save(key|nutdoor|cadoor)(\d)\.exe$/);
+  if (save) {
+    const number = Number(save[2]);
+    if (save[1] === "key" && number >= 1 && number <= 9) return { kind: "gameKey", key: number as GameKey };
+    if (number >= 1 && number <= 8) {
+      return save[1] === "nutdoor"
+        ? { kind: "nutDoor", door: number as DoorKey }
+        : { kind: "childrensDoor", door: number as DoorKey };
+    }
+  }
+  const resets = {
+    "resetgamekeys.exe": "gameKeys",
+    "resetcadoors.exe": "childrensDoors",
+    "resetopendoors.exe": "nutHouseRooms",
+    "resetdoorskeys.exe": "nutDoors",
+  } as const;
+  const target = resets[helper as keyof typeof resets];
+  if (target) return { kind: "reset", target };
+  return { kind: "unsupported", helper };
+}
+
+// ---- Original install files ----------------------------------------------------------------------------
+
+/** Where scripts/prepare-projector-install.mjs mirrors the recovered CD's games and activities. */
+export const projectorInstallRoot = "/projector-install/";
+
+/** Lowercased CD path -> real spelling, from public/projector-install/index.json. */
+export type ProjectorInstallIndex = ReadonlyMap<string, string>;
+
+export function parseProjectorInstallIndex(json: unknown): ProjectorInstallIndex {
+  const files = (json as { files?: Record<string, unknown> } | null)?.files;
+  const index = new Map<string, string>();
+  if (files && typeof files === "object") {
+    for (const [key, value] of Object.entries(files)) {
+      if (typeof value === "string") index.set(key.toLowerCase(), value);
+    }
+  }
+  return index;
+}
+
+/** The URL that serves one original file, keeping its real spelling. */
+export function projectorInstallFileUrl(realPath: string): string {
+  return `${projectorInstallRoot}${realPath.split("/").map(encodeURIComponent).join("/")}`;
 }
 
 // ---- Stand-in movie -------------------------------------------------------------------------------------
