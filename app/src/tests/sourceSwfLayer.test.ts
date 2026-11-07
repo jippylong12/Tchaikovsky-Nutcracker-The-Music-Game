@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createAppShell, fluteIntroHandoffMs } from "../app";
+import { alicePreviewHandoffMs, createAppShell, fluteIntroHandoffMs } from "../app";
 import { createAudioService, type AudioElementLike } from "../audio/audioService";
 import {
   buildRuffleLoadOptions,
@@ -234,6 +234,7 @@ describe("overture plays flute_intro.swf through Ruffle", () => {
 
     expect(String(fake.loads[0]?.url)).toContain("flute-intro");
     expect(mount.querySelector(".source-intro-skip")?.getAttribute("tabindex")).toBe("-1");
+    expect(document.querySelector(".source-swf-skip-target")?.getAttribute("aria-label")).toBe("skip");
     mount.remove();
   });
 
@@ -272,6 +273,73 @@ describe("overture plays flute_intro.swf through Ruffle", () => {
 
     expect(fake.players).toHaveLength(2);
     expect(fake.players[1].isConnected).toBe(true);
+    mount.remove();
+  });
+
+  it("hands the Alice preview back at aliceJump, 607 projector frames after aliceIntro", () => {
+    expect(alicePreviewHandoffMs).toBe(40467);
+  });
+
+  async function openAlicePreview(fake: FakeRuffle) {
+    const mount = createShell(fake.loader);
+    await flush();
+    document.querySelector<HTMLButtonElement>(".source-swf-skip-target")?.click();
+    mount.querySelector<HTMLButtonElement>('[data-action="preview-alice"]')?.click();
+    await flush();
+    return mount;
+  }
+
+  it("Given the launcher, when the Alice preview is chosen, then the projector trailer plays instead of the Alice game", async () => {
+    const fake = createFakeRuffle();
+    const mount = await openAlicePreview(fake);
+
+    expect(mount.querySelector(".source-alice-preview-scene")).not.toBeNull();
+    expect(mount.querySelector(".m08-alice-scene")).toBeNull();
+    expect(String(fake.loads[fake.loads.length - 1]?.url)).toContain("projector-alice-preview");
+    expect(document.querySelector<HTMLElement>(".source-swf-layer")?.style.cursor).toBe("pointer");
+    expect(document.querySelector(".source-swf-skip-target")?.getAttribute("aria-label")).toBe("EXIT");
+    mount.remove();
+  });
+
+  it("Given the Alice trailer is playing, when the player clicks anywhere, then the launcher returns", async () => {
+    const fake = createFakeRuffle();
+    const mount = await openAlicePreview(fake);
+
+    document.body.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, button: 0 }));
+
+    expect(mount.querySelector(".source-projector-launcher")).not.toBeNull();
+    expect(document.querySelector(".source-swf-layer")).toBeNull();
+    mount.remove();
+  });
+
+  it("Given the Alice trailer runs to aliceJump, then the launcher returns", async () => {
+    vi.useFakeTimers();
+    const fake = createFakeRuffle();
+    const mount = createShell(fake.loader);
+    await vi.advanceTimersByTimeAsync(0);
+    document.querySelector<HTMLButtonElement>(".source-swf-skip-target")?.click();
+    mount.querySelector<HTMLButtonElement>('[data-action="preview-alice"]')?.click();
+    await vi.advanceTimersByTimeAsync(0);
+    fake.players[fake.players.length - 1]?.dispatchEvent(new Event("loadedmetadata"));
+    await vi.advanceTimersByTimeAsync(alicePreviewHandoffMs);
+
+    expect(mount.querySelector(".source-projector-launcher")).not.toBeNull();
+    mount.remove();
+  });
+
+  it("Given Ruffle cannot start the Alice trailer, then the launcher returns instead of a dead end", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    let calls = 0;
+    const fake = createFakeRuffle();
+    const loader: RuffleLoader = () => (++calls === 1 ? fake.loader() : Promise.reject(new Error("no wasm")));
+    const mount = createShell(loader);
+    await flush();
+    document.querySelector<HTMLButtonElement>(".source-swf-skip-target")?.click();
+    mount.querySelector<HTMLButtonElement>('[data-action="preview-alice"]')?.click();
+    await flush();
+
+    expect(mount.querySelector(".source-projector-launcher")).not.toBeNull();
+    warn.mockRestore();
     mount.remove();
   });
 

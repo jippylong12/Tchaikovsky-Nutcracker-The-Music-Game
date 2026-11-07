@@ -67,13 +67,28 @@ The runtime overlays transparent accessible hit targets only where source button
 | --- | --- | --- | --- |
 | Featured game | button `0028`, instance `nut`, depth `0002`, x `364.15`, y `90.95`, ratio `1267` | root `gotoAndPlay("nutIni")` | continue to the recovered `playRoom` |
 | Musical Friends preview | button `0043`, instance `MFBtn`, depth `0012`, x `146.25`, y `355.55`, ratio `1267` | root `gotoAndPlay("MFintro")` | replay the recovered local Musical Friends/flute introduction |
-| Alice preview | button `0047`, instance `aliceBTN`, depth `0020`, x `291.80`, y `355.55`, ratio `1267` | root `gotoAndPlay("aliceIntro")` | open the reconstructed Alice activity |
+| Alice preview | button `0047`, instance `aliceBTN`, depth `0020`, x `291.80`, y `355.55`, ratio `1267` | root `gotoAndPlay("aliceIntro")` | play the projector's own aliceIntro trailer through Ruffle, then return to this launcher (see "Projector Alice preview") |
 | Website | button `0051`, instance `webBTN`, depth `0029`, x `527.70`, y `355.65`, ratio `1267` | `warningMSG_mc.gotoAndStop("show")`, then `http://www.kidsmusicstage.com` | open the exact legacy URL through the desktop/browser external-link boundary |
 | Exit | button `0038`, depth `0009`, x `563.50`, y `25.45`, ratio `1267` | root frame `2388`, then `FSCommand:quit` | close the Tauri window; browser preview uses `window.close()` |
 
 The modern hit rectangles over that native capture are Play `x 216-424, y 44-246`, Musical Friends `x 54-188, y 326-460`, Alice `x 196-332, y 326-460`, website `x 432-576, y 320-464`, and EXIT `x 572-640, y 8-58`. Their DOM `data-source-hit-rect` evidence and actual CSS geometry are both locked by shell tests so metadata cannot stay correct while the clickable regions drift.
 
 The source text objects remain baked into the recovered frame: text `0030` is `Play / Featured / Game`, text `0031` is `Preview Other Games`, text `0048` is `Go to / KidsMusicStage.com`, and button texts `0033`-`0037` provide the EXIT states. No new visible launcher labels or controls are drawn over the source art.
+
+## Projector start frame
+
+Projector root frame 1 (`DOACTION` at byte `79408`, 113 bytes) sets `_quality = "MEDIUM"`, sends `FSCommand:fullscreen true`, `allowscale false`, and `showmenu false`, then runs `GotoFrame 1267` (zero-based, so root frame 1268, label `choose`) and `Play`. The loader action for `flute_intro.swf` belongs to root frame 2, label `MFIntro`, which the projector reaches only through `MFBtn.onRelease = _root.gotoAndPlay("MFintro")`. So the original projector opened on the launcher. The flute intro is the Musical Friends preview, not a startup intro. The remake currently plays it at launch, as Stage 1 requested; whether launch should go straight to the launcher is waiting on Marcus.
+
+## Projector Alice preview
+
+`aliceBTN` on the launcher runs `_root.gotoAndPlay("aliceIntro")`. That label is root frame `1535` of the projector itself, not the Alice game: a trailer on the projector's own timeline (with its own stream sound) running through frame `2141`. Frame `2142`, label `aliceJump`, runs `unloadMovieNum(1)` and `_root.gotoAndStop("choose")`.
+
+| Object | Source | Behaviour |
+| --- | --- | --- |
+| `aliceSkip` | button `0307`, depth `0119`, x `-311.00`, y `621.00`, hit-only shape `0306` (local bounds x `-426.10..1178.25`, y `-858.10..566.25`) | covers the whole stage; `onRelease` runs `gotoAndPlay("aliceJump")`, which returns to `choose` |
+| `skipBTN` | button `0308`, depth `0121`, x `563.50`, y `25.45`, state texts `0033`-`0037` (`EXIT`) | `onRelease` runs `unloadMovieNum(1)` and `gotoAndStop("choose")` |
+
+Runtime: Ruffle cannot start a movie at a label. `assets:shell-reference` therefore promotes `projector-alice-preview.swf` (SHA-256 `c4f8ff3cdb1585a4756107469c05673d803a109a4ed357205be8c8ae3d86a84e`). It is the extracted projector with one change: the frame-1 `ActionGotoFrame` operand changes from 1267 to 1534 (bytes `79524`-`79525`). The `overturePhase = "alice-preview"` scene plays it through the shared Ruffle layer with a hand cursor, because `aliceSkip` covers the stage. A primary mouse release anywhere, or the transparent keyboard target over the trailer's `EXIT`, returns to the launcher, matching `aliceSkip` and `skipBTN`. With no input, the shell returns 607 frames / 15 fps = 40 467 ms after Ruffle's `loadedmetadata`, i.e. at `aliceJump`. A real `tauri dev` probe measured 40.7 s, with the trailer art and the source `EXIT` visible. If Ruffle fails, the launcher returns immediately. Previously the launcher routed this button into the full Alice puzzle game (the large clock), which has no exit; that was the dead end Marcus hit on 2026-11-06. The trailer's `EXIT` rollover colours are not shown, because pointer events go to the shell layer instead of Ruffle.
 
 ## Projector `playRoom`
 

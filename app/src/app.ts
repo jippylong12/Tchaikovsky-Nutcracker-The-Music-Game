@@ -36,6 +36,7 @@ import songWarningframeTalkerUrl from "./assets/nutcracker-source/song-warningfr
 import songYesLabelUrl from "./assets/nutcracker-source/song-yes-label.png";
 import fluteIntroGardenUrl from "./assets/source-scenes/flute-intro-garden.jpg";
 import fluteIntroSwfUrl from "./assets/source-scenes/flute-intro.swf?url";
+import projectorAlicePreviewSwfUrl from "./assets/source-scenes/projector-alice-preview.swf?url";
 import listeningRoomSourceUrl from "./assets/source-scenes/listening-room-source.png";
 import mainPlayRoomCompositeUrl from "./assets/source-scenes/main-playroom-source-composite.png";
 import musictionaryHelpFishUrl from "./assets/source-scenes/musictionary-help-fish.png";
@@ -126,7 +127,7 @@ const nutcrackerSongSourceFrameUrls: Readonly<Record<NutcrackerSongId, string>> 
 type ShellState = {
   routeId: RouteId;
   routeStack: RouteId[];
-  overturePhase: "intro" | "launcher";
+  overturePhase: "intro" | "launcher" | "alice-preview";
   helpOpen: boolean;
   nutcrackerChooserWarningOpen: boolean;
   activeAudioId: string | null;
@@ -398,6 +399,10 @@ export type AppShellOptions = {
 export const fluteIntroHandoffMs = Math.round((1266 / 15) * 1000);
 // flute_intro.swf text id 0004 "skip" at x 770.95, y 572.50 (12 px font) on the 800 x 600 movie.
 const fluteIntroSkipTarget = { left: 764 / 800, top: 566 / 600, width: 36 / 800, height: 30 / 600 } as const;
+// Launcher aliceBTN -> root label aliceIntro (frame 1535); frame 2142 aliceJump returns to choose: 607 frames.
+export const alicePreviewHandoffMs = Math.round((607 / 15) * 1000);
+// Trailer skipBTN (button 0308, EXIT text ids 0033-0037) at x 563.50, y 25.45 on the 640 x 480 projector.
+const alicePreviewSkipTarget = { left: 562 / 640, top: 14 / 480, width: 60 / 640, height: 28 / 480 } as const;
 
 const defaultPreviewAudioPath = suiteTracks.find((track) => track.audioPath)?.audioPath ?? "";
 const sourceReaderPreviousButtonIds: Record<ReadingRouteId, readonly (number | null)[]> = {
@@ -1596,6 +1601,26 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   // The overture intro plays the original flute_intro.swf through Ruffle in a persistent layer over the
   // stage. The static source scene underneath stays as the fallback if Ruffle cannot start.
   const syncSourceSwf = () => {
+    const alicePreviewStage = mount.querySelector<HTMLElement>(".source-alice-preview-scene");
+    if (alicePreviewStage) {
+      sourceSwfLayer.play(alicePreviewStage, {
+        swfUrl: projectorAlicePreviewSwfUrl,
+        handoffAfterMs: alicePreviewHandoffMs,
+        quality: "medium",
+        // aliceSkip (button 0307) is a full-stage hit area, so Flash shows its hand cursor everywhere.
+        cursor: "pointer",
+        skipTarget: alicePreviewSkipTarget,
+        skipLabel: "EXIT",
+        skipSourceControl: "skipBTN button 0308 (EXIT text ids 0033-0037) at x 563.50 y 25.45; onRelease unloadMovieNum 1 and gotoAndStop choose",
+        onSkip: () => handleAction("start"),
+        onEnd: () => handleAction("start"),
+        onError: (error) => {
+          console.warn("The projector Alice preview could not start through Ruffle; returning to the launcher", error);
+          handleAction("start");
+        },
+      });
+      return;
+    }
     const introStage = mount.querySelector<HTMLElement>(".source-intro-scene");
     if (!introStage || overtureSourceSwfFailed) {
       sourceSwfLayer.stop();
@@ -1998,7 +2023,8 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
 
     if (action === "preview-alice") {
-      navigate("alice-puzzles");
+      shellState.overturePhase = "alice-preview";
+      render();
       return;
     }
 
@@ -2434,6 +2460,20 @@ function renderScene(
 }
 
 function renderSourceOverture(phase: ShellState["overturePhase"], sourceSwfActive: boolean): string {
+  if (phase === "alice-preview") {
+    return `
+      <div
+        class="scene-body source-alice-preview-scene"
+        data-source-projector="analysis/setup/app/Nutcracker2.exe embedded FWS at byte 864256"
+        data-source-frame="root frames 1535 label aliceIntro through 2141; frame 2142 aliceJump returns to choose"
+        data-source-runtime="projector-alice-preview.swf (root frame-1 GotoFrame retargeted from choose to aliceIntro) through bundled Ruffle v0.5.0"
+        data-source-control="aliceSkip button 0307 full-stage hit area to aliceJump; skipBTN button 0308 EXIT text to choose"
+      >
+        <h1 class="sr-only">Alice's Adventures in Musicland preview</h1>
+      </div>
+    `;
+  }
+
   if (phase === "launcher") {
     return `
       <div

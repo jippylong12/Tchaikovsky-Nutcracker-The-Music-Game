@@ -3416,6 +3416,7 @@ body:has(.release-shell) {
 }
 
 .source-intro-scene,
+.source-alice-preview-scene,
 .source-projector-launcher,
 .source-playroom-scene,
 .source-reader-scene,
@@ -3427,7 +3428,8 @@ body:has(.release-shell) {
   padding: 0;
 }
 
-.source-intro-scene {
+.source-intro-scene,
+.source-alice-preview-scene {
   background: #000000;
 }
 

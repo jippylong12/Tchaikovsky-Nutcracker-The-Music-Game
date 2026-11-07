@@ -148,6 +148,7 @@ const expected = {
   projectorPlayRoomLayerCaptureSha256: "93a4f305c588c65665ec506545554f7c751740d18c1cd715743ea78a02412b0e",
   playRoomCompositeSha256: "f1f42c978c8735db266e6aa89bf67d34b2e4b84e7f9b43acfdc47a720b298f75",
   introSha256: "aa92b6b3022c3cf3030cecd7c06888aebd929a63bcc7b3ce18119f3f7476b782",
+  alicePreviewSha256: "c4f8ff3cdb1585a4756107469c05673d803a109a4ed357205be8c8ae3d86a84e",
   introJpegId: 371,
   introStillSha256: "90185364eb26cb2b295084db962c23aeab64090d268ae09c89add44489d27e7d",
   musictionarySha256: "c8ce65d2ee006afb6254e59e49b2867ad22cd4a5a6d5da004be53c28c632f7cd",
@@ -326,6 +327,23 @@ for (const [suffix, flag] of [["actions", "-a"], ["placements", "-p"], ["text", 
 
 const playRoomPath = join(promotedRoot, "main-playroom-background.jpg");
 const playRoom = extractJpeg(mainSwfPath, expected.playRoomJpegId, playRoomPath);
+// The launcher's Alice preview (aliceBTN -> _root.gotoAndPlay("aliceIntro")) is a trailer inside the
+// projector's own root timeline, frames 1535-2141. Ruffle cannot start a movie at a label, so the
+// runtime plays a copy of the projector whose root frame-1 action (DOACTION at byte 79408:
+// _quality MEDIUM, fscommands, GotoFrame 1267 = label choose, Play) jumps to frame 1535 instead.
+// That is the only change: the 2-byte ActionGotoFrame operand 1267 becomes 1534 (zero-based).
+const aliceFrameOneAction = 79408;
+const gotoChooseBytes = Buffer.from([0x81, 0x02, 0x00, 0xf3, 0x04]);
+const frameOneBody = embedded.swf.subarray(aliceFrameOneAction + 6, aliceFrameOneAction + 6 + 113);
+assertEqual(embedded.swf.readUInt16LE(aliceFrameOneAction) >> 6, 12, "projector root frame-1 DOACTION tag code");
+const gotoChooseAt = frameOneBody.indexOf(gotoChooseBytes);
+assertEqual(gotoChooseAt >= 0 && frameOneBody.indexOf(gotoChooseBytes, gotoChooseAt + 1) < 0, true, "single GotoFrame 1267 in frame-1 action");
+const alicePreview = Buffer.from(embedded.swf);
+alicePreview.writeUInt16LE(1534, aliceFrameOneAction + 6 + gotoChooseAt + 3);
+const alicePreviewPath = join(promotedRoot, "projector-alice-preview.swf");
+writeFileSync(alicePreviewPath, alicePreview);
+assertEqual(sha256(readFileSync(alicePreviewPath)), expected.alicePreviewSha256, "projector-alice-preview.swf SHA-256");
+
 assertEqual(sha256(playRoom), expected.playRoomSha256, "playRoom JPEG 518 SHA-256");
 
 const projectorChooseCapture = readFileSync(projectorChooseCapturePath);
@@ -540,6 +558,11 @@ const manifest = {
       sourceLocator: `embedded main SWF root frame 2378 label playRoom; official Ruffle v0.5.0 render of the extracted frame composited over DEFINEBITSJPEG id ${expected.playRoomJpegId}`,
       path: "app/src/assets/source-scenes/main-playroom-source-composite.png",
       sha256: sha256(playRoomComposite),
+    },
+    {
+      sourceLocator: "embedded main SWF with root frame-1 ActionGotoFrame 1267 (choose) retargeted to 1534 (aliceIntro); trailer frames 1535-2141 played through bundled Ruffle v0.5.0",
+      path: "app/src/assets/source-scenes/projector-alice-preview.swf",
+      sha256: expected.alicePreviewSha256,
     },
     {
       sourceLocator: "analysis/setup/app/flute_intro.swf complete 800 x 600, 15 fps, 1277-frame movie played through bundled Ruffle v0.5.0",

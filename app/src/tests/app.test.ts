@@ -259,7 +259,9 @@ describe("desktop app shell", () => {
 
     const aliceMount = makeMount();
     aliceMount.querySelector<HTMLButtonElement>('[data-action="preview-alice"]')?.click();
-    expect(aliceMount.querySelector(".m08-alice-scene")).not.toBeNull();
+    // Source aliceBTN plays the projector's own aliceIntro trailer, not the Alice game.
+    expect(aliceMount.querySelector(".source-alice-preview-scene")).not.toBeNull();
+    expect(aliceMount.querySelector(".m08-alice-scene")).toBeNull();
 
     const webMount = makeMount();
     webMount.querySelector<HTMLButtonElement>('[data-action="open-kids-music-stage"]')?.click();

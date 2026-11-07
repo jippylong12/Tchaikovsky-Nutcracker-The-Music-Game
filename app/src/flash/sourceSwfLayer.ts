@@ -22,8 +22,14 @@ export type SourceSwfPlayback = {
   readonly handoffAfterMs: number;
   /** Source quality the projector set before loading the movie (`_quality`). */
   readonly quality: "low" | "medium" | "high";
+  /** Cursor over the movie: "pointer" where the source covers the stage with a button (Flash hand cursor). */
+  readonly cursor?: "default" | "pointer";
   /** Accessible keyboard skip target over the movie's own skip pixels, as fractions of the movie. */
   readonly skipTarget: { readonly left: number; readonly top: number; readonly width: number; readonly height: number };
+  /** Accessible name of the keyboard skip target: the source control's own text (default "skip"). */
+  readonly skipLabel?: string;
+  /** Source provenance for the skip target. */
+  readonly skipSourceControl?: string;
   /** Source mouse-up / skip path. */
   readonly onSkip: () => void;
   /** Source timeline reached its hand-off frame. */
@@ -174,6 +180,7 @@ export function createSourceSwfLayer(loadRuffle: RuffleLoader = loadBundledRuffl
     const thisSession = ++session;
     const host = ensureLayer();
     host.dataset.sourceSwf = playback.swfUrl;
+    host.style.cursor = playback.cursor ?? "default";
     reposition();
 
     let finished = false;
@@ -186,8 +193,9 @@ export function createSourceSwfLayer(loadRuffle: RuffleLoader = loadBundledRuffl
     const skip = document.createElement("button");
     skip.type = "button";
     skip.className = "source-swf-skip-target";
-    skip.setAttribute("aria-label", "skip");
-    skip.dataset.sourceControl = "source skip pixels rendered by the movie; projector _root.onMouseUp to gotoAndStop choose";
+    skip.setAttribute("aria-label", playback.skipLabel ?? "skip");
+    skip.dataset.sourceControl =
+      playback.skipSourceControl ?? "source skip pixels rendered by the movie; projector _root.onMouseUp to gotoAndStop choose";
     skip.style.left = `${playback.skipTarget.left * 100}%`;
     skip.style.top = `${playback.skipTarget.top * 100}%`;
     skip.style.width = `${playback.skipTarget.width * 100}%`;
