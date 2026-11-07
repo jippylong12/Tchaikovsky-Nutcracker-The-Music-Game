@@ -32,16 +32,28 @@ Maintainers who change the recovered files repack them with `node app/scripts/pa
 | --- | --- | --- |
 | 0-3 | Shell, opening, launcher, music room | Playing the original projector |
 | 4-5 | Nutcracker song games, room activities | Playing the original games; being play-tested |
-| 6 | Package and ship | Not started |
+| 6 | Package and ship | Mac `.dmg` and Windows `.exe` build; being play-tested |
 
 Known gaps:
 
 - The **printable certificates and activity sheets** on the Nutcracker Club pages don't do anything yet. These are 2 certificates plus Guess Who, the crosswords, and similar sheets. On the CD, each was a small Windows program that printed one page.
 - The **key drawer** in the music room stays empty. The original file that drew collected keys into it (`games/keycontroller.swf`) is missing from the recovered CD.
 
-## The plan: a double-click app
+## Desktop apps
 
-Stage 6 turns this into a normal desktop application. On a Mac that means a `.app` and a `.dmg` installer that you open with a double-click, with no Flash, browser, or setup needed. The same Tauri project can build a Windows `.exe` as well. Before shipping, we still have to decide how to bundle the roughly 186 MB of original game files.
+The app ships as a normal double-click program with the original game files inside. It needs no Flash, browser, or setup.
+
+**Mac (`.dmg`)**, built on a Mac:
+
+```sh
+cd app
+npm install
+npm run package:mac
+```
+
+The installer lands in `app/src-tauri/target/release/bundle/dmg/`. It is about 260 MB. It is ad-hoc signed, not notarized, so the first time you open it, right-click the app and choose **Open**.
+
+**Windows (`.exe`)** is built by GitHub Actions (`.github/workflows/windows-build.yml`) on a Windows machine. Start it from the repository's **Actions** tab (**Windows build**, then **Run workflow**), or push a tag such as `v0.1.0`. When the run finishes, download the `windows-installer` artifact. It contains the setup `.exe`. Windows SmartScreen may warn because the installer is unsigned; choose **More info**, then **Run anyway**.
 
 ## Running it (development)
 

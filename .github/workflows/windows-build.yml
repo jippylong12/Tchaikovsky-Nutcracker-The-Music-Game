@@ -1,0 +1,47 @@
+# Builds the Windows installer (.exe) on a GitHub-hosted Windows machine.
+# Run it from the Actions tab (Run workflow), or push a tag such as v0.1.0.
+# The installer is attached to the run as the "windows-installer" artifact.
+name: Windows build
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      - run: npm ci
+
+      # Unpacks the original CD files from original-cd/ (also run by `npm run build`, kept as its own step for a clear log).
+      - run: npm run setup:cd
+
+      - run: npm test
+
+      # beforeBuildCommand runs `npm run build` (Ruffle, original games mirror, typecheck, Vite).
+      - run: npx tauri build --bundles nsis
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: app/src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error

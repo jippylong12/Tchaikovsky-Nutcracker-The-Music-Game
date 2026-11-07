@@ -282,3 +282,10 @@ The UI promotion pass currently copies source UI bitmap evidence such as `song1_
 - Repack after changing recovered files: `node app/scripts/pack-original-cd.mjs` (about 5 minutes; tar uses `--format ustar` and `COPYFILE_DISABLE=1` so macOS AppleDouble files stay out).
 - Verified 2026-11-06: restoring into a clean folder reproduced all 480 files byte-identical (`diff -r` against `analysis/setup/app` and `base`). Archive size: 192 MB from a 246 MB tar.
 - The `.iso` is left out because it duplicates the install; the README carries its Internet Archive identifier and SHA-256.
+
+## Packaging the desktop apps (2026-11-06)
+
+- Mac: `npm run package:mac` from `app/`. It sets `CI=true` for `tauri build` so Tauri's `bundle_dmg.sh` skips the Finder AppleScript window layout, which fails from an agent shell ("error running bundle_dmg.sh"). Output: `src-tauri/target/release/bundle/dmg/*.dmg`, about 259 MB, ad-hoc signed.
+- `scripts/validate-release-candidate.mjs` now expects 16 routes and the `showDeveloperPanel ?? isDeveloperPanelRequested()` gate. `scripts/verify-macos-package.mjs` requires at least 300 original CD files under `dist/projector-install/`, at least 400 audio files and at least 75 images (464 and 83 after the m07/m08 removal).
+- Windows: `.github/workflows/windows-build.yml` (manual run or a `v*` tag) runs `npx tauri build --bundles nsis` on `windows-latest` and uploads the `windows-installer` artifact. `scripts/prepare-ruffle.mjs` uses Windows' built-in `tar` there because the runner has no `unzip` on PATH.
+- `public/local-media/` (131 MB, made by `npm run assets:pipeline` with swftools) only backs the remaining hand-made fallback screens. CI cannot generate it, so the Windows build ships without it; the live projector does not need it.

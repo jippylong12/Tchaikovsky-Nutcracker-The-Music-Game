@@ -43,10 +43,10 @@ assert(existsSync(path.join(appRoot, "src-tauri/app-icon.png")), "source-derived
 assert(!/\bplaceholder\b/i.test(routesSource), "release route metadata still contains placeholder language");
 assert(!/\b(?:planned|scaffold)\b/i.test(routesSource), "release route metadata still contains planned/scaffold language");
 assert(
-  appSource.includes("showDeveloperPanel ?? import.meta.env.DEV") && appSource.includes("showDeveloperPanel ?"),
+  appSource.includes("showDeveloperPanel ?? isDeveloperPanelRequested()") && !appSource.includes("showDeveloperPanel ?? import.meta.env.DEV"),
   "production developer-panel gate is missing",
 );
-assert(atlas.routeCount === 28, `expected 28 release routes, found ${atlas.routeCount}`);
+assert(atlas.routeCount === 16, `expected 16 release routes, found ${atlas.routeCount}`);
 assert(atlas.defectCount === 0, `source atlas still contains ${atlas.defectCount} defect entries`);
 assert(atlas.plannedCount === 0, `source atlas still contains ${atlas.plannedCount} planned entries`);
 assert(/npm run package:mac/.test(readme), "README is missing the verified macOS package command");

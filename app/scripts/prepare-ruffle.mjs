@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const appRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -27,7 +28,12 @@ if (!upToDate) {
   rmSync(outputRoot, { recursive: true, force: true });
   mkdirSync(outputRoot, { recursive: true });
   // Source maps are 1.5 MB of debugging data the player never requests; leave them out of the bundle.
-  execFileSync("unzip", ["-q", "-o", archivePath, "-x", "*.map", "-d", outputRoot]);
+  // Windows has no unzip, but its built-in tar (bsdtar, Windows 10+) reads zip archives.
+  if (process.platform === "win32") {
+    execFileSync("tar", ["-xf", archivePath, "-C", outputRoot, "--exclude", "*.map"]);
+  } else {
+    execFileSync("unzip", ["-q", "-o", archivePath, "-x", "*.map", "-d", outputRoot]);
+  }
   writeFileSync(stampPath, `${expectedSha256}\n`);
   console.log(`Unpacked Ruffle v0.5.0 into ${outputRoot}`);
 }

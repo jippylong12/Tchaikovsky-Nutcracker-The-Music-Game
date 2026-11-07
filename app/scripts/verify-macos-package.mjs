@@ -69,8 +69,11 @@ try {
 const distFiles = walk(path.join(appRoot, "dist"));
 const audioFiles = distFiles.filter((file) => /\.(?:mp3|wav)$/i.test(file));
 const imageFiles = distFiles.filter((file) => /\.(?:jpe?g|png)$/i.test(file));
-assert(audioFiles.length >= 600, `production frontend contains only ${audioFiles.length} audio files`);
-assert(imageFiles.length >= 90, `production frontend contains only ${imageFiles.length} image files`);
+// The room games play from the original CD files mirrored into projector-install/ (369 files on 2026-11-06).
+const originalGameFiles = distFiles.filter((file) => file.split(path.sep).join("/").includes("/dist/projector-install/"));
+assert(originalGameFiles.length >= 300, `production frontend contains only ${originalGameFiles.length} original CD game files`);
+assert(audioFiles.length >= 400, `production frontend contains only ${audioFiles.length} audio files`);
+assert(imageFiles.length >= 75, `production frontend contains only ${imageFiles.length} image files`);
 assert(statSync(dmg).size > 1024 * 1024, "DMG is unexpectedly small");
 
 const manifest = {
