@@ -319,6 +319,13 @@ describe("Listening Room under Ruffle's asynchronous loadSound", () => {
       const firstTag = 8 + Math.ceil((5 + 4 * nbits) / 8) + 4;
       expect((patched[firstTag] | (patched[firstTag + 1] << 8)) >> 6).toBe(12);
       expect(text(patched)).toContain("addProperty");
+      // Review fix: a record dropped while another MP3 still loads owns the turntable. The older sound's
+      // late onLoad must not move stopAt (only the newest pending sound may), and it is stopped instead of
+      // autoplaying over the new record.
+      const injected = text(patched.subarray(firstTag, firstTag + patched.length - original.length));
+      expect(injected).toContain("\0__pendingSound\0");
+      expect(injected).toContain("\0stop\0");
+      expect(injected.indexOf("__pendingSound")).toBeLessThan(injected.indexOf("\0duration\0"));
       // Everything after the insertion is the original movie, except the four renamed constants.
       const insertedLength = patched.length - original.length;
       const tail = text(patched.subarray(firstTag + insertedLength)).split("\0durDelay\0").join("\0duration\0");

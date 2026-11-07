@@ -448,7 +448,8 @@ export function patchGramophoneSoundDuration(original: Uint8Array): Uint8Array {
   if (renamed !== 4) throw new Error(`gramophone.swf: expected 4 duration constants, found ${renamed}`);
 
   const getMember = 0x4e;
-  const onLoad = [
+  const jump = (offset: number) => [0x99, ...u16(2), ...u16(offset & 0xffff)];
+  const setStopAt = [
     ...actionPush("_root"),
     ...op.getVariable,
     ...actionPush("stopAt"),
@@ -460,7 +461,41 @@ export function patchGramophoneSoundDuration(original: Uint8Array): Uint8Array {
     0x47, // Add2
     ...op.setMember, // _root.stopAt = getTimer() + this.duration
   ];
+  // A later drop or the help button already moved stopAt off the pending value: leave it alone.
+  const stillPending = [
+    ...actionPush("_root"),
+    ...op.getVariable,
+    ...actionPush("stopAt"),
+    getMember,
+    0x34, // getTimer()
+    0x0b, // Subtract
+    ...actionPush(gramophonePendingDurationMs / 2),
+    0x67, // Greater
+    ...op.not,
+  ];
+  // A record dropped after this one owns the turntable: keep this stale sound from autoplaying.
+  const stopStale = [...actionPush(0, "this"), ...op.getVariable, ...actionPush("stop"), ...op.callMethod, ...op.pop];
+  const toEnd = jump(stopStale.length);
+  const fresh = [...stillPending, ...actionIf(setStopAt.length + toEnd.length + stopStale.length), ...setStopAt, ...toEnd];
+  const onLoad = [
+    ...actionPush("_root"),
+    ...op.getVariable,
+    ...actionPush("__pendingSound"),
+    getMember,
+    ...actionPush("this"),
+    ...op.getVariable,
+    ...op.equals2,
+    ...op.not,
+    ...actionIf(fresh.length),
+    ...fresh,
+    ...stopStale,
+  ];
   const getter = [
+    ...actionPush("_root"),
+    ...op.getVariable,
+    ...actionPush("__pendingSound", "this"),
+    ...op.getVariable,
+    ...op.setMember, // _root.__pendingSound = this
     ...actionPush("this"),
     ...op.getVariable,
     ...actionPush("onLoad"),
