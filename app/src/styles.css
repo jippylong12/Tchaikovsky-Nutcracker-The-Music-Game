@@ -3539,6 +3539,17 @@ body:has(.release-shell) {
   pointer-events: none;
 }
 
+/* The live projector takes its own pointer input (its buttons, rollovers, and hand cursor). */
+.source-swf-layer[data-interactive="true"] .source-swf-player {
+  pointer-events: auto;
+}
+
+/* A suspended movie stays alive, paused and hidden, while the shell shows one of its own routes. */
+.source-swf-layer[data-suspended="true"] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .source-swf-skip-target {
   position: absolute;
   padding: 0;

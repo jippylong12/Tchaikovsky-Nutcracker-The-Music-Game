@@ -39,6 +39,9 @@ describe("shell and reference source reconstruction", () => {
     expect(sha256("projector-alice-preview.swf")).toBe(
       "c4f8ff3cdb1585a4756107469c05673d803a109a4ed357205be8c8ae3d86a84e",
     );
+    expect(sha256("projector-nutcracker2.swf")).toBe(
+      "b6a3677764a9440b9942ec278240b212c4e2c950ad281c4e6c5fdfeb41b04c2b",
+    );
     expect(sha256("flute-intro.swf")).toBe(
       "aa92b6b3022c3cf3030cecd7c06888aebd929a63bcc7b3ce18119f3f7476b782",
     );

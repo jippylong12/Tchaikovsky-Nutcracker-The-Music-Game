@@ -75,6 +75,21 @@ The modern hit rectangles over that native capture are Play `x 216-424, y 44-246
 
 The source text objects remain baked into the recovered frame: text `0030` is `Play / Featured / Game`, text `0031` is `Preview Other Games`, text `0048` is `Go to / KidsMusicStage.com`, and button texts `0033`-`0037` provide the EXIT states. No new visible launcher labels or controls are drawn over the source art.
 
+### Live launcher (since 2026-11-06, JIP-1536)
+
+The launcher is now the projector's own frame 1268, playing live in Ruffle: `projector-nutcracker2.swf` is the unmodified embedded FWS (SHA-256 `b6a3677764a9440b9942ec278240b212c4e2c950ad281c4e6c5fdfeb41b04c2b`). Its buttons, rollover/down states, and button sounds run as authored, which closes the button-renderer gap above. The static capture and the hit targets stay underneath only as the fallback for when Ruffle fails.
+
+| Source behaviour | Where in the projector | Shell boundary |
+| --- | --- | --- |
+| `webBTN` shows `warningMSG_mc` (sprite `0064`, depth `0054`, x `343.35`, y `256.50`) | `onRelease` → `warningMSG_mc.gotoAndStop("show")`; sprite frame 2 places `cover_btn` (button `0053`, full-stage blocker), `no_btn` (`0058`), `yes_btn` (`0061`), and text `0063` | none: the projector plays its own prompt |
+| NO | `no_btn.onRelease` → `gotoAndStop("first")` (hidden) | none |
+| YES | `yes_btn.onRelease` → `gotoAndPlay("bye")`; frame 3 `getURL("http://www.kidsmusicstage.com")`; frame 10 `stop()` and `FSCommand:quit` | Ruffle's `window.open` is sent to `openExternal`, then `quit` calls `exitApp`. The original opened the site **and closed the CD**; the remake does the same. |
+| EXIT (button `0038`) | `GotoFrame 2388` (root frame 2389, `exitNow` outro), then `FSCommand:quit` | `quit` calls `exitApp` after the source outro |
+| `MFBtn` | root frame 2 `MFIntro` loads `flute_intro.swf` into `bigloader` at (-77, -60), clipping the 800 x 600 movie | the request for `flute_intro.swf` switches to the fitted Stage 1 intro, so the source `skip` text stays visible |
+| `aliceBTN` | `aliceIntro` trailer, then `aliceJump` back to `choose` | none: plays natively. `projector-alice-preview.swf` is now only used from the static fallback launcher |
+
+Fallback gap: if Ruffle cannot start, the static website target still opens the site directly, without the prompt.
+
 ## Projector start frame
 
 Projector root frame 1 (`DOACTION` at byte `79408`, 113 bytes) sets `_quality = "MEDIUM"`, sends `FSCommand:fullscreen true`, `allowscale false`, and `showmenu false`, then runs `GotoFrame 1267` (zero-based, so root frame 1268, label `choose`) and `Play`. The loader action for `flute_intro.swf` belongs to root frame 2, label `MFIntro`, which the projector reaches only through `MFBtn.onRelease = _root.gotoAndPlay("MFintro")`. So the original projector opened on the launcher. The flute intro is the Musical Friends preview, not a startup intro. Since 2026-11-06 the remake matches this, on Marcus's rule that the remake does what the original did wherever the source shows it: the app opens with `overturePhase = "launcher"`, and re-entering the overture route also lands on the launcher. The flute intro plays only from the Musical Friends preview.
@@ -88,7 +103,7 @@ Projector root frame 1 (`DOACTION` at byte `79408`, 113 bytes) sets `_quality = 
 | `aliceSkip` | button `0307`, depth `0119`, x `-311.00`, y `621.00`, hit-only shape `0306` (local bounds x `-426.10..1178.25`, y `-858.10..566.25`) | covers the whole stage; `onRelease` runs `gotoAndPlay("aliceJump")`, which returns to `choose` |
 | `skipBTN` | button `0308`, depth `0121`, x `563.50`, y `25.45`, state texts `0033`-`0037` (`EXIT`) | `onRelease` runs `unloadMovieNum(1)` and `gotoAndStop("choose")` |
 
-Runtime: Ruffle cannot start a movie at a label. `assets:shell-reference` therefore promotes `projector-alice-preview.swf` (SHA-256 `c4f8ff3cdb1585a4756107469c05673d803a109a4ed357205be8c8ae3d86a84e`). It is the extracted projector with one change: the frame-1 `ActionGotoFrame` operand changes from 1267 to 1534 (bytes `79524`-`79525`). The `overturePhase = "alice-preview"` scene plays it through the shared Ruffle layer with a hand cursor, because `aliceSkip` covers the stage. A primary mouse release anywhere, or the transparent keyboard target over the trailer's `EXIT`, returns to the launcher, matching `aliceSkip` and `skipBTN`. With no input, the shell returns 607 frames / 15 fps = 40 467 ms after Ruffle's `loadedmetadata`, i.e. at `aliceJump`. A real `tauri dev` probe measured 40.7 s, with the trailer art and the source `EXIT` visible. If Ruffle fails, the launcher returns immediately. Previously the launcher routed this button into the full Alice puzzle game (the large clock), which has no exit; that was the dead end Marcus hit on 2026-11-06. The trailer's `EXIT` rollover colours are not shown, because pointer events go to the shell layer instead of Ruffle.
+Runtime: Ruffle cannot start a movie at a label. `assets:shell-reference` therefore promotes `projector-alice-preview.swf` (SHA-256 `c4f8ff3cdb1585a4756107469c05673d803a109a4ed357205be8c8ae3d86a84e`). It is the extracted projector with one change: the frame-1 `ActionGotoFrame` operand changes from 1267 to 1534 (opcode at byte `79520`, operand bytes `79523`-`79524`). The `overturePhase = "alice-preview"` scene plays it through the shared Ruffle layer with a hand cursor, because `aliceSkip` covers the stage. A primary mouse release anywhere, or the transparent keyboard target over the trailer's `EXIT`, returns to the launcher, matching `aliceSkip` and `skipBTN`. With no input, the shell returns 607 frames / 15 fps = 40 467 ms after Ruffle's `loadedmetadata`, i.e. at `aliceJump`. A real `tauri dev` probe measured 40.7 s, with the trailer art and the source `EXIT` visible. If Ruffle fails, the launcher returns immediately. Previously the launcher routed this button into the full Alice puzzle game (the large clock), which has no exit; that was the dead end Marcus hit on 2026-11-06. The trailer's `EXIT` rollover colours are not shown, because pointer events go to the shell layer instead of Ruffle.
 
 ## Projector `playRoom`
 
@@ -116,7 +131,26 @@ The activity buttons are source hotspots; their source button ids, depths, coord
 
 The Nutcracker game is a separate `nutButton` sprite `0671` at depth `0187`, x `300.95`, y `192.40`. Its on-load ActionScript hides the instance until `collectedKeys == 9`; the remake uses the equivalent nine-completed-game gate.
 
-The source-coordinate hotspots stay over that recovered composite. Every listed activity now maps to a reconstructed local route; no visible playRoom activity is intentionally left as a dead or disabled source button. Full moving projector-timeline playback remains the documented gap.
+The source-coordinate hotspots stay over that recovered composite. Every listed activity now maps to a reconstructed local route; no visible playRoom activity is intentionally left as a dead or disabled source button.
+
+### Live room and loadGame boundary (since 2026-11-06, JIP-1537, JIP-1538)
+
+The room is now the live projector, so the composite and the DOM hotspots above are only the Ruffle-failure fallback (`tabindex="-1"` while live). The source flow, from `actions.txt`:
+
+1. `nut.onRelease` → `gotoAndPlay("nutIni")` (root frame 2144). That frame defines `updateKeys()` and runs `loadVariables("games/data/gamekeys.txt", "_level0")`. Frame 2152 then branches: `collectedKeys == 9` goes to `holdToReset` (the reset prompt with `FSCommand:exec reset*.exe`), `0` goes to `ini`, anything else to `nutKeys`. The props then animate in on the root timeline up to frame 2377.
+2. Root frame 2378 `playRoom` defines `loadGame(game, kind)` and `updateKeys()`, then loads `games/keycontroller.swf` into `_level2`, sets `maxKeys = 9`, and stops.
+3. A hotspot calls `_root.loadGame(path, "g"|"a")`, which sets `comingFrom`, `nextGame`, and plays `bye` (frame 2380). Frame 2383 runs `loadMovie(nextGame, "_level1")`, `stop()`, `_level0._visible = 0`, or with `doExit == 1` jumps to the `exitNow` outro.
+4. A game returned by setting `_level0.gameKeyN = 1`, calling `FSCommand:exec saveKeyN.exe`, then `_level0.gotoAndPlay("comeAgain")` (for example `memory.swf` and `story.swf`). Frame 2384 `comeAgain` unloads `_level1`, calls `updateKeys()`, and shows `_level0`. Frame 2386 clears `nextGame` and returns to `playRoom`.
+
+Shell boundary (`app/src/flash/projectorBridge.ts`):
+
+- Ruffle resolves the projector's relative URLs against `/__projector/`, and a `window.fetch` wrapper answers them.
+- `gamekeys.txt` comes from the progress store in the install format (`&gameKey1=0…&EOF=1`). The nine-key `nutButton` (sprite `0671`) therefore uses its own `collectedKeys == 9` gate.
+- Each `loadGame` movie, plus `games/nutcrackergame/nutchooser.swf`, gets a generated three-frame stand-in SWF while the shell opens the matching route. The projector stays paused and hidden behind that route.
+- When the route returns to the room, the stand-in receives `ret=1` plus the current keys, copies them into `_level0`, and calls `_level0.gotoAndPlay("comeAgain")`, as the original games did. The props settle and the room is live again.
+- `FSCommand:exec resetgameKeys.exe`, `resetCADoors.exe`, `resetopenDoors.exe`, and `resetdoorsKeys.exe` map to the progress-store resets for game keys, Children's Album doors, NutHouse rooms, and Nutcracker doors.
+- `games/keycontroller.swf` is not in the recovered install and gets a 404.
+- Opening the room from the route map while the projector is on the launcher restarts the projector with its frame-1 `GotoFrame` patched in memory to 2143 (`nutIni`).
 
 ## Story, biography, and ballet readers
 

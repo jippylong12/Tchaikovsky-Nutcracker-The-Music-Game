@@ -191,6 +191,32 @@ The UI promotion pass currently copies source UI bitmap evidence such as `song1_
 - When a spike window opens in front of Marcus, a real click on it can end a skip-on-click scene early. Log `pointerup` events (with `isTrusted`) in the probe before calling an early hand-off a bug.
 - `app/.gitignore` carries the Vite template's `*.sw?` vim-swap pattern, which also ignores `.swf`. It now has `!*.swf` so promoted source movies get committed.
 
+### Live projector at the Ruffle boundary (Stage 2/3, JIP-1536 to JIP-1538, 2026-11-06)
+
+- The launcher and the music room are the unmodified projector (`projector-nutcracker2.swf`, SHA-256 `b6a36777…4c2b`) playing interactively in the Ruffle layer. Don't rebuild projector scenes in the DOM. The static capture and hotspots under the layer are only the fallback for when Ruffle fails, so they get `tabindex="-1" aria-hidden="true"` while the projector is live.
+- Code: `app/src/flash/projectorBridge.ts` (boundary, stand-in movie, start-frame patch) and the projector state machine in `syncSourceSwf()` in `app/src/app.ts`. `projectorPosition` is `launcher`, `room`, or `away`, where `away` means the projector is parked at root frame 2383 with a game "loaded" in `_level1`.
+- Every projector request is answered by the shell. Ruffle loads with `base: <origin>/__projector/`, `allowNetworking: "all"` and `openUrlMode: "allow"`. A `window.fetch` wrapper answers everything under that base, and nothing reaches the network:
+  - `games/data/gamekeys.txt` is built from the progress store.
+  - Room `loadGame` movies (paths in `projectorGameRoutes`) get a generated stand-in SWF while the shell opens the matching route.
+  - `flute_intro.swf` (MFBtn) switches to the fitted Stage 1 intro.
+  - Anything else gets a 404. Example: `games/keycontroller.swf`, which the projector loads into `_level2` before `playRoom`, is not in the recovered install.
+- The Ruffle v0.5.0 core calls `window.fetch` and `window.open` on the global window through wasm-bindgen glue. Both can therefore be wrapped from JS. `getURL("http://…")` with `openUrlMode: "allow"` reaches `window.open`. The wrapper sends it to `openExternal`, guarded against re-entry because the browser-preview `openExternal` itself calls `window.open`. Never let it reach the webview.
+- How the original games returned, which the stand-in reproduces: set `_level0.gameKeyN = 1`, call `FSCommand:exec saveKeyN.exe`, then `_level0.gotoAndPlay("comeAgain")`. Root frame 2384 `comeAgain` unloads `_level1`, shows `_level0`, and frame 2386 jumps back to `playRoom`.
+  - The stand-in is a 3-frame SWF 6. It long-polls `__shell/return.txt` into `_level1`, which the shell answers with `ret=1&gameKey1=…` when the route returns to `main-menu`. It then copies the nine keys into `_level0` and calls `comeAgain`.
+  - Check it with `swfdump -a` on the bytes from `buildProjectorReturnStubSwf()`.
+- `fscommand` reaches the shell through `ruffle().addFSCommandHandler`. `quit` calls `exitApp`. The holdToReset `exec reset*.exe` helpers map to the progress-store resets. Match them case-insensitively, because the projector says `resetgameKeys.exe` while the install has `resetGameKeys.exe`.
+- Two original behaviours worth knowing:
+  - Website YES runs `getURL` on `warningMSG_mc` frame 3 and then `FSCommand:quit` on frame 10. The original opened the site and closed the CD.
+  - The room's own EXIT sets `doExit`, plays the `exitNow` outro (root frame 2389), then quits.
+- Ruffle can't start at a label. To start in the room (route map, fallback Play button), the runtime fetches the projector once and patches only the frame-1 `ActionGotoFrame` operand in memory: opcode at byte **79520**, operand bytes 79523-79524, value 1267 → 2143 (`nutIni`). The asset gate asserts this offset. The Alice preview docs once said "79524-79525", which was off by one.
+- Suspend, don't destroy: when a game route opens from the room, the layer is hidden (`data-suspended`) and Ruffle `pause()`d. Returning calls `resume()`, then answers the stand-in.
+- Tests: happy-dom has no asset server, so `src/tests/setup.ts` keeps `.swf` fetches pending (inert, like the inert RufflePlayer). The boundary is driven through `window.fetch(projectorBaseUrl() + path)` with a fake layer in `src/tests/projectorBridge.test.ts`.
+- Window probes:
+  - On macOS, a `tauri dev` window behind other windows reports `document.hidden === true`. WebKit then stops painting it, so `screencapture -l` returns black, and Ruffle pauses itself while hidden.
+  - Bringing the window to the front steals Marcus's focus. **Don't run window or screenshot probes for this project without asking Marcus first.** Prove behaviour with the source dumps plus vitest on the boundary hooks, and ask Marcus to look at the visuals himself.
+  - The one capture taken (launcher, live in Ruffle, `playing` about 6 s after launch) matched the source frame.
+- Don't add `await import()` at the top of `main.ts`. Top-level await lets `DOMContentLoaded` fire before `createAppShell`'s listener is registered, and the app never mounts.
+
 ## Source-Backed Behaviors Already Implemented
 
 - Song controls are placed from SWF instance evidence:

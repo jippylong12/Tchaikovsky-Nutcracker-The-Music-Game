@@ -210,6 +210,118 @@ describe("source SWF layer (Ruffle)", () => {
   });
 });
 
+describe("source SWF layer: interactive projector session", () => {
+  function createInteractiveRuffle() {
+    const calls: string[] = [];
+    const loads: Record<string, unknown>[] = [];
+    const fsHandlers: ((command: string, args: string) => void)[] = [];
+    const players: RufflePlayerElement[] = [];
+    const loader: RuffleLoader = () =>
+      Promise.resolve({
+        createPlayer: () => {
+          const element = document.createElement("ruffle-fake") as unknown as RufflePlayerElement;
+          const api = {
+            load: (options: Record<string, unknown>) => {
+              loads.push(options);
+              return Promise.resolve();
+            },
+            addFSCommandHandler: (handler: (command: string, args: string) => void) => fsHandlers.push(handler),
+            pause: () => calls.push("pause"),
+            resume: () => calls.push("resume"),
+          };
+          element.ruffle = () => api;
+          players.push(element);
+          return element;
+        },
+      });
+    return { loader, calls, loads, fsHandlers, players };
+  }
+
+  const projector = (overrides: Partial<SourceSwfPlayback> = {}): SourceSwfPlayback => ({
+    swfUrl: "/assets/projector-nutcracker2.swf",
+    sessionKey: "projector@1267",
+    loadData: () => Promise.resolve(new Uint8Array([0x46, 0x57, 0x53])),
+    interactive: true,
+    base: "http://localhost/__projector/",
+    quality: "medium",
+    onFSCommand: vi.fn(),
+    onError: vi.fn(),
+    ...overrides,
+  });
+
+  it("Given the live projector, then Ruffle gets its bytes, its base, networking, and URL opening for the shell boundary", async () => {
+    const fake = createInteractiveRuffle();
+    const layer = createSourceSwfLayer(fake.loader);
+    layer.play(document.createElement("div"), projector());
+    await flush();
+
+    expect(fake.loads[0]).toMatchObject({ base: "http://localhost/__projector/", allowNetworking: "all", openUrlMode: "allow" });
+    expect(fake.loads[0]?.data).toBeInstanceOf(Uint8Array);
+    expect(fake.loads[0]).not.toHaveProperty("url");
+    layer.stop();
+  });
+
+  it("Given the live projector, then it takes its own pointer input: no skip target and no release-anywhere hand-off", async () => {
+    const fake = createInteractiveRuffle();
+    const layer = createSourceSwfLayer(fake.loader);
+    const config = projector({ onSkip: vi.fn() });
+    layer.play(document.createElement("div"), config);
+    await flush();
+    fake.players[0].dispatchEvent(new Event("loadedmetadata"));
+
+    window.dispatchEvent(new PointerEvent("pointerup", { button: 0 }));
+
+    expect(document.querySelector(".source-swf-skip-target")).toBeNull();
+    expect(document.querySelector<HTMLElement>(".source-swf-layer")?.dataset.interactive).toBe("true");
+    expect(config.onSkip).not.toHaveBeenCalled();
+    layer.stop();
+  });
+
+  it("Given the projector sends an fscommand, then the shell receives it until the session ends", async () => {
+    const fake = createInteractiveRuffle();
+    const layer = createSourceSwfLayer(fake.loader);
+    const config = projector();
+    layer.play(document.createElement("div"), config);
+    await flush();
+
+    fake.fsHandlers[0]?.("quit", "");
+    expect(config.onFSCommand).toHaveBeenCalledWith("quit", "");
+    layer.stop();
+    fake.fsHandlers[0]?.("quit", "");
+    expect(config.onFSCommand).toHaveBeenCalledTimes(1);
+  });
+
+  it("Given a game route opens, when the projector is suspended and resumed, then the same player pauses, hides, and resumes", async () => {
+    const fake = createInteractiveRuffle();
+    const layer = createSourceSwfLayer(fake.loader);
+    const stage = document.createElement("div");
+    layer.play(stage, projector());
+    await flush();
+
+    layer.suspend();
+    expect(document.querySelector<HTMLElement>(".source-swf-layer")?.dataset.suspended).toBe("true");
+    expect(layer.isSuspended()).toBe(true);
+    layer.play(stage, projector());
+
+    expect(layer.isSuspended()).toBe(false);
+    expect(fake.calls).toEqual(["pause", "resume"]);
+    expect(fake.players).toHaveLength(1);
+    expect(layer.activeSession()).toBe("projector@1267");
+    layer.stop();
+  });
+
+  it("Given the movie bytes cannot load, then onError fires and the layer is removed", async () => {
+    const fake = createInteractiveRuffle();
+    const layer = createSourceSwfLayer(fake.loader);
+    const config = projector({ loadData: () => Promise.reject(new Error("HTTP 404")) });
+    layer.play(document.createElement("div"), config);
+    await flush();
+
+    expect(config.onError).toHaveBeenCalledTimes(1);
+    expect(document.querySelector(".source-swf-layer")).toBeNull();
+  });
+});
+
 describe("overture plays flute_intro.swf through Ruffle", () => {
   function launchShell(loader: RuffleLoader) {
     const mount = document.createElement("main");
@@ -230,14 +342,17 @@ describe("overture plays flute_intro.swf through Ruffle", () => {
     return mount;
   }
 
-  it("Given app launch, then the launcher shows and no movie plays (projector frame 1 jumps to choose)", async () => {
+  const layerSession = () => document.querySelector<HTMLElement>(".source-swf-layer")?.dataset.sourceSession ?? null;
+
+  it("Given app launch, then the live projector starts on the launcher (frame 1 jumps to choose), with no intro", async () => {
     const fake = createFakeRuffle();
     const mount = launchShell(fake.loader);
     await flush();
 
     expect(mount.querySelector(".source-projector-launcher")).not.toBeNull();
-    expect(fake.loads).toHaveLength(0);
-    expect(document.querySelector(".source-swf-layer")).toBeNull();
+    expect(mount.querySelector(".source-intro-scene")).toBeNull();
+    expect(layerSession()).toBe("projector@1267");
+    expect(fake.loads.some((options) => String(options.url).includes("flute-intro"))).toBe(false);
     mount.remove();
   });
 
@@ -285,8 +400,8 @@ describe("overture plays flute_intro.swf through Ruffle", () => {
     document.querySelector(".source-swf-layer")?.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, button: 0 }));
 
     expect(mount.querySelector(".source-projector-launcher")).not.toBeNull();
-    expect(document.querySelector(".source-swf-layer")).toBeNull();
     expect(fake.players[0].isConnected).toBe(false);
+    expect(layerSession()).toBe("projector@1267");
     mount.remove();
   });
 
@@ -347,7 +462,7 @@ describe("overture plays flute_intro.swf through Ruffle", () => {
     document.body.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, button: 0 }));
 
     expect(mount.querySelector(".source-projector-launcher")).not.toBeNull();
-    expect(document.querySelector(".source-swf-layer")).toBeNull();
+    expect(layerSession()).toBe("projector@1267");
     mount.remove();
   });
 
@@ -368,12 +483,13 @@ describe("overture plays flute_intro.swf through Ruffle", () => {
 
   it("Given Ruffle cannot start the Alice trailer, then the launcher returns instead of a dead end", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    let calls = 0;
+    let rejectLoads = false;
     const fake = createFakeRuffle();
-    const loader: RuffleLoader = () => (++calls === 1 ? fake.loader() : Promise.reject(new Error("no wasm")));
+    const loader: RuffleLoader = () => (rejectLoads ? Promise.reject(new Error("no wasm")) : fake.loader());
     const mount = createShell(loader);
     await flush();
     document.querySelector<HTMLButtonElement>(".source-swf-skip-target")?.click();
+    rejectLoads = true;
     mount.querySelector<HTMLButtonElement>('[data-action="preview-alice"]')?.click();
     await flush();
 

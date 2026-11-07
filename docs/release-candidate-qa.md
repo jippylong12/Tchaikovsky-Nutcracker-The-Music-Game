@@ -29,8 +29,8 @@ Automated/package QA may move M09 work to **In Review**, but the release candida
 
 | Surface | Resettable check | Approval issue |
 | --- | --- | --- |
-| Overture | Launch on the source launcher; open the Musical Friends preview and confirm the intro skip path returns to the launcher; open the Alice preview and confirm it returns; then Play Featured Game into the main room | JIP-818 |
-| Main Menu | Verify source room art, hotspots, locked Nutcracker gate, and no debug chrome | JIP-818 |
+| Overture | Launch on the live projector launcher (buttons light up on hover); open the Musical Friends preview and confirm skip returns to the launcher; open the Alice preview and confirm a click returns; click KidsMusicStage.com and confirm the source warning prompt: NO closes it, YES opens the site in the browser and then closes the app as the original did; EXIT plays the source outro and closes the app | JIP-818, JIP-1534, JIP-1535, JIP-1536 |
+| Main Menu | Play Featured Game: the room animates in and settles; every hotspot opens its activity and the activity's exit returns to the settled room; the Nutcracker appears only with nine keys; no debug chrome | JIP-818, JIP-1537, JIP-1538 |
 | Story | Traverse all four spreads; verify exact source prose, book art, NEXT/PREV/EXIT | JIP-819 |
 | Composer Biography | Traverse all four spreads, including both frame-3 images | JIP-819 |
 | Ballet History | Traverse all five spreads and source controls | JIP-819 |

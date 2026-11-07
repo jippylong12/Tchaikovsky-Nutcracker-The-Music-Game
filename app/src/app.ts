@@ -37,6 +37,7 @@ import songYesLabelUrl from "./assets/nutcracker-source/song-yes-label.png";
 import fluteIntroGardenUrl from "./assets/source-scenes/flute-intro-garden.jpg";
 import fluteIntroSwfUrl from "./assets/source-scenes/flute-intro.swf?url";
 import projectorAlicePreviewSwfUrl from "./assets/source-scenes/projector-alice-preview.swf?url";
+import projectorNutcracker2SwfUrl from "./assets/source-scenes/projector-nutcracker2.swf?url";
 import listeningRoomSourceUrl from "./assets/source-scenes/listening-room-source.png";
 import mainPlayRoomCompositeUrl from "./assets/source-scenes/main-playroom-source-composite.png";
 import musictionaryHelpFishUrl from "./assets/source-scenes/musictionary-help-fish.png";
@@ -49,6 +50,18 @@ import readerControlPrevHoverUrl from "./assets/source-scenes/reader-control-pre
 import stageMarkUrl from "./assets/stage-mark.svg";
 import { createAudioService, type AudioService } from "./audio/audioService";
 import { createSourceSwfLayer, type SourceSwfLayer } from "./flash/sourceSwfLayer";
+import {
+  buildGameKeysVariables,
+  buildProjectorReturnStubSwf,
+  connectProjectorBoundary,
+  notFoundResponse,
+  patchProjectorStartFrame,
+  projectorBaseUrl,
+  projectorReturnPath,
+  projectorStartFrames,
+  swfResponse,
+  variablesResponse,
+} from "./flash/projectorBridge";
 import {
   dictionaryInstruments,
   getDictionaryInstrument,
@@ -234,6 +247,46 @@ const mainRoomHotspots: readonly MainRoomHotspot[] = [
   { sourceButtonId: 644, depth: 87, x: 187.5, y: 130.25, label: "The Nutcracker Ballet", sourcePath: "activities/ballet/ballet.swf", routeId: "ballet-history" },
   { sourceButtonId: 646, depth: 93, x: 474.95, y: 105.7, label: "Tchaikovsky's Biography", sourcePath: "activities/biography/biography.swf", routeId: "composer-biography" },
 ];
+
+/**
+ * Movies the live projector loads into `_level1` through `_root.loadGame`, mapped to the reconstructed
+ * routes. `games/nutcrackergame/nutchooser.swf` is the nine-key `nutButton` (button 0670).
+ */
+export const projectorGameRoutes: ReadonlyMap<string, RouteId> = new Map<string, RouteId>([
+  ...mainRoomHotspots.flatMap((hotspot): [string, RouteId][] =>
+    hotspot.routeId ? [[hotspot.sourcePath.toLowerCase(), hotspot.routeId]] : [],
+  ),
+  ["games/nutcrackergame/nutchooser.swf", "nutcracker-chooser"],
+]);
+
+/** `FSCommand:exec` reset helpers the projector's holdToReset prompt runs, mapped to the progress store. */
+const projectorResetCommands = {
+  "resetgamekeys.exe": "resetGameKeys",
+  "resetcadoors.exe": "resetChildrensDoors",
+  "resetopendoors.exe": "resetNutHouseRooms",
+  "resetdoorskeys.exe": "resetNutDoors",
+} as const;
+
+let projectorMoviePromise: Promise<Uint8Array> | null = null;
+
+/** The unmodified projector, fetched once; a start frame other than `choose` is patched into a copy. */
+function loadProjectorMovie(startFrame: number): Promise<Uint8Array> {
+  if (!projectorMoviePromise) {
+    projectorMoviePromise = window.fetch(projectorNutcracker2SwfUrl)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Could not load ${projectorNutcracker2SwfUrl}: HTTP ${response.status}`);
+        return response.arrayBuffer();
+      })
+      .then((buffer) => new Uint8Array(buffer))
+      .catch((error: unknown) => {
+        projectorMoviePromise = null;
+        throw error;
+      });
+  }
+  return projectorMoviePromise.then((movie) =>
+    startFrame === projectorStartFrames.choose ? movie : patchProjectorStartFrame(movie, startFrame),
+  );
+}
 
 const suiteRecordPlacements: readonly SuiteRecordPlacement[] = [
   { trackNumber: 1, sourceSpriteId: 63, sourceInstance: "lp1", depth: 43, x: 450.55, y: 384.2, matrix: [1.243, 0, 0, 0.562] },
@@ -467,6 +520,14 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
   });
   const sourceSwfLayer = options.sourceSwfLayer ?? createSourceSwfLayer();
   let overtureSourceSwfFailed = false;
+  // The launcher and the music room are the live projector (projector-nutcracker2.swf) in Ruffle.
+  // `projectorPosition` tracks where its root timeline is: on `choose`, in the room, or parked at
+  // root frame 2383 with a game "loaded" in _level1 while the shell shows that game's route.
+  let projectorFailed = false;
+  let projectorPosition: "launcher" | "room" | "away" = "launcher";
+  let projectorReturnRequested = false;
+  let pendingProjectorReturn: ((response: Response) => void) | null = null;
+  const projectorSessionPrefix = "projector@";
   const shellState: ShellState = {
     routeId: "overture",
     routeStack: [],
@@ -596,7 +657,7 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
                     <p class="status-label">${progressSnapshot.completedGameCount} of 9 keys</p>
                   </header>`
             }
-            ${renderScene(route, progressSnapshot, shellState, !overtureSourceSwfFailed)}
+            ${renderScene(route, progressSnapshot, shellState, !overtureSourceSwfFailed, !projectorFailed)}
             ${
               sourceFrameRoute
                 ? ""
@@ -1600,9 +1661,118 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     syncSourceSwf();
   };
 
-  // The overture intro plays the original flute_intro.swf through Ruffle in a persistent layer over the
-  // stage. The static source scene underneath stays as the fallback if Ruffle cannot start.
+  const isProjectorSession = () => sourceSwfLayer.activeSession()?.startsWith(projectorSessionPrefix) === true;
+
+  const settlePendingProjectorReturn = (response: Response) => {
+    const resolve = pendingProjectorReturn;
+    pendingProjectorReturn = null;
+    resolve?.(response);
+  };
+
+  const projectorReturnVariables = () => `ret=1${buildGameKeysVariables(progress.getSnapshot().gameKeys)}`;
+
+  // The stand-in movie in _level1 copies these keys into _level0 and runs _level0.gotoAndPlay("comeAgain").
+  const returnProjectorToRoom = () => {
+    projectorPosition = "room";
+    if (pendingProjectorReturn) settlePendingProjectorReturn(variablesResponse(projectorReturnVariables()));
+    else projectorReturnRequested = true;
+  };
+
+  const handleProjectorFsCommand = (command: string, args: string) => {
+    const name = command.trim().toLowerCase();
+    if (name === "quit") {
+      exitApp();
+      return;
+    }
+    if (name === "exec") {
+      const helper = args.trim().toLowerCase() as keyof typeof projectorResetCommands;
+      const reset = projectorResetCommands[helper];
+      if (reset) progress[reset]();
+      else console.info(`Projector FSCommand exec ${args} has no desktop equivalent`);
+      return;
+    }
+    // fullscreen, allowscale, and showmenu: the desktop window already holds the scaled stage.
+  };
+
+  const startProjector = (stage: HTMLElement, startFrame: number) => {
+    sourceSwfLayer.stop();
+    settlePendingProjectorReturn(notFoundResponse());
+    projectorReturnRequested = false;
+    projectorPosition = startFrame === projectorStartFrames.choose ? "launcher" : "room";
+    sourceSwfLayer.play(stage, {
+      swfUrl: projectorNutcracker2SwfUrl,
+      sessionKey: `${projectorSessionPrefix}${startFrame}`,
+      loadData: () => loadProjectorMovie(startFrame),
+      interactive: true,
+      base: projectorBaseUrl(),
+      quality: "medium",
+      onFSCommand: handleProjectorFsCommand,
+      onError: (error) => {
+        console.warn("The projector could not start through Ruffle; keeping the static source launcher and room", error);
+        projectorFailed = true;
+        render();
+      },
+    });
+  };
+
+  // Every relative URL the projector requests arrives here instead of the network.
+  connectProjectorBoundary({
+    request: async (path) => {
+      if (path === "games/data/gamekeys.txt") {
+        // nutIni: the featured game was chosen; the room animates in on the projector's own timeline.
+        projectorPosition = "room";
+        if (shellState.routeId === "overture") {
+          window.setTimeout(() => {
+            if (projectorPosition !== "launcher" && shellState.routeId === "overture") navigate("main-menu");
+          }, 0);
+        }
+        return variablesResponse(buildGameKeysVariables(progress.getSnapshot().gameKeys));
+      }
+      if (path === projectorReturnPath) {
+        if (projectorReturnRequested) {
+          projectorReturnRequested = false;
+          return variablesResponse(projectorReturnVariables());
+        }
+        settlePendingProjectorReturn(notFoundResponse());
+        return new Promise<Response>((resolve) => {
+          pendingProjectorReturn = resolve;
+        });
+      }
+      if (path === "flute_intro.swf") {
+        // MFBtn -> MFintro loads the intro into bigloader. Play it fitted to the stage (Stage 1) instead.
+        window.setTimeout(() => handleAction("preview-musical-friends"), 0);
+        return notFoundResponse();
+      }
+      const routeId = projectorGameRoutes.get(path);
+      if (routeId) {
+        projectorPosition = "away";
+        window.setTimeout(() => navigate(routeId), 0);
+        return swfResponse(buildProjectorReturnStubSwf());
+      }
+      console.info(`The projector requested ${path}, which the recovered install does not provide`);
+      return notFoundResponse();
+    },
+    openUrl: (url) => openExternal(url),
+  });
+
+  // The launcher and the room are the live projector. The intro and the fallback Alice preview play the
+  // original movies through the same Ruffle layer. Static source scenes stay underneath as fallbacks.
   const syncSourceSwf = () => {
+    const projectorStage = mount.querySelector<HTMLElement>(".source-projector-launcher, .source-playroom-scene");
+    if (projectorStage && !projectorFailed) {
+      const wantLauncher = shellState.routeId === "overture";
+      const restart =
+        !isProjectorSession() ||
+        (wantLauncher && projectorPosition !== "launcher") ||
+        (!wantLauncher && projectorPosition === "launcher");
+      if (restart) {
+        startProjector(projectorStage, wantLauncher ? projectorStartFrames.choose : projectorStartFrames.nutIni);
+        return;
+      }
+      sourceSwfLayer.resume(projectorStage);
+      if (!wantLauncher && projectorPosition === "away") returnProjectorToRoom();
+      return;
+    }
     const alicePreviewStage = mount.querySelector<HTMLElement>(".source-alice-preview-scene");
     if (alicePreviewStage) {
       sourceSwfLayer.play(alicePreviewStage, {
@@ -1625,7 +1795,10 @@ export function createAppShell(mount: HTMLElement, options: AppShellOptions = {}
     }
     const introStage = mount.querySelector<HTMLElement>(".source-intro-scene");
     if (!introStage || overtureSourceSwfFailed) {
-      sourceSwfLayer.stop();
+      // A game route opened from the room: keep the projector paused behind it, as the original kept
+      // _level0 loaded (and hidden) under the game in _level1.
+      if (!introStage && isProjectorSession() && projectorPosition !== "launcher") sourceSwfLayer.suspend();
+      else sourceSwfLayer.stop();
       return;
     }
     sourceSwfLayer.play(introStage, {
@@ -2357,13 +2530,14 @@ function renderScene(
   progress: ReturnType<ProgressStoreController["getSnapshot"]>,
   shellState: ShellState,
   sourceSwfActive: boolean,
+  projectorLive: boolean,
 ): string {
   if (route.id === "overture") {
-    return renderSourceOverture(shellState.overturePhase, sourceSwfActive);
+    return renderSourceOverture(shellState.overturePhase, sourceSwfActive, projectorLive);
   }
 
   if (route.id === "main-menu") {
-    return renderMainPlayRoom(progress);
+    return renderMainPlayRoom(progress, projectorLive);
   }
 
   if (isReadingRouteId(route.id)) {
@@ -2461,7 +2635,15 @@ function renderScene(
   `;
 }
 
-function renderSourceOverture(phase: ShellState["overturePhase"], sourceSwfActive: boolean): string {
+/** Under the live projector, the source-placed DOM targets stay for the static fallback only. */
+const liveProjectorInertTarget = 'tabindex="-1" aria-hidden="true"';
+
+function renderSourceOverture(
+  phase: ShellState["overturePhase"],
+  sourceSwfActive: boolean,
+  projectorLive: boolean,
+): string {
+  const inert = projectorLive ? liveProjectorInertTarget : "";
   if (phase === "alice-preview") {
     return `
       <div
@@ -2486,6 +2668,7 @@ function renderSourceOverture(phase: ShellState["overturePhase"], sourceSwfActiv
         data-source-capture="official Ruffle v0.5.0 lossless 1280 x 960 DPR-2 source-runtime capture downsampled to the native 640 x 480 stage"
         data-source-fallback="static source capture preserves the normal launcher frame; isolated button ids 0028, 0038, 0043, 0047, and 0051 extract but swfrender reports the button ids unknown, so exact rollover/down timeline playback remains pending"
         data-source-action-map="nut to nutIni; MFBtn to MFintro; aliceBTN to aliceIntro; webBTN to warningMSG_mc show; button 0038 to root frame 2388"
+        data-source-runtime="${projectorLive ? "live projector-nutcracker2.swf through bundled Ruffle v0.5.0; the projector's own buttons, warningMSG_mc prompt, Alice trailer, and exit outro run unchanged" : "static fallback"}"
       >
         <img class="source-projector-choose" src="${projectorChooseSourceUrl}" alt="" aria-hidden="true" />
         <h1 class="sr-only">Choose a Kids Music Stage game</h1>
@@ -2493,6 +2676,7 @@ function renderSourceOverture(phase: ShellState["overturePhase"], sourceSwfActiv
           class="source-projector-launcher-button source-projector-play"
           type="button"
           data-action="play-featured-game"
+          ${inert}
           aria-label="Play Featured Game"
           data-source-placement="button id 0028 instance nut at depth 0002 x 364.15 y 90.95 ratio 1267"
           data-source-hit-rect="x 216-424 y 44-246"
@@ -2502,6 +2686,7 @@ function renderSourceOverture(phase: ShellState["overturePhase"], sourceSwfActiv
           class="source-projector-launcher-button source-projector-preview-mf"
           type="button"
           data-action="preview-musical-friends"
+          ${inert}
           aria-label="Preview Musical Friends"
           data-source-placement="button id 0043 instance MFBtn at depth 0012 x 146.25 y 355.55 ratio 1267"
           data-source-hit-rect="x 54-188 y 326-460"
@@ -2511,6 +2696,7 @@ function renderSourceOverture(phase: ShellState["overturePhase"], sourceSwfActiv
           class="source-projector-launcher-button source-projector-preview-alice"
           type="button"
           data-action="preview-alice"
+          ${inert}
           aria-label="Preview Alice's Adventures in Musicland"
           data-source-placement="button id 0047 instance aliceBTN at depth 0020 x 291.80 y 355.55 ratio 1267"
           data-source-hit-rect="x 196-332 y 326-460"
@@ -2520,6 +2706,7 @@ function renderSourceOverture(phase: ShellState["overturePhase"], sourceSwfActiv
           class="source-projector-launcher-button source-projector-web"
           type="button"
           data-action="open-kids-music-stage"
+          ${inert}
           aria-label="Go to KidsMusicStage.com"
           data-source-placement="button id 0051 instance webBTN at depth 0029 x 527.70 y 355.65 ratio 1267"
           data-source-hit-rect="x 432-576 y 320-464"
@@ -2529,6 +2716,7 @@ function renderSourceOverture(phase: ShellState["overturePhase"], sourceSwfActiv
           class="source-projector-launcher-button source-projector-exit"
           type="button"
           data-action="exit-projector"
+          ${inert}
           aria-label="Exit"
           data-source-placement="button id 0038 at depth 0009 x 563.50 y 25.45 ratio 1267"
           data-source-hit-rect="x 572-640 y 8-58"
@@ -2560,8 +2748,9 @@ function renderSourceOverture(phase: ShellState["overturePhase"], sourceSwfActiv
   `;
 }
 
-function renderMainPlayRoom(progress: ReturnType<ProgressStoreController["getSnapshot"]>): string {
+function renderMainPlayRoom(progress: ReturnType<ProgressStoreController["getSnapshot"]>, projectorLive: boolean): string {
   const nutcrackerUnlocked = progress.completedGameCount === 9;
+  const inert = projectorLive ? liveProjectorInertTarget : "";
   return `
     <div
       class="scene-body source-playroom-scene"
@@ -2570,16 +2759,18 @@ function renderMainPlayRoom(progress: ReturnType<ProgressStoreController["getSna
       data-source-background="DEFINEBITSJPEG id 0518; shape id 0519 at depth 0003 centered x 320 y 240"
       data-source-capture="official Ruffle v0.5.0 render of extracted root frame 2378 source layers"
       data-source-fallback="swfextract -f 2378 omits JPEG id 0518 with the installed SWFTools build; the deterministic asset gate chroma-keys the source-runtime foreground capture over the exact promoted source JPEG and retains source-coordinate hotspots"
+      data-source-runtime="${projectorLive ? "live projector-nutcracker2.swf through bundled Ruffle v0.5.0; loadGame movies open the matching routes at the shell boundary" : "static fallback"}"
     >
       <img class="source-playroom-background" src="${mainPlayRoomCompositeUrl}" alt="" aria-hidden="true" />
       <div class="source-playroom-hotspots" role="group" aria-label="Music room activities">
-        ${mainRoomHotspots.map(renderMainRoomHotspot).join("")}
+        ${mainRoomHotspots.map((hotspot) => renderMainRoomHotspot(hotspot, inert)).join("")}
         ${
           nutcrackerUnlocked
             ? `<button
                 class="source-playroom-hotspot source-playroom-nutcracker"
                 type="button"
                 data-scene-route="nutcracker-chooser"
+                ${inert}
                 style="left: 300.95px; top: 192.4px"
                 title="The Nutcracker Game"
                 aria-label="The Nutcracker Game"
@@ -2593,7 +2784,7 @@ function renderMainPlayRoom(progress: ReturnType<ProgressStoreController["getSna
   `;
 }
 
-function renderMainRoomHotspot(hotspot: MainRoomHotspot): string {
+function renderMainRoomHotspot(hotspot: MainRoomHotspot, inert: string): string {
   const routeAttribute = hotspot.routeId ? `data-scene-route="${hotspot.routeId}"` : "disabled";
   const gapDescription = hotspot.routeId ? "" : " (source route not yet reconstructed)";
   return `
@@ -2601,6 +2792,7 @@ function renderMainRoomHotspot(hotspot: MainRoomHotspot): string {
       class="source-playroom-hotspot"
       type="button"
       ${routeAttribute}
+      ${inert}
       style="left: ${hotspot.x}px; top: ${hotspot.y}px"
       title="${escapeHtml(hotspot.label)}${gapDescription}"
       aria-label="${escapeHtml(hotspot.label)}${gapDescription}"

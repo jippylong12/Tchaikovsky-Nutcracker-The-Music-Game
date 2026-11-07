@@ -149,6 +149,7 @@ const expected = {
   playRoomCompositeSha256: "f1f42c978c8735db266e6aa89bf67d34b2e4b84e7f9b43acfdc47a720b298f75",
   introSha256: "aa92b6b3022c3cf3030cecd7c06888aebd929a63bcc7b3ce18119f3f7476b782",
   alicePreviewSha256: "c4f8ff3cdb1585a4756107469c05673d803a109a4ed357205be8c8ae3d86a84e",
+  projectorMovieSha256: "b6a3677764a9440b9942ec278240b212c4e2c950ad281c4e6c5fdfeb41b04c2b",
   introJpegId: 371,
   introStillSha256: "90185364eb26cb2b295084db962c23aeab64090d268ae09c89add44489d27e7d",
   musictionarySha256: "c8ce65d2ee006afb6254e59e49b2867ad22cd4a5a6d5da004be53c28c632f7cd",
@@ -343,6 +344,12 @@ alicePreview.writeUInt16LE(1534, aliceFrameOneAction + 6 + gotoChooseAt + 3);
 const alicePreviewPath = join(promotedRoot, "projector-alice-preview.swf");
 writeFileSync(alicePreviewPath, alicePreview);
 assertEqual(sha256(readFileSync(alicePreviewPath)), expected.alicePreviewSha256, "projector-alice-preview.swf SHA-256");
+// The live launcher and playRoom play the unmodified embedded projector. The runtime retargets the same
+// frame-1 GotoFrame operand in memory when it must start at nutIni (projectorBridge.ts).
+const projectorMoviePath = join(promotedRoot, "projector-nutcracker2.swf");
+writeFileSync(projectorMoviePath, embedded.swf);
+assertEqual(sha256(readFileSync(projectorMoviePath)), expected.projectorMovieSha256, "projector-nutcracker2.swf SHA-256");
+assertEqual(aliceFrameOneAction + 6 + gotoChooseAt, 79520, "frame-1 GotoFrame 1267 byte offset used by projectorBridge.ts");
 
 assertEqual(sha256(playRoom), expected.playRoomSha256, "playRoom JPEG 518 SHA-256");
 
@@ -563,6 +570,11 @@ const manifest = {
       sourceLocator: "embedded main SWF with root frame-1 ActionGotoFrame 1267 (choose) retargeted to 1534 (aliceIntro); trailer frames 1535-2141 played through bundled Ruffle v0.5.0",
       path: "app/src/assets/source-scenes/projector-alice-preview.swf",
       sha256: expected.alicePreviewSha256,
+    },
+    {
+      sourceLocator: "analysis/setup/app/Nutcracker2.exe embedded FWS at byte 864256, unmodified; the live launcher (choose) and playRoom play it through bundled Ruffle v0.5.0",
+      path: "app/src/assets/source-scenes/projector-nutcracker2.swf",
+      sha256: expected.projectorMovieSha256,
     },
     {
       sourceLocator: "analysis/setup/app/flute_intro.swf complete 800 x 600, 15 fps, 1277-frame movie played through bundled Ruffle v0.5.0",
