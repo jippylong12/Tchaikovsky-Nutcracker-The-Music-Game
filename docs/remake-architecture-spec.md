@@ -177,6 +177,8 @@ Private/local unsigned builds are acceptable for preservation use. Signing/notar
 7. M08 Mini-game Recreation Batch 2
 8. M09 Packaging QA and Release Candidate
 
+M07 and M08 were built and then removed on 2026-11-06. The music room plays the original games from the restored CD, so the hand-made mini-game screens and their assets were deleted.
+
 M02 should begin with Tauri/Vite/TypeScript scaffold and validation scripts. M03 should follow before deep game implementation so asset imports and data normalization are repeatable.
 
 ## Major Risks

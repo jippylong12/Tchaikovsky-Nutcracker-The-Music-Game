@@ -12,8 +12,6 @@
     "assets:certificates": "node scripts/extract-certificate-projectors.mjs",
     "assets:source-atlas": "node scripts/validate-source-atlas.mjs",
     "assets:shell-reference": "node scripts/extract-shell-reference-assets.mjs",
-    "assets:m07": "node scripts/extract-m07-source-assets.mjs",
-    "assets:m08": "node scripts/extract-m08-source-assets.mjs",
     "assets:nutcracker-actors": "node scripts/promote-nutcracker-actor-assets.mjs",
     "assets:nutcracker-jpeg3": "node scripts/extract-nutcracker-jpeg3.mjs",
     "assets:nutcracker-swf": "node scripts/extract-nutcracker-swf-assets.mjs",

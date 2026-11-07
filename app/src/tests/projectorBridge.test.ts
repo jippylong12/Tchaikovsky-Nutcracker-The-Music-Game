@@ -1,7 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createAppShell, projectorGameRoutes, resetProjectorInstallIndexForTests } from "../app";
+import {
+  createAppShell,
+  projectorGameRoutes,
+  projectorInstallOnlyGames,
+  resetProjectorInstallIndexForTests,
+} from "../app";
 import { createAudioService, type AudioElementLike } from "../audio/audioService";
 import {
   buildChildrensDoorsVariables,
@@ -213,10 +218,21 @@ describe("projector data and stand-in movie", () => {
     expect(normalizeProjectorPath("http://example.com/games/trivia/trivia.swf")).toBeNull();
   });
 
-  it("maps every room loadGame movie and the nine-key nutButton to a route", () => {
-    expect(projectorGameRoutes.get("games/trivia/trivia.swf")).toBe("trivia");
+  it("maps the room activities and the nine-key nutButton to routes, and leaves the room games to the CD", () => {
+    expect(projectorGameRoutes.get("activities/story/story.swf")).toBe("story");
     expect(projectorGameRoutes.get("games/nutcrackergame/nutchooser.swf")).toBe("nutcracker-chooser");
-    expect(projectorGameRoutes.size).toBe(14);
+    expect(projectorGameRoutes.get("games/trivia/trivia.swf")).toBeUndefined();
+    expect(projectorGameRoutes.size).toBe(6);
+    expect([...projectorInstallOnlyGames].sort()).toEqual([
+      "games/childrensalbum/childrensalbum.swf",
+      "games/flyinginstruments/flyinginstruments.swf",
+      "games/melody/melody.swf",
+      "games/memorygame/memory.swf",
+      "games/nuthouse/room11.swf",
+      "games/orchestragame/orchestra.swf",
+      "games/tree/tree.swf",
+      "games/trivia/trivia.swf",
+    ]);
   });
 });
 
@@ -471,6 +487,28 @@ describe("live projector launcher and room", () => {
 
     expect(response.status).toBe(404);
     expect(mount.querySelector(".source-intro-scene")).not.toBeNull();
+  });
+
+  it("Given no mirrored install, when a room game with no hand-made route loads, then the stand-in movie sends the projector straight back to the room", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const progress = createProgressStore(createMemoryPersistence());
+    progress.markGameKey(4);
+    const { mount, layer, request } = launch({ progress });
+    await request("games/data/gamekeys.txt");
+    await tick();
+
+    const gameResponse = await request("games/trivia/trivia.swf");
+    await tick();
+    const stub = new Uint8Array(await gameResponse.arrayBuffer());
+    expect(String.fromCharCode(...stub.subarray(0, 3))).toBe("FWS");
+    expect(mount.querySelector(".source-playroom-scene")).not.toBeNull();
+    expect(layer.suspended).toBe(false);
+
+    const returned = await (await request("__shell/return.txt")).text();
+    expect(returned.startsWith("ret=1&")).toBe(true);
+    expect(returned).toContain("&gameKey4=1&");
+    expect(layer.plays).toHaveLength(1);
+    warn.mockRestore();
   });
 
   it("Given a file the recovered install lacks (keycontroller.swf), then the projector gets a 404", async () => {

@@ -1,4 +1,4 @@
-export type RouteGroup = "menu" | "reference" | "suite" | "mini-game";
+export type RouteGroup = "menu" | "reference" | "suite";
 
 export type RouteDefinition = {
   readonly id: string;
@@ -163,126 +163,6 @@ export const routes = [
     levelTarget: "_level1",
     mainMenu: false,
   },
-  {
-    id: "childrens-album",
-    title: "Children's Album",
-    heading: "Children's Album doors",
-    summary:
-      "Source-backed eight-song instrumentation game with exact recovered patterns, bundled previews, saved doors, and game key 6 completion.",
-    group: "suite",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
-  {
-    id: "loopy-tunes",
-    title: "Loopy Tunes",
-    heading: "Loopy Tunes",
-    summary:
-      "Source-backed eight-tune loop mixer with exact four-track answers, recovered boards and embedded loop audio.",
-    group: "mini-game",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
-  {
-    id: "orchestra",
-    title: "Orchestra",
-    heading: "The Orchestra Game",
-    summary:
-      "Source-backed 18-instrument listening game with recovered stage layers, exact labels, embedded prompts, and game key 4 completion.",
-    group: "mini-game",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
-  {
-    id: "toy-soldiers",
-    title: "Toy Soldiers",
-    heading: "Toy Soldiers",
-    summary:
-      "Source-derived eight-soldier pitch-order activity using the recovered note sounds and documented staff-control fallback.",
-    group: "mini-game",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
-  {
-    id: "waltz",
-    title: "Waltz",
-    heading: "Waltz timeline",
-    summary:
-      "Faithful audio-first recreation of the source 785-frame Waltz timeline, with the bundled Wedding music and no invented gameplay.",
-    group: "mini-game",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
-  {
-    id: "tree-game",
-    title: "Tree Game",
-    heading: "Instrument tree game",
-    summary:
-      "Source-backed three-round listening game using the recovered tree layers, exact hotspots, bundled prompts, and game key 8 path.",
-    group: "mini-game",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
-  {
-    id: "flying-instruments",
-    title: "Flying Instruments",
-    heading: "Flying Instruments",
-    summary:
-      "Source-backed instrument-family game using the recovered instrument art, embedded sounds, level grid, and game key 3 completion path.",
-    group: "mini-game",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
-  {
-    id: "trivia",
-    title: "Trivia",
-    heading: "Trivia challenge",
-    summary:
-      "Source-backed 106-question game using the recovered book, exact question/answer placements, embedded feedback sounds, and game key 9 path.",
-    group: "mini-game",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
-  {
-    id: "melody",
-    title: "Melody",
-    heading: "Melody sequence game",
-    summary:
-      "Source-backed Funky Monkey sequence game using recovered stage art, all four source difficulty sets, exact note audio, and game key 5 path.",
-    group: "mini-game",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
-  {
-    id: "memory",
-    title: "Memory",
-    heading: "Memory game",
-    summary:
-      "Source-backed MusiCards game using promoted card faces/backs, recovered level and error rules, bundled sounds, and game key 2 path.",
-    group: "mini-game",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
-  {
-    id: "alice-puzzles",
-    title: "Alice Puzzles",
-    heading: "Alice puzzle chooser",
-    summary:
-      "Source-backed 12-puzzle clock selector with recovered puzzle art and the exact three-dial solution behavior.",
-    group: "mini-game",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
-  {
-    id: "nut-house",
-    title: "The NutHouse",
-    heading: "The NutHouse",
-    summary:
-      "Source-backed eight-room mirror sequence with recovered room art, persistent room progress, and game key 7 completion.",
-    group: "mini-game",
-    levelTarget: "_level1",
-    mainMenu: true,
-  },
 ] as const satisfies readonly RouteDefinition[];
 
 export const mainMenuRoutes = routes.filter((route) => route.mainMenu);
@@ -295,10 +175,6 @@ export const routeGroups: readonly { readonly id: RouteGroup; readonly title: st
   {
     id: "suite",
     title: "Music",
-  },
-  {
-    id: "mini-game",
-    title: "Games",
   },
 ] as const;
 

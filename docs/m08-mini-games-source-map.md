@@ -1,5 +1,7 @@
 # M08 Mini-Game Source Map
 
+> **Removed 2026-11-06.** The hand-made Children's Album, Loopy Tunes, Orchestra, Toy Soldiers, Waltz, Alice puzzles, and NutHouse screens and their assets, data module, and extractor script are gone, because the music room now plays the original games from the restored CD through Ruffle. This map stays as source evidence only; its commands and paths no longer exist.
+
 This map is the source-of-truth record for the M08 recreation pass. The runtime inputs are the recovered Flash files under `analysis/setup/app/games/`; `app/scripts/extract-m08-source-assets.mjs` verifies their SHA-256 hashes before writing ignored evidence under `app/generated/m08-source-extract/` and promoted runtime files under `app/src/assets/m08-source/`.
 
 Run `npm run assets:m08` from `app/`. A valid pass reports 34 SWFs, 112 source images, 3 extracted root streams, 205 extracted `DefineSound` files, 77 runtime companion files, 13 verified Alice Ruffle renders, and 33 verified Nut House Ruffle renders. The extractor excludes backup files and alternate Children's Album WAV copies while retaining the source MP3s and Waltz WAV. It preflights every required source/companion, all 34 locked SWF hashes, and all 46 source-runtime capture hashes before removing only its owned generated and promoted M08 roots for the rebuild.

@@ -1,5 +1,7 @@
 # M07 Mini-Game Source Map
 
+> **Removed 2026-11-06.** The hand-made Trivia, Funky Monkey, MusiCards, Find Me On The Tree, and Flying Instruments screens, their `app/src/assets/m07-source/` assets, `app/src/data/m07Games.ts`, and `npm run assets:m07` (`app/scripts/extract-m07-source-assets.mjs`) are gone, because the music room now plays the original games from the restored CD through Ruffle. This map stays as source evidence only; its commands and paths no longer exist.
+
 Linear milestone: M07. Manual UI approval remains required for JIP-825, JIP-830, and JIP-835.
 
 This map is the durable source contract for Trivia, Funky Monkey Melody, MusiCards Memory, Find Me On The Tree, and Flying Instruments. The extractor is `app/scripts/extract-m07-source-assets.mjs`; run it from `app/` with `npm run assets:m07`. Generated audit evidence is written to ignored `app/generated/m07-source-extract/`, and source-local runtime promotions are written to `app/src/assets/m07-source/`.

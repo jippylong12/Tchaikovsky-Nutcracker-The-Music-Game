@@ -453,7 +453,6 @@ describe("overture plays flute_intro.swf through Ruffle", () => {
     const mount = await openAlicePreview(fake);
 
     expect(mount.querySelector(".source-alice-preview-scene")).not.toBeNull();
-    expect(mount.querySelector(".m08-alice-scene")).toBeNull();
     expect(String(fake.loads[fake.loads.length - 1]?.url)).toContain("projector-alice-preview");
     expect(document.querySelector<HTMLElement>(".source-swf-layer")?.style.cursor).toBe("pointer");
     expect(document.querySelector(".source-swf-skip-target")?.getAttribute("aria-label")).toBe("EXIT");

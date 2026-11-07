@@ -77,6 +77,8 @@ Door routing recovered:
 | 7 | `games/nutcrackergame/song7/song.swf` |
 | 8 | `games/nutcrackergame/song8/song.swf` |
 
+> The hand-made remakes of the room games below (Tree Game through Alice and Nut House) were removed on 2026-11-06, because the music room plays the original games from the restored CD. These sections stay as a record of what the original games do.
+
 ## Tree Game
 
 File: `games/tree/tree.swf`
@@ -189,7 +191,7 @@ The full root probe produces a transparent 640 x 480, 406-byte PNG while reporti
 
 ## M08 Mini-Game Batch 2
 
-The full source inventory, locked hashes, per-SWF dimensions, promoted child layers, audio map, and root-render diagnostics are in `docs/m08-mini-games-source-map.md`. The runtime rule helpers live in `app/src/data/m08Games.ts`.
+The full source inventory, locked hashes, per-SWF dimensions, promoted child layers, audio map, and root-render diagnostics are in `docs/m08-mini-games-source-map.md`. Its runtime helpers (`app/src/data/m08Games.ts`) were removed on 2026-11-06 along with the hand-made screens.
 
 ### Children's Album and Loopy Tunes
 
