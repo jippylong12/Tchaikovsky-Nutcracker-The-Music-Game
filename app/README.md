@@ -1,6 +1,6 @@
 # Tchaikovsky Nutcracker: The Music Game
 
-Local desktop remake foundation for the recovered 2003 Flash game.
+Desktop shell that plays the recovered 2003 Flash game's original movies through Ruffle. See the [project README](../README.md) for what this is and where it is headed.
 
 ## Scope
 
