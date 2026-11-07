@@ -94,6 +94,7 @@ describe("source SWF layer (Ruffle)", () => {
       allowNetworking: "none",
       openUrlMode: "deny",
     });
+    expect(buildRuffleLoadOptions({ swfUrl: "/x.swf", quality: "medium" })).not.toHaveProperty("allowScriptAccess");
   });
 
   it("Given a stage, when the intro plays, then a player is mounted outside the stage and survives re-pinning", async () => {
@@ -259,6 +260,9 @@ describe("source SWF layer: interactive projector session", () => {
     expect(fake.loads[0]).toMatchObject({ base: "http://localhost/__projector/", allowNetworking: "all", openUrlMode: "allow" });
     expect(fake.loads[0]?.data).toBeInstanceOf(Uint8Array);
     expect(fake.loads[0]).not.toHaveProperty("url");
+    // Ruffle 0.5.0 installs its FSCommand bridge only with script access on and networking "all";
+    // without it the credits' FSCommand:quit never reaches the shell (Marcus, 2026-11-06).
+    expect(fake.loads[0]).toMatchObject({ allowScriptAccess: true });
     layer.stop();
   });
 

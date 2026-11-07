@@ -123,9 +123,16 @@ export function buildRuffleLoadOptions(
 ): Record<string, unknown> {
   const source = data ? { data } : { url: playback.swfUrl };
   // The live projector loads games, data files, and the website through the shell boundary
-  // (projectorBridge.ts); other movies get no network or URL access at all.
+  // (projectorBridge.ts); other movies get no network or URL access at all. Ruffle forwards
+  // FSCommands (quit, exec helpers) to the page only with script access on and networking "all".
+  // Script access is safe here: the projector's one empty-target getURL is retargeted to _blank.
   const access = playback.interactive
-    ? { openUrlMode: "allow", allowNetworking: "all", ...(playback.base ? { base: playback.base } : {}) }
+    ? {
+        openUrlMode: "allow",
+        allowNetworking: "all",
+        allowScriptAccess: true,
+        ...(playback.base ? { base: playback.base } : {}),
+      }
     : { openUrlMode: "deny", allowNetworking: "none" };
   return {
     ...source,
